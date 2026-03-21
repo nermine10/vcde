@@ -1,6 +1,6 @@
 ---
 title: "My Awesome Paper Title"
-author: "Your Name"
+author: "Nermine"
 format:
   html:
     theme: cosmo
