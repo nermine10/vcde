@@ -1,6 +1,6 @@
 ---
-title: "My Awesome Paper Title"
-author: "Nermine"
+title: "Global Illumination: Die Physik des Lichts"
+author: "Laura Barrionuevo, Nermine Bouchaala, Nikolai Straßmair"
 format:
   html:
     theme: cosmo

@@ -6,6 +6,15 @@ sowie beispielhaft Babylon.js für die Einbindung interaktiver 3D-Visualisierung
 ## Konfigurationsschritte (Setup)
 Um eine eigene Arbeitsumgebung auf Basis dieser Vorlage zu erstellen, führen Sie bitte die folgenden Schritte strikt in der angegebenen Reihenfolge aus:
 
+- **Lokale Python-Abhängigkeiten installieren**
+Wechseln Sie in den Projektordner und installieren Sie die benötigten Pakete einmalig:
+
+```powershell
+py -m pip install --user -r requirements.txt
+```
+
+Dieser Schritt ist notwendig, damit Quarto lokale Python-Codeblöcke mit `jupyter: python3` ausführen kann.
+
 - **Repository forken**
 Betätigen Sie die Schaltfläche "Fork" in der oberen rechten Ecke der GitHub-Oberfläche. Hierdurch wird eine identische Kopie des Projekts in Ihren persönlichen GitHub-Account übertragen.
 
@@ -47,6 +56,14 @@ Sämtliche Änderungen an der Datei index.qmd führen nach einem Push zum Reposi
 
 ## Fehleranalyse (Troubleshooting)
 - Fehlende Python-Grafiken: Überprüfen Sie das Protokoll unter dem Reiter "Actions" auf etwaige Installationsfehler der Bibliotheken matplotlib oder numpy.
+
+- Fehler `ModuleNotFoundError` (z. B. `yaml`, `nbformat`):
+Ursache: Benötigte Python-Pakete sind lokal nicht installiert.
+
+```powershell
+py -m pip install --user -r requirements.txt
+quarto preview index.qmd --no-browser --no-watch-inputs
+```
 
 - Inaktiver 3D-Canvas: Sollte die 3D-Umgebung nicht geladen werden, untersuchen Sie die Browser-Konsole (Taste F12) auf einen 404 (Not Found) Fehler. Dies deutet zumeist auf eine fehlerhafte Syntax im Verweis auf das Babylon.js-Framework hin.
 
