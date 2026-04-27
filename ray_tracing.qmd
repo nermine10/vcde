@@ -1,0 +1,709 @@
+## Ray Tracing:
+1. Primaerstrahl pro Pixel
+2. Oberflaechennormalen
+3. Pixelmatrix (sichtbar blockig)
+4. Anti-Aliasing (mehrere Strahlen pro Pixel)
+5. Diffuse Zufalls-Bounces (Lambert)
+6. Reflektierende Oberflaechen + Farbtransport + Gamma
+
+```{=html}
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+
+<style>
+  .rtx-wrap {
+    margin: 1rem 0 2rem;
+    padding: 0.95rem;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    background: linear-gradient(180deg, #fbfdff, #f4f7fb);
+  }
+
+  .rtx-toolbar {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+
+  .rtx-btn {
+    border: 1px solid #111827;
+    background: #111827;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.35rem 0.72rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .rtx-btn.secondary {
+    background: #fff;
+    color: #111827;
+  }
+
+  .rtx-grid {
+    display: block !important;
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .rtx-grid > * + * {
+    margin-top: 0.8rem;
+  }
+
+  .rtx-card {
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .rtx-grid aside.rtx-card {
+    align-self: start;
+    height: fit-content;
+    max-height: 620px;
+  }
+
+  .rtx-grid aside.rtx-card .rtx-panel {
+    max-height: 560px;
+    overflow: auto;
+  }
+
+  .rtx-head {
+    margin: 0;
+    padding: 0.58rem 0.75rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    border-bottom: 1px solid #d1d5db;
+    background: #f8fafc;
+    color: #1f2937;
+  }
+
+  #rayTracingCanvas {
+    width: 100%;
+    height: 500px; 
+    display: block;
+    touch-action: none;
+    background: #0f172a;
+  }
+
+  #rayDiagram {
+    width: 100%;
+    height: 150px;
+    display: block;
+    border-top: 1px solid #d1d5db;
+    background: #f8fafc;
+  }
+
+  .rtx-panel {
+    padding: 0.7rem 0.75rem 0.8rem;
+    font-size: 0.88rem;
+    color: #374151;
+    line-height: 1.35;
+  }
+
+  .rtx-stage {
+    margin: 0 0 0.45rem;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .rtx-stat {
+    margin: 0.22rem 0;
+  }
+
+  .rtx-row {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .rtx-range {
+    width: 130px;
+  }
+
+  @media (max-width: 980px) {
+    .rtx-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .rtx-grid aside.rtx-card {
+      max-height: none;
+    }
+
+    .rtx-grid aside.rtx-card .rtx-panel {
+      max-height: none;
+      overflow: visible;
+    }
+
+    #rayTracingCanvas {
+      height: 360px;
+    }
+  }
+</style>
+
+<div class="rtx-wrap">
+  <div class="rtx-toolbar" id="rtxToolbar"></div>
+
+  <div class="rtx-grid">
+    <article class="rtx-card">
+      <h3 class="rtx-head">Ray-Tracing Kamera + Pixelmatrix</h3>
+      <canvas id="rayTracingCanvas"></canvas>
+        <canvas id="rayDiagram" width="520" height="150"></canvas>
+    </article>
+
+    <aside class="rtx-card">
+      <h3 class="rtx-head">Erklaerung</h3>
+      <div class="rtx-panel">
+        <p class="rtx-stage" id="rtxStageTitle">Stage</p>
+        <p id="rtxStageText"></p>
+
+        <p class="rtx-stat"><strong>Kamera:</strong> <span id="camInfo"></span></p>
+        <p class="rtx-stat"><strong>Zentraler Ray:</strong> <span id="rayInfo"></span></p>
+        <p class="rtx-stat"><strong>Samples/Pixel:</strong> <span id="sppInfo"></span></p>
+        <p class="rtx-stat"><strong>Bounces:</strong> <span id="bounceInfo"></span></p>
+
+        <div class="rtx-row">
+          <label for="pixelSize">Pixelgroesse</label>
+          <input id="pixelSize" class="rtx-range" type="range" min="1" max="14" value="6" />
+        </div>
+
+        <div class="rtx-row">
+          <label for="manualSpp">SPP (manuell)</label>
+          <input id="manualSpp" class="rtx-range" type="range" min="1" max="16" value="8" />
+        </div>
+
+        <p class="rtx-stat">Steuerung: Ziehen = Orbit, Mausrad = Zoom.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  if (!window.BABYLON) return;
+
+  const canvas = document.getElementById('rayTracingCanvas');
+  const diagram = document.getElementById('rayDiagram');
+  const toolbar = document.getElementById('rtxToolbar');
+  const stageTitle = document.getElementById('rtxStageTitle');
+  const stageText = document.getElementById('rtxStageText');
+  const camInfo = document.getElementById('camInfo');
+  const rayInfo = document.getElementById('rayInfo');
+  const sppInfo = document.getElementById('sppInfo');
+  const bounceInfo = document.getElementById('bounceInfo');
+  const pixelSizeInput = document.getElementById('pixelSize');
+  const manualSppInput = document.getElementById('manualSpp');
+
+  if (!canvas || !diagram || !toolbar) return;
+
+  const STAGES = [
+    {
+      name: '1) Primaerstrahlen',
+      text: 'Ein Ray pro Pixel trifft Szene oder Himmel. So entsteht das Grundbild.',
+      spp: 1,
+      bounces: 1,
+      mode: 0,
+      grid: 1.0,
+      pixel: 8.0
+    },
+    {
+      name: '2) Normalen',
+      text: 'Farben codieren Oberflaechennormalen. Damit siehst du die lokale Orientierung jedes Treffpunkts.',
+      spp: 1,
+      bounces: 1,
+      mode: 1,
+      grid: 0.0,
+      pixel: 1.0
+    },
+    {
+      name: '3) Pixelmatrix (ohne AA)',
+      text: 'Grobe Pixelmatrix mit harten Kanten. Jeder Block entspricht einem einzelnen Sample.',
+      spp: 1,
+      bounces: 1,
+      mode: 2,
+      grid: 1.0,
+      pixel: 10.0
+    },
+    {
+      name: '4) Anti-Aliasing',
+      text: 'Mehrere Rays pro Pixel werden gemittelt. Kanten werden sichtbar weicher.',
+      spp: 8,
+      bounces: 1,
+      mode: 2,
+      grid: 0.0,
+      pixel: 1.0
+    },
+    {
+      name: '5) Diffuse Bounces (Lambert)',
+      text: 'Rays streuen zufaellig in der Halbkugel. Jeder Bounce verliert Energie gemaess Materialfarbe.',
+      spp: 10,
+      bounces: 4,
+      mode: 3,
+      grid: 0.0,
+      pixel: 1.0
+    },
+    {
+      name: '6) Spiegelung + Gamma',
+      text: 'Reflektierende Materialien nutzen berechenbare Reflexionsrichtung. Finale Farbe wird von linear nach Gamma transformiert.',
+      spp: 12,
+      bounces: 5,
+      mode: 4,
+      grid: 0.0,
+      pixel: 1.0
+    }
+  ];
+
+  let stageIndex = 0;
+
+  const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: false }, true);
+  const scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+
+  const camera = new BABYLON.FreeCamera('cam', new BABYLON.Vector3(0, 0, -1), scene);
+  camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA;
+  scene.activeCamera = camera;
+
+  const quad = BABYLON.MeshBuilder.CreatePlane('quad', { size: 2 }, scene);
+  quad.position.z = 0;
+
+  BABYLON.Effect.ShadersStore.rtxStepVertexShader = `
+    precision highp float;
+    attribute vec3 position;
+    varying vec2 vUV;
+    void main(void) {
+      vUV = position.xy * 0.5 + 0.5;
+      gl_Position = vec4(position, 1.0);
+    }
+  `;
+
+  BABYLON.Effect.ShadersStore.rtxStepFragmentShader = `
+    precision highp float;
+    varying vec2 vUV;
+
+    uniform vec2 iResolution;
+    uniform float iTime;
+    uniform float uMode;
+    uniform float uSPP;
+    uniform float uBounces;
+    uniform float uPixelSize;
+    uniform float uShowGrid;
+    uniform vec3 uCamPos;
+    uniform vec3 uCamTarget;
+
+    struct Hit {
+      float t;
+      vec3 p;
+      vec3 n;
+      vec3 albedo;
+      float matType;
+    };
+
+    float hash(vec2 p) {
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+    }
+
+    float hash3(vec3 p) {
+      return fract(sin(dot(p, vec3(113.1, 179.3, 271.9))) * 43758.5453123);
+    }
+
+    vec3 skyColor(vec3 rd) {
+      float t = 0.5 * (rd.y + 1.0);
+      return mix(vec3(0.93, 0.95, 1.0), vec3(0.55, 0.72, 0.96), t);
+    }
+
+    bool hitSphere(vec3 ro, vec3 rd, vec3 c, float r, vec3 albedo, float matType, inout Hit h) {
+      vec3 oc = ro - c;
+      float b = dot(oc, rd);
+      float cc = dot(oc, oc) - r * r;
+      float d = b * b - cc;
+      if (d < 0.0) return false;
+      float s = sqrt(d);
+      float t = -b - s;
+      if (t < 0.001) t = -b + s;
+      if (t < 0.001 || t >= h.t) return false;
+
+      h.t = t;
+      h.p = ro + rd * t;
+      h.n = normalize(h.p - c);
+      h.albedo = albedo;
+      h.matType = matType;
+      return true;
+    }
+
+    bool hitPlane(vec3 ro, vec3 rd, vec3 n, float d, vec3 albedo, float matType, inout Hit h) {
+      float den = dot(rd, n);
+      if (abs(den) < 0.0001) return false;
+      float t = -(dot(ro, n) + d) / den;
+      if (t < 0.001 || t >= h.t) return false;
+
+      h.t = t;
+      h.p = ro + rd * t;
+      h.n = n;
+      h.albedo = albedo;
+      h.matType = matType;
+      return true;
+    }
+
+    bool traceScene(vec3 ro, vec3 rd, out Hit h) {
+      h.t = 1e9;
+      h.p = vec3(0.0);
+      h.n = vec3(0.0);
+      h.albedo = vec3(0.0);
+      h.matType = 0.0;
+
+      hitPlane(ro, rd, vec3(0.0, 1.0, 0.0), 0.0, vec3(0.80), 0.0, h);
+      hitPlane(ro, rd, vec3(1.0, 0.0, 0.0), 4.5, vec3(0.95, 0.26, 0.22), 0.0, h);
+      hitPlane(ro, rd, vec3(-1.0, 0.0, 0.0), 4.5, vec3(0.20, 0.92, 0.28), 0.0, h);
+
+      hitSphere(ro, rd, vec3(-1.1, 1.0, 0.15), 1.0, vec3(0.95, 0.95, 0.98), 1.0, h);
+      hitSphere(ro, rd, vec3(1.55, 0.72, 0.65), 0.7, vec3(0.20, 0.45, 0.95), 0.0, h);
+      hitSphere(ro, rd, vec3(0.0, 0.38, -1.35), 0.38, vec3(0.95, 0.78, 0.18), 0.0, h);
+
+      return h.t < 1e8;
+    }
+
+    vec3 cosineHemisphere(vec3 n, vec2 xi) {
+      float r = sqrt(xi.x);
+      float phi = 6.2831853 * xi.y;
+      vec3 t = normalize(abs(n.x) > 0.1 ? cross(vec3(0.0, 1.0, 0.0), n) : cross(vec3(1.0, 0.0, 0.0), n));
+      vec3 b = cross(n, t);
+      return normalize(t * (r * cos(phi)) + b * (r * sin(phi)) + n * sqrt(max(0.0, 1.0 - xi.x)));
+    }
+
+    vec3 reflectDir(vec3 i, vec3 n) {
+      return i - 2.0 * dot(i, n) * n;
+    }
+
+    vec3 evaluateRay(vec3 ro, vec3 rd, vec2 seed, float mode, float bounces) {
+      Hit h;
+      if (!traceScene(ro, rd, h)) return skyColor(rd);
+
+      if (mode < 0.5) {
+        vec3 l = normalize(vec3(0.2, 1.0, 0.35));
+        float ndl = max(dot(h.n, l), 0.0);
+        return h.albedo * (0.16 + 0.84 * ndl);
+      }
+
+      if (mode < 1.5) {
+        return 0.5 * (h.n + vec3(1.0));
+      }
+
+      vec3 throughput = vec3(1.0);
+      vec3 color = vec3(0.0);
+
+      for (int i = 0; i < 7; ++i) {
+        if (float(i) >= bounces) break;
+
+        Hit hh;
+        if (!traceScene(ro, rd, hh)) {
+          color += throughput * skyColor(rd);
+          break;
+        }
+
+        vec3 lightPos = vec3(0.0, 4.8, 0.0);
+        vec3 ldir = normalize(lightPos - hh.p);
+        float ndotl = max(dot(hh.n, ldir), 0.0);
+        vec3 direct = hh.albedo * vec3(7.0, 6.5, 6.1) * ndotl * 0.025;
+        color += throughput * direct;
+
+        throughput *= hh.albedo;
+
+        vec3 nextDir;
+        if (mode > 3.5 && hh.matType > 0.5) {
+          nextDir = reflectDir(rd, hh.n);
+        } else {
+          vec2 xi = vec2(hash(seed + vec2(float(i) * 1.37, iTime * 0.17)), hash(seed.yx + vec2(float(i) * 2.11, iTime * 0.23)));
+          nextDir = cosineHemisphere(hh.n, xi);
+        }
+
+        ro = hh.p + hh.n * 0.002;
+        rd = normalize(nextDir);
+      }
+
+      return color;
+    }
+
+    void main(void) {
+      float px = max(1.0, uPixelSize);
+      vec2 frag = gl_FragCoord.xy;
+      vec2 sampleFrag = frag;
+      if (uMode < 2.5) {
+        sampleFrag = floor(frag / px) * px + 0.5 * px;
+      }
+
+      vec2 uv = sampleFrag / iResolution;
+      vec2 ndc = uv * 2.0 - 1.0;
+      ndc.x *= iResolution.x / iResolution.y;
+
+      vec3 forward = normalize(uCamTarget - uCamPos);
+      vec3 right = normalize(cross(vec3(0.0, 1.0, 0.0), forward));
+      vec3 up = cross(forward, right);
+
+      float spp = max(1.0, floor(uSPP + 0.5));
+      vec3 col = vec3(0.0);
+
+      for (int s = 0; s < 16; ++s) {
+        if (float(s) >= spp) break;
+
+        vec2 jitter = vec2(0.0);
+        if (spp > 1.0) {
+          jitter = vec2(hash(vec2(float(s), frag.x + iTime)), hash(vec2(float(s) + 17.0, frag.y + iTime))) - 0.5;
+        }
+
+        vec2 n2 = ndc + jitter / iResolution;
+        vec3 rd = normalize(right * n2.x + up * n2.y + forward * 1.35);
+        vec2 seed = vec2(frag.x + float(s) * 13.1, frag.y + float(s) * 7.7 + iTime * 11.0);
+        col += evaluateRay(uCamPos, rd, seed, uMode, uBounces);
+      }
+
+      col /= spp;
+
+      if (uMode < 2.5 && uShowGrid > 0.5) {
+        vec2 cell = fract(frag / px);
+        float line = max(step(cell.x, 0.06), step(cell.y, 0.06));
+        col = mix(col, col * 0.45, line);
+      }
+
+      col = sqrt(max(col, vec3(0.0)));
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  const mat = new BABYLON.ShaderMaterial(
+    'rtxStepMat',
+    scene,
+    { vertex: 'rtxStep', fragment: 'rtxStep' },
+    {
+      attributes: ['position'],
+      uniforms: [
+        'worldViewProjection',
+        'iResolution',
+        'iTime',
+        'uMode',
+        'uSPP',
+        'uBounces',
+        'uPixelSize',
+        'uShowGrid',
+        'uCamPos',
+        'uCamTarget'
+      ]
+    }
+  );
+
+  quad.material = mat;
+
+  let yaw = -1.05;
+  let pitch = 0.32;
+  let radius = 6.0;
+  const target = new BABYLON.Vector3(0, 1.0, 0);
+  let dragging = false;
+  let lastX = 0;
+  let lastY = 0;
+
+  function camPosFromOrbit() {
+    const cp = Math.cos(pitch);
+    return new BABYLON.Vector3(
+      target.x + radius * cp * Math.sin(yaw),
+      target.y + radius * Math.sin(pitch),
+      target.z + radius * cp * Math.cos(yaw)
+    );
+  }
+
+  canvas.addEventListener('pointerdown', function (e) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.setPointerCapture(e.pointerId);
+  });
+
+  canvas.addEventListener('pointermove', function (e) {
+    if (!dragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    yaw -= dx * 0.006;
+    pitch -= dy * 0.006;
+    pitch = Math.max(-1.2, Math.min(1.2, pitch));
+  });
+
+  canvas.addEventListener('pointerup', function (e) {
+    dragging = false;
+    try { canvas.releasePointerCapture(e.pointerId); } catch (_) { }
+  });
+
+  canvas.addEventListener('wheel', function (e) {
+    radius += e.deltaY * 0.01;
+    radius = Math.max(2.8, Math.min(12.0, radius));
+    e.preventDefault();
+  }, { passive: false });
+
+  const stageButtons = [];
+  STAGES.forEach(function (stage, idx) {
+    const btn = document.createElement('button');
+    btn.className = 'rtx-btn secondary';
+    btn.textContent = stage.name;
+    btn.addEventListener('click', function () {
+      stageIndex = idx;
+      updateStageUI();
+    });
+    toolbar.appendChild(btn);
+    stageButtons.push(btn);
+  });
+
+  function setButtonState() {
+    stageButtons.forEach(function (b, idx) {
+      if (idx === stageIndex) {
+        b.classList.remove('secondary');
+      } else {
+        b.classList.add('secondary');
+      }
+    });
+  }
+
+  function updateStageUI() {
+    const s = STAGES[stageIndex];
+    stageTitle.textContent = s.name;
+    stageText.textContent = s.text;
+    pixelSizeInput.value = String(Math.round(s.pixel));
+    manualSppInput.value = String(Math.round(s.spp));
+    setButtonState();
+  }
+
+  function drawRayDiagram(camPos, rayDir) {
+    const ctx = diagram.getContext('2d');
+    if (!ctx) return;
+
+    const w = diagram.width;
+    const h = diagram.height;
+    ctx.clearRect(0, 0, w, h);
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.strokeStyle = '#d1d5db';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(0, 0, w, h);
+
+    function mapXZ(v) {
+      const sx = w * 0.5 + v.x * 32.0;
+      const sy = h * 0.74 - v.z * 24.0;
+      return { x: sx, y: sy };
+    }
+
+    const spheres = [
+      { c: new BABYLON.Vector3(-1.1, 1.0, 0.15), r: 1.0, color: '#334155' },
+      { c: new BABYLON.Vector3(1.55, 0.72, 0.65), r: 0.7, color: '#1d4ed8' }
+    ];
+
+    ctx.strokeStyle = '#64748b';
+    ctx.beginPath();
+    const p1 = mapXZ(new BABYLON.Vector3(-4.5, 0, 0));
+    const p2 = mapXZ(new BABYLON.Vector3(4.5, 0, 0));
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.stroke();
+
+    spheres.forEach(function (s) {
+      const p = mapXZ(s.c);
+      ctx.fillStyle = s.color;
+      ctx.globalAlpha = 0.25;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, s.r * 24.0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalAlpha = 1.0;
+      ctx.strokeStyle = s.color;
+      ctx.stroke();
+    });
+
+    const cam2 = mapXZ(camPos);
+    const rayEnd = mapXZ(camPos.add(rayDir.scale(8.0)));
+
+    ctx.strokeStyle = '#f97316';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(cam2.x, cam2.y);
+    ctx.lineTo(rayEnd.x, rayEnd.y);
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.beginPath();
+    ctx.arc(cam2.x, cam2.y, 4, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Top-View: Kamera und zentraler Ray', 12, 18);
+  }
+
+  function centerRayHitInfo(camPos) {
+    const forward = target.subtract(camPos).normalize();
+
+    function hitSphere(c, r) {
+      const oc = camPos.subtract(c);
+      const b = BABYLON.Vector3.Dot(oc, forward);
+      const cc = BABYLON.Vector3.Dot(oc, oc) - r * r;
+      const d = b * b - cc;
+      if (d < 0) return null;
+      const s = Math.sqrt(d);
+      let t = -b - s;
+      if (t < 0.001) t = -b + s;
+      if (t < 0.001) return null;
+      return t;
+    }
+
+    const hits = [
+      { name: 'Spiegel-Sphaere', t: hitSphere(new BABYLON.Vector3(-1.1, 1.0, 0.15), 1.0) },
+      { name: 'Diffuse Sphaere', t: hitSphere(new BABYLON.Vector3(1.55, 0.72, 0.65), 0.7) }
+    ].filter(function (h) { return h.t !== null; });
+
+    if (hits.length === 0) return 'trifft Himmel/Background';
+    hits.sort(function (a, b) { return a.t - b.t; });
+    return 'trifft ' + hits[0].name;
+  }
+
+  updateStageUI();
+
+  engine.runRenderLoop(function () {
+    const t = performance.now() * 0.001;
+    const camPos = camPosFromOrbit();
+    const forward = target.subtract(camPos).normalize();
+    const right = BABYLON.Vector3.Cross(BABYLON.Axis.Y, forward).normalize();
+    const up = BABYLON.Vector3.Cross(forward, right).normalize();
+
+    const s = STAGES[stageIndex];
+    const manualSpp = Number(manualSppInput.value);
+    const pixelSize = Number(pixelSizeInput.value);
+
+    const spp = (stageIndex <= 3) ? manualSpp : s.spp;
+    const bounces = s.bounces;
+    const mode = s.mode;
+
+    mat.setVector2('iResolution', new BABYLON.Vector2(engine.getRenderWidth(), engine.getRenderHeight()));
+    mat.setFloat('iTime', t);
+    mat.setFloat('uMode', mode);
+    mat.setFloat('uSPP', spp);
+    mat.setFloat('uBounces', bounces);
+    mat.setFloat('uPixelSize', stageIndex === 2 ? pixelSize : s.pixel);
+    mat.setFloat('uShowGrid', s.grid);
+    mat.setVector3('uCamPos', camPos);
+    mat.setVector3('uCamTarget', target);
+
+    camInfo.textContent = 'yaw ' + yaw.toFixed(2) + ', pitch ' + pitch.toFixed(2) + ', radius ' + radius.toFixed(2);
+    rayInfo.textContent = centerRayHitInfo(camPos);
+    sppInfo.textContent = String(spp);
+    bounceInfo.textContent = String(bounces);
+
+    drawRayDiagram(camPos, forward);
+    scene.render();
+  });
+
+  window.addEventListener('resize', function () {
+    engine.resize();
+  });
+});
+</script>
+```
