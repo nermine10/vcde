@@ -32,27 +32,34 @@
     "href": "index.html",
     "title": "Global Illumination: Die Physik des Lichts",
     "section": "",
-    "text": "Nach Knuth (1984) ist TeX… This is a single-file Quarto website hosted on GitHub Pages. It combines Markdown text, LaTeX math, and interactive 3D elements.\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
-  },
-  {
-    "objectID": "index.html#abstract",
-    "href": "index.html#abstract",
-    "title": "Global Illumination: Die Physik des Lichts",
-    "section": "",
-    "text": "Nach Knuth (1984) ist TeX… This is a single-file Quarto website hosted on GitHub Pages. It combines Markdown text, LaTeX math, and interactive 3D elements.\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
-  },
-  {
-    "objectID": "index.html#methodology",
-    "href": "index.html#methodology",
-    "title": "Global Illumination: Die Physik des Lichts",
-    "section": "Methodology",
-    "text": "Methodology\nYou can include complex math like \\[E = mc^2\\] and immediately follow it with an interactive 3D figure to visualize your results."
+    "text": "Dieser kleine Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look, rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht.\n\n\n\n    \n        Früher: stilisiert und unrealistisch\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        Kaum Schatten, wenig Materialdetails.\n    \n\n    \n        Heute: realistischer und dichter\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        PBR-Materialien, weichere Beleuchtung und dynamische Schatten.\n    \n\n\n\n\n\n\nDie Renderinggleichung beschreibt die Lichtverteilung an einem Punkt unter Berücksichtigung von Emission und indirekter Beleuchtung.\n\\[\nL(x, x', \\lambda)\n= g(x, x', \\lambda) \\cdot \\left(\nL_e(x, x', \\lambda)\n+ \\int_S b(x, x', x'', \\lambda) \\cdot L(x', x'', \\lambda) \\, d x''\n\\right)\n\\]\n\n\\(L(x, x', \\lambda)\\): Licht zwischen zwei Punkten\n\\(g(x, x', \\lambda)\\): Geometrie- und Sichtbarkeitsfaktor\n\\(L_e(x, x', \\lambda)\\): emittiertes Licht\n\\(b(x, x', x'', \\lambda)\\): Reflexions- bzw. Streufunktion\n\\(\\int_S \\dots d x''\\): indirektes Licht über die Oberfläche \\(S\\)\n\n(Hier noch paar Bilder einfügen, um die Komponenten zu visualisieren)\n\n\n\nWenn Licht aus allen Richtungen kommen kann, wie kann man das überhaupt schnell berechnen? -&gt; Pocoyo sagt das und dann geht in nächster Station\n\n\n\n\n\n\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
   },
   {
     "objectID": "index.html#videospiele-früher-vs.-heute",
     "href": "index.html#videospiele-früher-vs.-heute",
     "title": "Global Illumination: Die Physik des Lichts",
-    "section": "Videospiele: Früher vs. Heute",
-    "text": "Videospiele: Früher vs. Heute\nDieser kleine Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look, rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht.\n\n\n\n    \n        Früher: stilisiert und unrealistisch\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        Kaum Schatten, wenig Materialdetails.\n    \n\n    \n        Heute: realistischer und dichter\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        PBR-Materialien, weichere Beleuchtung und dynamische Schatten."
+    "section": "",
+    "text": "Dieser kleine Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look, rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht.\n\n\n\n    \n        Früher: stilisiert und unrealistisch\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        Kaum Schatten, wenig Materialdetails.\n    \n\n    \n        Heute: realistischer und dichter\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        PBR-Materialien, weichere Beleuchtung und dynamische Schatten."
+  },
+  {
+    "objectID": "index.html#renderinggleichung",
+    "href": "index.html#renderinggleichung",
+    "title": "Global Illumination: Die Physik des Lichts",
+    "section": "",
+    "text": "Die Renderinggleichung beschreibt die Lichtverteilung an einem Punkt unter Berücksichtigung von Emission und indirekter Beleuchtung.\n\\[\nL(x, x', \\lambda)\n= g(x, x', \\lambda) \\cdot \\left(\nL_e(x, x', \\lambda)\n+ \\int_S b(x, x', x'', \\lambda) \\cdot L(x', x'', \\lambda) \\, d x''\n\\right)\n\\]\n\n\\(L(x, x', \\lambda)\\): Licht zwischen zwei Punkten\n\\(g(x, x', \\lambda)\\): Geometrie- und Sichtbarkeitsfaktor\n\\(L_e(x, x', \\lambda)\\): emittiertes Licht\n\\(b(x, x', x'', \\lambda)\\): Reflexions- bzw. Streufunktion\n\\(\\int_S \\dots d x''\\): indirektes Licht über die Oberfläche \\(S\\)\n\n(Hier noch paar Bilder einfügen, um die Komponenten zu visualisieren)"
+  },
+  {
+    "objectID": "index.html#phong-shading",
+    "href": "index.html#phong-shading",
+    "title": "Global Illumination: Die Physik des Lichts",
+    "section": "",
+    "text": "Wenn Licht aus allen Richtungen kommen kann, wie kann man das überhaupt schnell berechnen? -&gt; Pocoyo sagt das und dann geht in nächster Station"
+  },
+  {
+    "objectID": "index.html#mit-vs.-ohne-global-illumination",
+    "href": "index.html#mit-vs.-ohne-global-illumination",
+    "title": "Global Illumination: Die Physik des Lichts",
+    "section": "",
+    "text": "import numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
   }
 ]
