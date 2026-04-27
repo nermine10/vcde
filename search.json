@@ -1,30 +1,30 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Global Illumination: Die Physik des Lichts",
+    "objectID": "ray_tracing.html",
+    "href": "ray_tracing.html",
+    "title": "",
     "section": "",
-    "text": "Nach Knuth (1984) ist TeX… This is a single-file Quarto website hosted on GitHub Pages. It combines Markdown text, LaTeX math, and interactive 3D elements.\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
+    "text": "Primaerstrahl pro Pixel\nOberflaechennormalen\nPixelmatrix (sichtbar blockig)\nAnti-Aliasing (mehrere Strahlen pro Pixel)\nDiffuse Zufalls-Bounces (Lambert)\nReflektierende Oberflaechen + Farbtransport + Gamma\n\n\n\n\n\n\n  \n\n  \n    \n      \n      \n        \n    \n\n    \n      \n      \n        Stage\n        \n\n        Kamera: \n        Zentraler Ray: \n        Samples/Pixel: \n        Bounces: \n\n        \n          Pixelgroesse\n          \n        \n\n        \n          SPP (manuell)\n          \n        \n\n        Steuerung: Ziehen = Orbit, Mausrad = Zoom."
   },
   {
-    "objectID": "index.html#abstract",
-    "href": "index.html#abstract",
-    "title": "Global Illumination: Die Physik des Lichts",
+    "objectID": "ray_tracing.html#ray-tracing",
+    "href": "ray_tracing.html#ray-tracing",
+    "title": "",
     "section": "",
-    "text": "Nach Knuth (1984) ist TeX… This is a single-file Quarto website hosted on GitHub Pages. It combines Markdown text, LaTeX math, and interactive 3D elements.\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis"
+    "text": "Primaerstrahl pro Pixel\nOberflaechennormalen\nPixelmatrix (sichtbar blockig)\nAnti-Aliasing (mehrere Strahlen pro Pixel)\nDiffuse Zufalls-Bounces (Lambert)\nReflektierende Oberflaechen + Farbtransport + Gamma\n\n\n\n\n\n\n  \n\n  \n    \n      \n      \n        \n    \n\n    \n      \n      \n        Stage\n        \n\n        Kamera: \n        Zentraler Ray: \n        Samples/Pixel: \n        Bounces: \n\n        \n          Pixelgroesse\n          \n        \n\n        \n          SPP (manuell)\n          \n        \n\n        Steuerung: Ziehen = Orbit, Mausrad = Zoom."
   },
   {
-    "objectID": "index.html#methodology",
-    "href": "index.html#methodology",
-    "title": "Global Illumination: Die Physik des Lichts",
-    "section": "Methodology",
-    "text": "Methodology\nYou can include complex math like \\[E = mc^2\\] and immediately follow it with an interactive 3D figure to visualize your results."
+    "objectID": "path_tracing.html",
+    "href": "path_tracing.html",
+    "title": "",
+    "section": "",
+    "text": "Ein Pfad startet an der Kamera und wird zufaellig durch die Szene verfolgt.\nJeder Treffer erzeugt einen neuen Bounce (diffus oder spiegelnd).\nTrifft der Pfad eine Lichtquelle, wird Energie eingesammelt.\nViele zufaellige Pfade werden gemittelt (Monte Carlo Integration).\nMehr Samples pro Pixel reduzieren das Rauschen, brauchen aber mehr Rechenzeit.\nRussian Roulette beendet unwichtige lange Pfade effizient.\n\n\n\n\n    \n\n    \n        \n            \n            \n            \n        \n\n        \n            \n            \n                Stage\n                \n\n                Samples: \n                Max Bounces: \n                Russian Roulette: \n                Treffer Licht: \n                Geschaetzte Helligkeit: \n\n                \n                    Samples (manuell)\n                    \n                \n\n                \n                    Neue Zufalls-Pfade\n                \n\n                \n                    Warum Path Tracing? Es approximiert globale Beleuchtung physikalisch plausibel,\n                    inklusive indirektem Licht, weichen Schatten und Farbbleeding."
   },
   {
-    "objectID": "index.html#videospiele-früher-vs.-heute",
-    "href": "index.html#videospiele-früher-vs.-heute",
-    "title": "Global Illumination: Die Physik des Lichts",
-    "section": "Videospiele: Früher vs. Heute",
-    "text": "Videospiele: Früher vs. Heute\nDieser kleine Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look, rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht.\n\n\n\n    \n        Früher: stilisiert und unrealistisch\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        Kaum Schatten, wenig Materialdetails.\n    \n\n    \n        Heute: realistischer und dichter\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        PBR-Materialien, weichere Beleuchtung und dynamische Schatten."
+    "objectID": "path_tracing.html#path-tracing-erklaerung-auf-deutsch",
+    "href": "path_tracing.html#path-tracing-erklaerung-auf-deutsch",
+    "title": "",
+    "section": "",
+    "text": "Ein Pfad startet an der Kamera und wird zufaellig durch die Szene verfolgt.\nJeder Treffer erzeugt einen neuen Bounce (diffus oder spiegelnd).\nTrifft der Pfad eine Lichtquelle, wird Energie eingesammelt.\nViele zufaellige Pfade werden gemittelt (Monte Carlo Integration).\nMehr Samples pro Pixel reduzieren das Rauschen, brauchen aber mehr Rechenzeit.\nRussian Roulette beendet unwichtige lange Pfade effizient.\n\n\n\n\n    \n\n    \n        \n            \n            \n            \n        \n\n        \n            \n            \n                Stage\n                \n\n                Samples: \n                Max Bounces: \n                Russian Roulette: \n                Treffer Licht: \n                Geschaetzte Helligkeit: \n\n                \n                    Samples (manuell)\n                    \n                \n\n                \n                    Neue Zufalls-Pfade\n                \n\n                \n                    Warum Path Tracing? Es approximiert globale Beleuchtung physikalisch plausibel,\n                    inklusive indirektem Licht, weichen Schatten und Farbbleeding."
   }
 ]
