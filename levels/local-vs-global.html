@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Level 1 – Lokal vs.&nbsp;Global – GI Lernwelt</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-e25895f8420b891f4d3deaee1a87d265.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GI Lernwelt</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Start</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../levels/local-vs-global.html" aria-current="page"> 
+<span class="menu-text">Lokal vs.&nbsp;Global</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/ray-tracing.html"> 
+<span class="menu-text">Ray Tracing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/path-tracing.html"> 
+<span class="menu-text">Path Tracing</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Auf dieser Seite</h2>
+   
+  <ul>
+  <li><a href="#worum" id="toc-worum" class="nav-link active" data-scroll-target="#worum">Worum geht es?</a></li>
+  <li><a href="#gleichung" id="toc-gleichung" class="nav-link" data-scroll-target="#gleichung">Die Rendering-Gleichung</a>
+  <ul class="collapse">
+  <li><a href="#brdf" id="toc-brdf" class="nav-link" data-scroll-target="#brdf">Das Materialverhalten: die BRDF <span class="math inline">\(b(\cdot)\)</span></a></li>
+  </ul></li>
+  <li><a href="#demo" id="toc-demo" class="nav-link" data-scroll-target="#demo">Interaktiv: mit vs.&nbsp;ohne Global Illumination</a></li>
+  <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz">Boss-Quiz: Licht-Detektiv</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Level 1 – Lokal vs.&nbsp;Global</h1>
+<p class="subtitle lead">Die Rendering-Gleichung als roter Faden</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div data-vcde-levelbar="local-vs-global">
+
+</div>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Willkommen im ersten Level! 💡 Hier lernst du das <strong>Herzstück</strong> kennen, das alle weiteren Stationen verbindet: die <strong>Rendering-Gleichung</strong>. Keine Sorge, wir gehen sie Stück für Stück durch. Am Ende wartet ein Quiz – schaffst du es, schalte ich das nächste Level für dich frei!</p>
+</div>
+<style>
+  .lvg-mission {
+    margin: 1.25rem 0 2rem;
+    padding: 1.15rem 1.25rem;
+    border: 1px solid #d1d5db;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #eef2ff 0%, #ffffff 55%, #ecfeff 100%);
+    box-shadow: 0 10px 30px rgba(30, 41, 59, 0.10);
+  }
+  .lvg-mission__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.85rem;
+  }
+  .lvg-mission__chip {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #4f46e5;
+    background: #e0e7ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
+    padding: 0.22rem 0.7rem;
+  }
+  .lvg-mission__title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #111827;
+  }
+  .lvg-mission__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.55rem;
+  }
+  .lvg-mission__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    font-size: 0.93rem;
+    color: #374151;
+  }
+  .lvg-mission__step {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(160deg, #6366f1, #4f46e5);
+    box-shadow: 0 3px 8px rgba(79, 70, 229, 0.35);
+  }
+</style>
+
+<section class="lvg-mission">
+  <div class="lvg-mission__head">
+    <span class="lvg-mission__chip">🎯 Mission · Level 1</span>
+    <h2 class="lvg-mission__title anchored">Werde zum Licht-Detektiv</h2>
+  </div>
+  <ul class="lvg-mission__list">
+    <li class="lvg-mission__item"><span class="lvg-mission__step">1</span><span>Verstehe den Unterschied zwischen <strong>lokaler</strong> und <strong>globaler</strong> Beleuchtung.</span></li>
+    <li class="lvg-mission__item"><span class="lvg-mission__step">2</span><span>Lies die <strong>Rendering-Gleichung</strong> Term für Term wie eine Schatzkarte.</span></li>
+    <li class="lvg-mission__item"><span class="lvg-mission__step">3</span><span>Erlebe <strong>Color Bleeding</strong> und weiche Schatten in der Live-Demo.</span></li>
+    <li class="lvg-mission__item"><span class="lvg-mission__step">★</span><span>Bestehe das <strong>Quiz</strong> und schalte das nächste Level frei.</span></li>
+  </ul>
+</section>
+<section id="worum" class="level2">
+<h2 class="anchored" data-anchor-id="worum">Worum geht es?</h2>
+<p>Eine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden <span class="citation" data-cites="quarto2024">(<a href="#ref-quarto2024" role="doc-biblioref">Allaire and Teague 2024</a>)</span>:</p>
+<ul>
+<li><strong>Lokale Beleuchtung</strong> (z. B. Phong-Blinn): Jeder Punkt wird nur aus der direkten Lichtquelle und seinem eigenen Material beleuchtet. Schnell, aber „indirektes“ Licht fehlt – Schatten werden tiefschwarz, Farben strahlen nicht aufeinander ab.</li>
+<li><strong>Globale Beleuchtung (Global Illumination)</strong>: Licht wird auch <em>zwischen</em> Oberflächen weitergereicht. Eine rote Wand färbt den Boden leicht rötlich, Schatten werden weicher, Räume wirken stimmig.</li>
+</ul>
+<p>Die Rendering-Gleichung fasst beides in einer Formel zusammen.</p>
+</section>
+<section id="gleichung" class="level2">
+<h2 class="anchored" data-anchor-id="gleichung">Die Rendering-Gleichung</h2>
+<p>Sie beschreibt das Licht, das von einem Punkt in eine Richtung abgestrahlt wird – als Summe aus <strong>selbst emittiertem</strong> Licht und <strong>reflektiertem</strong> einfallendem Licht:</p>
+<p><span class="math display">\[
+L(x, x', \lambda)
+= g(x, x', \lambda) \cdot \left(
+\underbrace{L_e(x, x', \lambda)}_{\text{Emission}}
++ \underbrace{\int_S b(x, x', x'', \lambda) \cdot L(x', x'', \lambda) \, d x''}_{\text{indirektes Licht}}
+\right)
+\]</span></p>
+<p>Jeder Buchstabe hat eine anschauliche Bedeutung:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 36%">
+<col style="width: 43%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Bedeutung</th>
+<th>Anschaulich</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(L(x, x', \lambda)\)</span></td>
+<td>Licht zwischen zwei Punkten</td>
+<td>„Wie hell ist dieser Punkt aus dieser Richtung?“</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(g(x, x', \lambda)\)</span></td>
+<td>Geometrie-/Sichtbarkeitsfaktor</td>
+<td>„Sehen sich die Punkte überhaupt?“</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(L_e(x, x', \lambda)\)</span></td>
+<td>emittiertes Licht</td>
+<td>„Leuchtet die Fläche selbst?“ (Lampe, Bildschirm)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(b(x, x', x'', \lambda)\)</span></td>
+<td>Reflexions-/Streufunktion (BRDF)</td>
+<td>„Wie wirft das Material Licht zurück?“</td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\int_S \dots\, dx''\)</span></td>
+<td>indirektes Licht über alle Flächen <span class="math inline">\(S\)</span></td>
+<td>„Sammle Licht aus <em>allen</em> Richtungen ein.“</td>
+</tr>
+</tbody>
+</table>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Der Trick steckt im <strong>Integral</strong>: Es summiert das Licht, das von <em>allen</em> anderen Oberflächen kommt. Genau dieses „Licht von überall“ ist der Unterschied zwischen lokaler und globaler Beleuchtung. Lokale Verfahren lassen das Integral einfach weg!</p>
+</div>
+<section id="brdf" class="level3">
+<h3 class="anchored" data-anchor-id="brdf">Das Materialverhalten: die BRDF <span class="math inline">\(b(\cdot)\)</span></h3>
+<p>Der Term <span class="math inline">\(b(\cdot)\)</span> – die <strong>BRDF</strong> – beschreibt, in welche Richtungen eine Oberfläche eingehendes Licht zurückwirft. Eine <strong>diffuse</strong> Fläche streut breit in alle Richtungen (matte Wand), eine <strong>glänzende</strong> Fläche bündelt das Licht eng um die Spiegelrichtung. Die folgenden „Reflexionskeulen“ zeigen das in Polarkoordinaten:</p>
+<div id="cell-fig-brdf" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>theta <span class="op">=</span> np.linspace(<span class="op">-</span>np.pi <span class="op">/</span> <span class="dv">2</span>, np.pi <span class="op">/</span> <span class="dv">2</span>, <span class="dv">400</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>diffuse <span class="op">=</span> np.cos(theta)          <span class="co"># breite Lambert-Keule</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>glossy <span class="op">=</span> np.cos(theta) <span class="op">**</span> <span class="dv">40</span>     <span class="co"># schmale spekulare Keule</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(subplot_kw<span class="op">=</span>{<span class="st">'projection'</span>: <span class="st">'polar'</span>}, figsize<span class="op">=</span>(<span class="fl">5.2</span>, <span class="fl">4.2</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ax.plot(theta, diffuse, color<span class="op">=</span><span class="st">'#4f46e5'</span>, linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'diffus (Lambert)'</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ax.plot(theta, glossy, color<span class="op">=</span><span class="st">'#f59e0b'</span>, linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'glänzend (spekular)'</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ax.fill(theta, diffuse, color<span class="op">=</span><span class="st">'#4f46e5'</span>, alpha<span class="op">=</span><span class="fl">0.10</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ax.fill(theta, glossy, color<span class="op">=</span><span class="st">'#f59e0b'</span>, alpha<span class="op">=</span><span class="fl">0.15</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>ax.set_theta_zero_location(<span class="st">'N'</span>)      <span class="co"># 0° = Oberflächennormale</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>ax.set_theta_direction(<span class="op">-</span><span class="dv">1</span>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>ax.set_thetamin(<span class="op">-</span><span class="dv">90</span>)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>ax.set_thetamax(<span class="dv">90</span>)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>ax.set_rticks([<span class="fl">0.5</span>, <span class="fl">1.0</span>])</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>ax.set_rlabel_position(<span class="dv">0</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'BRDF-Reflexionskeulen'</span>, pad<span class="op">=</span><span class="dv">18</span>)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'lower center'</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.22</span>), ncol<span class="op">=</span><span class="dv">2</span>, frameon<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="fig-brdf" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-brdf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="local-vs-global_files/figure-html/fig-brdf-output-1.png" class="quarto-figure quarto-figure-center figure-img" width="370" height="386">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-brdf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Reflexionskeulen der BRDF: eine diffuse Fläche (breit) streut Licht gleichmäßig, eine glänzende Fläche (schmal) bündelt es um die Spiegelrichtung.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Stark! Du hast die Formel geknackt. 🔍 Jetzt wird’s praktisch: Im nächsten Abschnitt darfst du das Integral <em>ein- und ausschalten</em> und live sehen, was passiert. Achte besonders auf die Schatten und die Wandfarben!</p>
+</div>
+</section>
+</section>
+<section id="demo" class="level2">
+<h2 class="anchored" data-anchor-id="demo">Interaktiv: mit vs.&nbsp;ohne Global Illumination</h2>
+<p>Genug Theorie – schau es dir an! Die folgende Szene ist eine kleine „Cornell-Box“ mit einer roten und einer grünen Wand. Schalte zwischen <strong>lokaler Beleuchtung</strong> (nur direktes Licht) und <strong>globaler Beleuchtung</strong> (mit indirektem Licht und Farbabstrahlung) um und achte auf:</p>
+<ul>
+<li>die <strong>Schatten</strong>: tiefschwarz vs.&nbsp;weich aufgehellt,</li>
+<li>den <strong>Boden</strong> und die Kugel: nehmen sie die Wandfarben an? (<em>Color Bleeding</em>),</li>
+<li>die allgemeine <strong>Stimmigkeit</strong> des Raums.</li>
+</ul>
+<style>
+  .gi-wrap {
+    margin: 1rem 0 2rem;
+    padding: 0.95rem;
+    border-radius: 14px;
+    border: 1px solid #d1d5db;
+    background: linear-gradient(180deg, #fbfdff, #f4f7fb);
+  }
+  .gi-toolbar {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .gi-btn {
+    border: 1px solid #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .gi-btn.secondary { background: #fff; color: #4f46e5; }
+  .gi-mode {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1f2937;
+  }
+  .gi-card {
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+  }
+  .gi-head {
+    margin: 0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-bottom: 1px solid #d1d5db;
+    background: #f8fafc;
+    color: #1f2937;
+  }
+  #giCanvas {
+    width: 100%;
+    height: 460px;
+    display: block;
+    touch-action: none;
+    background: #0f172a;
+  }
+  .gi-note {
+    margin: 0;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.88rem;
+    color: #374151;
+    border-top: 1px solid #eef1f6;
+    background: #fafbfe;
+  }
+  @media (max-width: 720px) { #giCanvas { height: 340px; } }
+</style>
+
+<div class="gi-wrap">
+  <div class="gi-toolbar">
+    <button class="gi-btn" id="giToggle">Globale Beleuchtung: AUS</button>
+    <span class="gi-mode" id="giModeLabel">Modus: nur lokale (direkte) Beleuchtung</span>
+  </div>
+  <article class="gi-card">
+    <h3 class="gi-head anchored">Cornell-Box (Ziehen = drehen, Mausrad = zoomen)</h3>
+    <canvas id="giCanvas"></canvas>
+    <p class="gi-note" id="giNote">
+      Ohne GI bleibt alles dunkel, was nicht direkt beleuchtet wird – Schatten
+      werden tiefschwarz und die Wände färben nichts ab.
+    </p>
+  </article>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  if (!window.BABYLON) return;
+
+  const canvas = document.getElementById('giCanvas');
+  const toggle = document.getElementById('giToggle');
+  const modeLabel = document.getElementById('giModeLabel');
+  const note = document.getElementById('giNote');
+  if (!canvas || !toggle) return;
+
+  const engine = new BABYLON.Engine(canvas, true);
+  const scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color3(0.06, 0.07, 0.10);
+
+  const camera = new BABYLON.ArcRotateCamera('giCam', -Math.PI / 2, Math.PI / 2.35, 9.5, new BABYLON.Vector3(0, 1.6, 0), scene);
+  camera.attachControl(canvas, true);
+  camera.lowerRadiusLimit = 6.5;
+  camera.upperRadiusLimit = 14;
+  camera.wheelPrecision = 30;
+
+  const RED = new BABYLON.Color3(0.82, 0.18, 0.18);
+  const GREEN = new BABYLON.Color3(0.20, 0.62, 0.24);
+  const WHITE = new BABYLON.Color3(0.86, 0.86, 0.86);
+
+  // Materialhelfer: ambientColor = diffuseColor, damit scene.ambientColor
+  // (unser GI-Schalter) das indirekte Grundlicht steuern kann.
+  function mat(name, color) {
+    const m = new BABYLON.StandardMaterial(name, scene);
+    m.diffuseColor = color;
+    m.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+    m.ambientColor = color;
+    return m;
+  }
+
+  const S = 5;            // halbe Boxbreite
+  const H = 5;            // Höhe
+  function wall(name, opts, pos, rot, color) {
+    const w = BABYLON.MeshBuilder.CreatePlane(name, opts, scene);
+    w.position = pos;
+    if (rot) w.rotation = rot;
+    w.material = mat(name + 'Mat', color);
+    w.receiveShadows = true;
+    return w;
+  }
+
+  // Boden, Decke, Rückwand (weiß), linke Wand (rot), rechte Wand (grün)
+  wall('floor', { width: 2 * S, height: 2 * S }, new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(Math.PI / 2, 0, 0), WHITE);
+  wall('ceil', { width: 2 * S, height: 2 * S }, new BABYLON.Vector3(0, H, 0), new BABYLON.Vector3(-Math.PI / 2, 0, 0), WHITE);
+  wall('back', { width: 2 * S, height: H }, new BABYLON.Vector3(0, H / 2, S), new BABYLON.Vector3(0, Math.PI, 0), WHITE);
+  wall('left', { width: 2 * S, height: H }, new BABYLON.Vector3(-S, H / 2, 0), new BABYLON.Vector3(0, -Math.PI / 2, 0), RED);
+  wall('right', { width: 2 * S, height: H }, new BABYLON.Vector3(S, H / 2, 0), new BABYLON.Vector3(0, Math.PI / 2, 0), GREEN);
+
+  // Objekte in der Box
+  const sphere = BABYLON.MeshBuilder.CreateSphere('giSphere', { diameter: 2.0, segments: 32 }, scene);
+  sphere.position.set(-1.5, 1.0, -0.6);
+  sphere.material = mat('sphereMat', WHITE);
+
+  const box = BABYLON.MeshBuilder.CreateBox('giBox', { width: 1.6, height: 2.8, depth: 1.6 }, scene);
+  box.position.set(1.5, 1.4, 0.8);
+  box.rotation.y = -0.4;
+  box.material = mat('boxMat', WHITE);
+
+  // Direkte Lichtquelle an der Decke (immer aktiv)
+  const lamp = new BABYLON.PointLight('lamp', new BABYLON.Vector3(0, H - 0.4, 0), scene);
+  lamp.intensity = 0.85;
+  lamp.diffuse = new BABYLON.Color3(1, 0.97, 0.9);
+
+  // sichtbares Lampen-Quad an der Decke
+  const lampQuad = BABYLON.MeshBuilder.CreatePlane('lampQuad', { width: 2.4, height: 2.4 }, scene);
+  lampQuad.position.set(0, H - 0.02, 0);
+  lampQuad.rotation.x = -Math.PI / 2;
+  const lampMat = new BABYLON.StandardMaterial('lampMat', scene);
+  lampMat.emissiveColor = new BABYLON.Color3(1, 0.96, 0.85);
+  lampMat.disableLighting = true;
+  lampQuad.material = lampMat;
+
+  // harte Schatten der direkten Lampe
+  const shadow = new BABYLON.ShadowGenerator(1024, lamp);
+  shadow.usePoissonSampling = true;
+  shadow.addShadowCaster(sphere);
+  shadow.addShadowCaster(box);
+
+  // --- GI-Approximation -----------------------------------------------------
+  // "Mit GI" simulieren wir mit (a) globalem Grundlicht (scene.ambientColor)
+  // und (b) zwei farbigen Füll-Lichtern, die das Color Bleeding der roten und
+  // grünen Wand nachahmen. "Ohne GI" werden diese ausgeschaltet.
+  const hemi = new BABYLON.HemisphericLight('giFill', new BABYLON.Vector3(0, 1, 0), scene);
+  hemi.intensity = 0;
+  hemi.diffuse = new BABYLON.Color3(0.9, 0.9, 0.95);
+  hemi.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+
+  const redBleed = new BABYLON.PointLight('redBleed', new BABYLON.Vector3(-S + 0.6, 2.2, 0), scene);
+  redBleed.diffuse = RED;
+  redBleed.intensity = 0;
+  redBleed.range = 12;
+
+  const greenBleed = new BABYLON.PointLight('greenBleed', new BABYLON.Vector3(S - 0.6, 2.2, 0), scene);
+  greenBleed.diffuse = GREEN;
+  greenBleed.intensity = 0;
+  greenBleed.range = 12;
+
+  let gi = false;
+  function applyMode() {
+    if (gi) {
+      scene.ambientColor = new BABYLON.Color3(0.34, 0.34, 0.36);
+      hemi.intensity = 0.35;
+      redBleed.intensity = 0.45;
+      greenBleed.intensity = 0.45;
+      shadow.setDarkness(0.45);
+      toggle.textContent = 'Globale Beleuchtung: AN';
+      toggle.classList.add('secondary');
+      modeLabel.textContent = 'Modus: globale Beleuchtung (indirektes Licht + Color Bleeding)';
+      note.textContent = 'Mit GI hellt indirektes Licht die Schatten auf, und die rote/grüne Wand färben Boden und Objekte sichtbar ein.';
+    } else {
+      scene.ambientColor = new BABYLON.Color3(0, 0, 0);
+      hemi.intensity = 0;
+      redBleed.intensity = 0;
+      greenBleed.intensity = 0;
+      shadow.setDarkness(0.0);
+      toggle.textContent = 'Globale Beleuchtung: AUS';
+      toggle.classList.remove('secondary');
+      modeLabel.textContent = 'Modus: nur lokale (direkte) Beleuchtung';
+      note.textContent = 'Ohne GI bleibt alles dunkel, was nicht direkt beleuchtet wird – Schatten werden tiefschwarz und die Wände färben nichts ab.';
+    }
+  }
+
+  toggle.addEventListener('click', function () {
+    gi = !gi;
+    applyMode();
+  });
+
+  applyMode();
+  engine.runRenderLoop(function () { scene.render(); });
+  window.addEventListener('resize', function () { engine.resize(); });
+});
+</script>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Wichtig zu wissen
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Diese Demo ist eine <strong>Veranschaulichung</strong>, kein physikalisch exakter GI-Renderer. Echte globale Beleuchtung berechnet das Integral der Rendering-Gleichung – genau das machen <strong>Ray Tracing</strong> und <strong>Path Tracing</strong> in den nächsten Leveln.</p>
+</div>
+</div>
+</section>
+<section id="quiz" class="level2">
+<h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Licht-Detektiv</h2>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Zeit für die Abschlussprüfung! 🚀 Es warten <strong>10 Fragen</strong> rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du <strong>mindestens 7 richtig</strong>, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!</p>
+</div>
+<style>
+  .lvg-quiz {
+    margin: 1.5rem 0 2rem;
+    padding: 1.2rem 1.25rem 1.35rem;
+    border: 1px solid #d1d5db;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff, #f5f8ff);
+    box-shadow: 0 10px 30px rgba(30, 41, 59, 0.10);
+  }
+  .lvg-quiz__barwrap {
+    position: sticky;
+    top: 0.5rem;
+    z-index: 5;
+    margin: 0 0 1.1rem;
+    padding: 0.7rem 0.85rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+  }
+  .lvg-quiz__barhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 0.4rem;
+  }
+  .lvg-quiz__score { color: #4f46e5; }
+  .lvg-quiz__bar {
+    height: 12px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    overflow: hidden;
+  }
+  .lvg-quiz__fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #4f46e5, #0ea5e9);
+    transition: width 0.5s cubic-bezier(.2,.8,.2,1);
+  }
+  .lvg-quiz__fill--pass { background: linear-gradient(90deg, #16a34a, #4ade80); }
+  .lvg-q {
+    margin: 0 0 0.95rem;
+    padding: 0.95rem 1.05rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    background: #ffffff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .lvg-q--correct { border-color: #86efac; box-shadow: 0 0 0 2px rgba(134,239,172,0.35); }
+  .lvg-q--wrong   { border-color: #fca5a5; box-shadow: 0 0 0 2px rgba(252,165,165,0.35); }
+  .lvg-q__num {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.35rem;
+  }
+  .lvg-q__text { font-weight: 700; margin: 0 0 0.65rem; color: #111827; }
+  .lvg-opt {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 0.45rem;
+    cursor: pointer;
+    transition: background 0.12s ease, border-color 0.12s ease;
+  }
+  .lvg-opt:hover { background: #f5f7ff; }
+  .lvg-opt input { margin-top: 0.18rem; }
+  .lvg-opt--correct { border-color: #86efac; background: #ecfdf5; }
+  .lvg-opt--wrong   { border-color: #fca5a5; background: #fef2f2; }
+  .lvg-opt__mark { margin-left: auto; font-weight: 800; }
+  .lvg-q__explain {
+    margin: 0.55rem 0 0;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.86rem;
+    color: #374151;
+    background: #f8fafc;
+    border-left: 3px solid #c7d2fe;
+    border-radius: 0 8px 8px 0;
+    display: none;
+  }
+  .lvg-q--checked .lvg-q__explain { display: block; }
+  .lvg-quiz__actions {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: 0.4rem;
+  }
+  .lvg-btn {
+    border: 1px solid #4f46e5;
+    background: #4f46e5;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: filter 0.12s ease;
+  }
+  .lvg-btn:hover { filter: brightness(1.07); }
+  .lvg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .lvg-btn--ghost { background: #fff; color: #4f46e5; }
+  .lvg-quiz__feedback {
+    margin-top: 1rem;
+    display: none;
+  }
+  .lvg-quiz__feedback--show { display: block; }
+  .lvg-fb {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+  }
+  .lvg-fb--pass { border-color: #bbf7d0; background: #ecfdf5; }
+  .lvg-fb--fail { border-color: #fed7aa; background: #fff7ed; }
+  .lvg-fb__avatar {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: radial-gradient(circle at 30% 30%, #c7d2fe, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    border: 3px solid #fff;
+    box-shadow: 0 5px 14px rgba(79, 70, 229, 0.30);
+  }
+  .lvg-fb__avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .lvg-fb__name { font-weight: 800; color: #4f46e5; margin: 0 0 0.15rem; font-size: 0.92rem; }
+  .lvg-fb__text { margin: 0; color: #1f2937; line-height: 1.45; }
+  .lvg-fb__next { display: inline-block; margin-top: 0.6rem; font-weight: 800; }
+  .lvg-warn { color: #b45309; font-size: 0.86rem; margin-top: 0.6rem; display: none; }
+  .lvg-warn--show { display: block; }
+</style>
+
+<div class="lvg-quiz" id="lvgQuiz">
+  <div class="lvg-quiz__barwrap">
+    <div class="lvg-quiz__barhead">
+      <span>Fortschritt</span>
+      <span class="lvg-quiz__score" id="lvgScore">0 / 10 richtig · benötigt: 7</span>
+    </div>
+    <div class="lvg-quiz__bar"><div class="lvg-quiz__fill" id="lvgFill"></div></div>
+  </div>
+
+  <div id="lvgQuestions"></div>
+
+  <div class="lvg-quiz__actions">
+    <button type="button" class="lvg-btn" id="lvgCheck">Auswerten 🔎</button>
+    <button type="button" class="lvg-btn lvg-btn--ghost" id="lvgRetry">Neu starten ↺</button>
+  </div>
+  <p class="lvg-warn" id="lvgWarn">Bitte beantworte zuerst alle Fragen.</p>
+
+  <div class="lvg-quiz__feedback" id="lvgFeedback"></div>
+</div>
+
+<script>
+(function () {
+  var LEVEL_ID = "local-vs-global";
+  var PASS = 7;
+
+  var QUESTIONS = [
+    {
+      q: "Wofür steht der Term L_e in der Rendering-Gleichung L = g·(L_e + ∫ b·L dx'')?",
+      options: [
+        "Für das Licht, das die Oberfläche selbst emittiert",
+        "Für die Position der Kamera im Raum",
+        "Für die Anzahl der Strahlen pro Pixel"
+      ],
+      answer: 0,
+      explain: "L_e ist der Emissionsterm – z. B. eine Lampe, eine Flamme oder ein leuchtender Bildschirm."
+    },
+    {
+      q: "Was ist der zentrale Unterschied zwischen lokaler und globaler Beleuchtung?",
+      options: [
+        "Globale Beleuchtung berücksichtigt auch indirektes Licht von anderen Oberflächen",
+        "Lokale Beleuchtung ist immer physikalisch exakt",
+        "Globale Beleuchtung kommt ganz ohne Lichtquellen aus"
+      ],
+      answer: 0,
+      explain: "Lokale Verfahren lassen das Integral weg; globale werten es aus und erfassen so indirektes Licht."
+    },
+    {
+      q: "Welcher Term beschreibt, wie ein Material eingehendes Licht zurückwirft – die BRDF?",
+      options: [
+        "b(x, x', x'')",
+        "g(x, x')",
+        "L_e(x, x')"
+      ],
+      answer: 0,
+      explain: "b(...) ist die Reflexions-/Streufunktion (BRDF): breite Keule bei diffusen, schmale bei glänzenden Flächen."
+    },
+    {
+      q: "Was leistet das Integral ∫_S … dx'' in der Rendering-Gleichung?",
+      options: [
+        "Es sammelt einfallendes Licht aus allen Richtungen über die umgebenden Flächen S ein",
+        "Es berechnet nur die Auflösung der Kamera",
+        "Es entfernt alle Schatten aus der Szene"
+      ],
+      answer: 0,
+      explain: "Das Integral summiert das Licht von überall – genau dieses 'Licht von überall' macht globale Beleuchtung aus."
+    },
+    {
+      q: "Welches Verfahren ist ein klassisches Beispiel für LOKALE Beleuchtung?",
+      options: [
+        "Phong-Blinn-Shading",
+        "Radiosity",
+        "Path Tracing"
+      ],
+      answer: 0,
+      explain: "Phong-Blinn ist ein lokales Beleuchtungsmodell. Radiosity und Path Tracing sind globale Verfahren."
+    },
+    {
+      q: "Eine rote Wand färbt den weißen Boden daneben leicht rötlich. Wie heißt dieser Effekt?",
+      options: [
+        "Color Bleeding (Farbabstrahlung durch indirektes Licht)",
+        "Anti-Aliasing",
+        "Z-Fighting"
+      ],
+      answer: 0,
+      explain: "Color Bleeding entsteht, weil Licht von der roten Wand reflektiert wird und so indirekt den Boden einfärbt."
+    },
+    {
+      q: "Wofür ist der ambiente Term in lokalen Beleuchtungsmodellen gedacht?",
+      options: [
+        "Als billige, konstante Näherung ('Fake') für das fehlende globale Licht",
+        "Als exakte Lösung des Rendering-Integrals",
+        "Zur Berechnung der Spiegelreflexion"
+      ],
+      answer: 0,
+      explain: "Das Ambient-Light ist ein konstanter Grundwert, der das fehlende indirekte Licht grob ersetzt – mehr Trick als Physik."
+    },
+    {
+      q: "Warum werden Schatten mit globaler Beleuchtung weicher und nicht tiefschwarz?",
+      options: [
+        "Weil indirektes Licht von anderen Flächen auch in den Schatten gelangt",
+        "Weil die Kameraauflösung steigt",
+        "Weil die BRDF abgeschaltet wird"
+      ],
+      answer: 0,
+      explain: "Indirektes Licht 'füllt' die Schattenbereiche auf. Rein lokales Licht mit Punktlampe liefert dagegen harte, schwarze Schatten."
+    },
+    {
+      q: "Was beschreibt der Geometrie-/Sichtbarkeitsfaktor g(x, x') anschaulich?",
+      options: [
+        "Ob sich die beiden Punkte überhaupt 'sehen' können",
+        "Welche Farbe die Lichtquelle hat",
+        "Wie viele Bounces berechnet werden"
+      ],
+      answer: 0,
+      explain: "g(...) kümmert sich um Sichtbarkeit und Geometrie: Verdeckt etwas die Verbindung, trägt der Punkt kein Licht bei."
+    },
+    {
+      q: "Radiosity und Path Tracing sind Beispiele für …",
+      options: [
+        "globale Beleuchtungsverfahren, die das Integral auswerten",
+        "rein lokale Beleuchtungsmodelle",
+        "Verfahren ohne jede Lichtberechnung"
+      ],
+      answer: 0,
+      explain: "Beide lösen (näherungsweise) das Rendering-Integral und erfassen damit indirektes Licht – also globale Beleuchtung."
+    }
+  ];
+
+  function prefix() {
+    return /\/levels\//.test(window.location.pathname) ? "../" : "";
+  }
+
+  function mascotAvatar() {
+    return '<span class="lvg-fb__avatar"><img src="' + prefix() +
+      'assets/mascot/guide.png" alt="Lumi" onerror="this.replaceWith(document.createTextNode(\'💡\'))"></span>';
+  }
+
+  function init() {
+    var qWrap = document.getElementById("lvgQuestions");
+    var checkBtn = document.getElementById("lvgCheck");
+    var retryBtn = document.getElementById("lvgRetry");
+    var fill = document.getElementById("lvgFill");
+    var scoreEl = document.getElementById("lvgScore");
+    var feedback = document.getElementById("lvgFeedback");
+    var warn = document.getElementById("lvgWarn");
+    if (!qWrap) return;
+
+    var gid = "lvgq-" + Math.random().toString(36).slice(2, 8);
+
+    function esc(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function render() {
+      var html = "";
+      QUESTIONS.forEach(function (q, qi) {
+        html += '<div class="lvg-q" data-qi="' + qi + '" data-answer="' + q.answer + '">';
+        html += '<span class="lvg-q__num">Frage ' + (qi + 1) + ' / ' + QUESTIONS.length + '</span>';
+        html += '<p class="lvg-q__text">' + esc(q.q) + '</p>';
+        q.options.forEach(function (opt, oi) {
+          html += '<label class="lvg-opt" data-oi="' + oi + '">' +
+            '<input type="radio" name="' + gid + '-' + qi + '" value="' + oi + '">' +
+            '<span>' + esc(opt) + '</span></label>';
+        });
+        html += '<p class="lvg-q__explain">💡 ' + esc(q.explain) + '</p>';
+        html += '</div>';
+      });
+      qWrap.innerHTML = html;
+    }
+
+    function setBar(correct) {
+      var pct = Math.round((correct / QUESTIONS.length) * 100);
+      fill.style.width = pct + "%";
+      scoreEl.textContent = correct + " / " + QUESTIONS.length + " richtig · benötigt: " + PASS;
+    }
+
+    function evaluate() {
+      var qNodes = qWrap.querySelectorAll(".lvg-q");
+      var correct = 0;
+      var answeredAll = true;
+
+      qNodes.forEach(function (qn) {
+        var answer = parseInt(qn.getAttribute("data-answer"), 10);
+        var opts = qn.querySelectorAll(".lvg-opt");
+        var selected = qn.querySelector("input:checked");
+
+        qn.classList.add("lvg-q--checked");
+        qn.classList.remove("lvg-q--correct", "lvg-q--wrong");
+        opts.forEach(function (o) {
+          o.classList.remove("lvg-opt--correct", "lvg-opt--wrong");
+          var m = o.querySelector(".lvg-opt__mark");
+          if (m) m.remove();
+        });
+
+        if (opts[answer]) {
+          opts[answer].classList.add("lvg-opt--correct");
+          opts[answer].insertAdjacentHTML("beforeend", '<span class="lvg-opt__mark">✓</span>');
+        }
+
+        if (!selected) { answeredAll = false; return; }
+        var chosen = parseInt(selected.value, 10);
+        if (chosen === answer) {
+          correct++;
+          qn.classList.add("lvg-q--correct");
+        } else {
+          qn.classList.add("lvg-q--wrong");
+          if (opts[chosen]) {
+            opts[chosen].classList.add("lvg-opt--wrong");
+            opts[chosen].insertAdjacentHTML("beforeend", '<span class="lvg-opt__mark">✗</span>');
+          }
+        }
+      });
+
+      if (!answeredAll) {
+        warn.classList.add("lvg-warn--show");
+      } else {
+        warn.classList.remove("lvg-warn--show");
+      }
+
+      setBar(correct);
+      fill.classList.toggle("lvg-quiz__fill--pass", correct >= PASS && answeredAll);
+      showFeedback(correct, answeredAll);
+    }
+
+    function showFeedback(correct, answeredAll) {
+      var passed = answeredAll && correct >= PASS;
+      var name, text, cls;
+
+      if (passed) {
+        cls = "lvg-fb--pass";
+        name = "Lumi";
+        if (correct === QUESTIONS.length) {
+          text = "🌟 Perfekt – alle " + QUESTIONS.length + " richtig! Du bist ein echter Licht-Detektiv. Das Integral hat keine Geheimnisse mehr vor dir.";
+        } else {
+          text = "🎉 Geschafft, " + correct + " von " + QUESTIONS.length + " richtig! Du hast lokal vs. global verstanden. Ich schalte das nächste Level frei.";
+        }
+        var next = (window.VCDE && window.VCDE.markComplete)
+          ? window.VCDE.markComplete(LEVEL_ID)
+          : null;
+        if (next) {
+          text += '<br><a class="lvg-fb__next" href="' + prefix() + next.href + '">Weiter zu „' + esc(next.title) + '“ →</a>';
+        } else {
+          text += '<br><a class="lvg-fb__next" href="' + prefix() + 'index.html">Zurück zur Landkarte →</a>';
+        }
+        document.querySelectorAll('[data-vcde-levelbar]').forEach(function (el) {
+          if (window.VCDE && window.VCDE.renderLevelBar) window.VCDE.renderLevelBar(el, LEVEL_ID);
+        });
+        checkBtn.disabled = true;
+      } else if (!answeredAll) {
+        cls = "lvg-fb--fail";
+        name = "Lumi";
+        text = "Fast! Ein paar Fragen sind noch offen. Beantworte alle, dann werte ich erneut aus. ✍️";
+      } else {
+        cls = "lvg-fb--fail";
+        name = "Lumi";
+        if (correct >= PASS - 2) {
+          text = "Knapp dran: " + correct + " von " + QUESTIONS.length + " richtig (nötig: " + PASS + "). Schau dir die markierten Erklärungen an – du hast es gleich!";
+        } else {
+          text = "Noch nicht ganz: " + correct + " von " + QUESTIONS.length + " richtig (nötig: " + PASS + "). Kein Stress! Lies die 💡-Erklärungen und starte neu.";
+        }
+      }
+
+      feedback.innerHTML =
+        '<div class="lvg-fb ' + cls + '">' +
+          mascotAvatar() +
+          '<div><p class="lvg-fb__name">' + name + '</p><p class="lvg-fb__text">' + text + '</p></div>' +
+        '</div>';
+      feedback.classList.add("lvg-quiz__feedback--show");
+    }
+
+    function reset() {
+      render();
+      checkBtn.disabled = false;
+      feedback.classList.remove("lvg-quiz__feedback--show");
+      feedback.innerHTML = "";
+      warn.classList.remove("lvg-warn--show");
+      fill.classList.remove("lvg-quiz__fill--pass");
+      setBar(0);
+    }
+
+    render();
+    setBar(0);
+    checkBtn.addEventListener("click", evaluate);
+    retryBtn.addEventListener("click", reset);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-quarto2024" class="csl-entry" role="listitem">
+Allaire, J. J., and Charles Teague. 2024. <span>“Quarto: An Open-Source Scientific and Technical Publishing System.”</span> <em>Proceedings of the Scientific Computing Conference</em>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script>
+// site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
+// include-after-body nicht, liefert aber auf jeder Seite den korrekten
+// Offset zum Projektstamm über <meta name="quarto:offset">. So funktioniert
+// der Pfad sowohl auf der Startseite als auch in /levels/ und unter einem
+// GitHub-Pages-Unterpfad.
+(function () {
+  var offset = "";
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  if (meta && meta.getAttribute("content")) {
+    offset = meta.getAttribute("content");
+    if (offset.charAt(offset.length - 1) !== "/") offset += "/";
+  }
+  var s = document.createElement("script");
+  s.src = offset + "assets/site.js";
+  document.body.appendChild(s);
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/nermine10\.github\.io\/vcde\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
