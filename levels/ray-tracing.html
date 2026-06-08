@@ -73,6 +73,35 @@ ul.task-list li input[type="checkbox"] {
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -132,8 +161,14 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Auf dieser Seite</h2>
    
   <ul>
-  <li><a href="#stufen" id="toc-stufen" class="nav-link active" data-scroll-target="#stufen">Die 6 Stufen des Ray Tracings</a></li>
-  <li><a href="#abschluss" id="toc-abschluss" class="nav-link" data-scroll-target="#abschluss">Geschafft?</a></li>
+  <li><a href="#was" id="toc-was" class="nav-link active" data-scroll-target="#was">Was ist Ray Tracing?</a></li>
+  <li><a href="#gleichung" id="toc-gleichung" class="nav-link" data-scroll-target="#gleichung">Ray Tracing &amp; die Rendering-Gleichung</a></li>
+  <li><a href="#fresnel" id="toc-fresnel" class="nav-link" data-scroll-target="#fresnel">Reflexion, Brechung &amp; der Fresnel-Effekt</a></li>
+  <li><a href="#schatten" id="toc-schatten" class="nav-link" data-scroll-target="#schatten">Schattenstrahlen &amp; der Sichtbarkeits-Faktor <span class="math inline">\(g\)</span></a></li>
+  <li><a href="#rekursion" id="toc-rekursion" class="nav-link" data-scroll-target="#rekursion">Rekursion: Spiegelungen in Spiegelungen</a></li>
+  <li><a href="#aa" id="toc-aa" class="nav-link" data-scroll-target="#aa">Anti-Aliasing: mehrere Strahlen pro Pixel</a></li>
+  <li><a href="#stufen" id="toc-stufen" class="nav-link" data-scroll-target="#stufen">Live-Ray-Tracer: alle Stufen in 3D</a></li>
+  <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz">Boss-Quiz: Strahlen-Detektiv</a></li>
   </ul>
 </nav>
     </div>
@@ -143,7 +178,7 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Level 2 – Ray Tracing</h1>
-<p class="subtitle lead">Von Primärstrahlen zu diffusen Bounces</p>
+<p class="subtitle lead">Von Primärstrahlen zur Rendering-Gleichung</p>
 </div>
 
 
@@ -164,11 +199,686 @@ ul.task-list li input[type="checkbox"] {
 
 </div>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Jetzt machen wir das Integral der Rendering-Gleichung „greifbar“: Ray Tracing verfolgt Lichtstrahlen durch die Szene. Klick dich durch die Stufen unten – von einem Strahl pro Pixel bis zu diffusen Bounces. 🔦</p>
+<p>Willkommen in Level 2! 🔦 Im ersten Level haben wir die <strong>Rendering-Gleichung</strong> kennengelernt. Jetzt machen wir sie <em>greifbar</em>: <strong>Ray Tracing</strong> verfolgt Lichtstrahlen rückwärts durch die Szene – vom Auge durch jeden Pixel bis zu den Objekten. Wir bauen das Stück für Stück auf, mit vielen Knöpfen zum Ausprobieren. Am Ende wartet ein Quiz, das dir das nächste Level freischaltet!</p>
 </div>
+<style>
+  /* ---- gemeinsame Stile für alle interaktiven Figuren dieses Levels ----- */
+  .rtx-fig {
+    max-width: 900px;
+    margin: 1.4rem auto 1.6rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #fbfdff, #eef2fb);
+    box-shadow: 0 12px 32px -22px rgba(79, 70, 229, 0.55);
+    overflow: hidden;
+    /* Verhindert, dass beim Ziehen von Reglern/Canvas Text markiert wird */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+  .rtx-fig__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.95rem;
+    font-weight: 800;
+    font-size: 0.96rem;
+    color: #3730a3;
+    background: linear-gradient(180deg, #eef2ff, #e0e7ff);
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .rtx-canvas {
+    width: 100%;
+    display: block;
+    touch-action: none;
+  }
+  .rtx-fig__controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 1.4rem;
+    align-items: center;
+    padding: 0.85rem 0.95rem;
+    background: #ffffff;
+    border-top: 1px solid #eef1f6;
+  }
+  .rtx-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: #475569;
+  }
+  .rtx-ctrl input[type="range"] {
+    width: 150px;
+    touch-action: none;
+    accent-color: #5a47d6;
+    cursor: pointer;
+  }
+  .rtx-readout {
+    font-variant-numeric: tabular-nums;
+    color: #1f2937;
+    font-weight: 700;
+  }
+  .rtx-toggle {
+    border: 1px solid #5a47d6;
+    background: #5a47d6;
+    color: #fff;
+    border-radius: 999px;
+    padding: 0.4rem 0.95rem;
+    font-weight: 700;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: filter 0.12s ease;
+  }
+  .rtx-toggle:hover { filter: brightness(1.07); }
+  .rtx-toggle.off { background: #fff; color: #5a47d6; }
+  .rtx-fig__note {
+    padding: 0.75rem 0.95rem;
+    font-size: 0.86rem;
+    color: #475569;
+    line-height: 1.45;
+    background: #fafbff;
+    border-top: 1px solid #eef1f6;
+  }
+  .rtx-fig__note strong { color: #1f2937; }
+</style>
+<section id="was" class="level2">
+<h2 class="anchored" data-anchor-id="was">Was ist Ray Tracing?</h2>
+<p>Beim <strong>Rasterisieren</strong> (klassische Echtzeit-Grafik) fragt man: <em>„Wo landet jedes Dreieck auf dem Bildschirm?“</em> Ray Tracing dreht die Frage um und arbeitet <strong>bildbasiert</strong>: <em>„Welches Licht erreicht das Auge durch genau diesen Pixel?“</em></p>
+<p>Dazu schießen wir <strong>Strahlen (Rays)</strong> in die Szene und verfolgen, was sie treffen. Der Grundalgorithmus besteht aus wenigen Bausteinen:</p>
+<ol type="1">
+<li><strong>Primärstrahl</strong> – Für jeden Pixel startet ein Strahl im <strong>Augpunkt</strong> und geht durch die <strong>Bildebene</strong> in die Szene hinein.</li>
+<li><strong>Strahl-Objekt-Schnitt</strong> – Wir berechnen den <strong>nächstgelegenen</strong> Treffpunkt entlang des Strahls (z. B. Kugel- oder Ebenen-Schnitt). Dieser Punkt ist sichtbar.</li>
+<li><strong>Schattenstrahl</strong> – Vom Treffpunkt schießen wir einen Strahl zur Lichtquelle. Wird er blockiert, liegt der Punkt im <strong>Schatten</strong>.</li>
+<li><strong>Sekundärstrahlen</strong> – An glatten Oberflächen erzeugen wir <strong>rekursiv</strong> neue Strahlen: <strong>Reflexion</strong> (Spiegelung) und <strong>Brechung</strong> (Transmission).</li>
+<li><strong>Anti-Aliasing</strong> – Mehrere Strahlen pro Pixel glätten <strong>Treppenstufen</strong> an Kanten.</li>
+</ol>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Merk dir den Perspektivwechsel: Ray Tracing geht <strong>vom Auge aus</strong> rückwärts zum Licht. Das ist clever, denn so berechnen wir nur die Strahlen, die wir auch wirklich sehen. 👀</p>
+</div>
+</section>
+<section id="gleichung" class="level2">
+<h2 class="anchored" data-anchor-id="gleichung">Ray Tracing &amp; die Rendering-Gleichung</h2>
+<p>Im letzten Level stand die <strong>Rendering-Gleichung</strong> im Mittelpunkt. Sie beschreibt das Licht <span class="math inline">\(L\)</span>, das von einem Punkt in eine Richtung abgestrahlt wird:</p>
+<p><span class="math display">\[
+L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
+\underbrace{L_e(x, x', \lambda)}_{\text{Emission}}
++ \underbrace{\int_S b(x, x', x'', \lambda)\, L(x', x'', \lambda)\, dx''}_{\text{einfallendes Licht über alle Flächen } S}
+\right)
+\]</span></p>
+<p>Ray Tracing ist nichts anderes als ein <strong>Rezept, um genau diese Terme auszuwerten</strong> – Strahl für Strahl:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 46%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Term</th>
+<th>Bedeutung (aus der Vorlesung)</th>
+<th>Wie Ray Tracing ihn liefert</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(g(x,x',\lambda)\)</span></td>
+<td>Geometrie- &amp; <strong>Sichtbarkeits</strong>-Faktor (0, falls verdeckt)</td>
+<td><strong>Primär-</strong> und <strong>Schattenstrahlen</strong> prüfen, was sich „sieht“</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(L_e\)</span></td>
+<td>Eigenleuchten der Fläche</td>
+<td>Trifft ein Strahl eine Lampe/den Himmel, liefert sie <span class="math inline">\(L_e\)</span></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(b(\cdot)\)</span></td>
+<td><strong>BRDF</strong> – Reflexionsverhalten des Materials</td>
+<td>Bestimmt Richtung &amp; Stärke der Sekundärstrahlen</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\int_S \dots\, dx''\)</span></td>
+<td>einfallendes Licht aus <strong>allen</strong> Richtungen</td>
+<td>Rekursive Strahlen sammeln dieses Licht ein</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Klassisches Ray Tracing</strong> wertet das Integral nur für <strong>wenige, wichtige Richtungen</strong> aus (ideale Spiegelung &amp; Brechung) – das ist schnell, aber eine Näherung. <strong>Path Tracing</strong> (nächstes Level) löst das <em>volle</em> Integral per <strong>Monte-Carlo</strong> und liefert echte globale Beleuchtung.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Lokal vs.&nbsp;global – nochmal kurz
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Das <strong>Phong-Blinn-Modell</strong> aus der Vorlesung ist <em>lokal</em>: Es betrachtet nur direktes Licht und ersetzt das Integral durch einen konstanten <strong>Ambient-Term</strong> (und kennt ohne Zusatz keine Schatten – eine Vereinfachung von <span class="math inline">\(g\)</span>). Ray Tracing fügt <strong>Sichtbarkeit (Schatten)</strong> und <strong>Sekundärstrahlen</strong> hinzu und nähert sich so der globalen Beleuchtung an.</p>
+<p><em>Quelle: Vorlesung „Rendering-Pipeline: Beleuchtung“ (Prof.&nbsp;Dr.&nbsp;Markus Friedrich, HM) sowie Nischwitz et al., „Computergrafik – Band I“, Kap. 12.</em></p>
+</div>
+</div>
+</section>
+<section id="fresnel" class="level2">
+<h2 class="anchored" data-anchor-id="fresnel">Reflexion, Brechung &amp; der Fresnel-Effekt</h2>
+<p>An einer glatten Grenzfläche passieren zwei Dinge gleichzeitig (geometrische Optik):</p>
+<ul>
+<li><strong>Reflexion</strong>: Einfallswinkel <span class="math inline">\(\alpha\)</span> = Ausfallswinkel <span class="math inline">\(\beta\)</span> (Spiegelgesetz).</li>
+<li><strong>Brechung</strong> (Transmission): Der Strahl knickt nach dem <strong>Snellius-Gesetz</strong> ab: <span class="math inline">\(\dfrac{\sin\alpha}{\sin\gamma} = \dfrac{n_2}{n_1}\)</span>.</li>
+</ul>
+<p>Wie viel Licht <strong>reflektiert</strong> und wie viel <strong>gebrochen</strong> wird, regelt der <strong>Fresnel-Effekt</strong>: Je <strong>flacher</strong> du auf eine Fläche blickst (großer Winkel), desto <strong>spiegelnder</strong> wird sie – selbst Wasser oder Glas. Probier es aus:</p>
+<div class="rtx-fig">
+  <div class="rtx-fig__head">🔬 Reflexion &amp; Brechung – mit Fresnel-Aufteilung</div>
+  <canvas id="fresnelCanvas" class="rtx-canvas"></canvas>
+  <div class="rtx-fig__controls">
+    <label class="rtx-ctrl">Einfallswinkel
+      <input id="fresnelAngle" type="range" min="0" max="89" value="35">
+    </label>
+    <label class="rtx-ctrl">Brechungsindex n₂
+      <input id="fresnelIor" type="range" min="100" max="260" value="150">
+    </label>
+    <button id="fresnelSwap" class="rtx-toggle off" type="button">Richtung: Luft → Medium</button>
+    <span class="rtx-readout" id="fresnelOut"></span>
+  </div>
+  <p class="rtx-fig__note">
+    Die <strong>orangene</strong> Linie ist der einfallende Strahl, <strong>blau</strong>
+    der reflektierte, <strong>grün</strong> der gebrochene. Ihre Deckkraft zeigt
+    den Fresnel-Anteil. Tipp: Schalte auf <strong>Medium → Luft</strong> und erhöhe
+    den Winkel – ab dem Grenzwinkel tritt <strong>Totalreflexion</strong> auf.
+  </p>
+</div>
+
+<script>
+(function () {
+  function init() {
+    var c = document.getElementById('fresnelCanvas');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var angEl = document.getElementById('fresnelAngle');
+    var iorEl = document.getElementById('fresnelIor');
+    var swapEl = document.getElementById('fresnelSwap');
+    var out = document.getElementById('fresnelOut');
+    var H = 330;
+    var fromAir = true;
+
+    function arrow(x0, y0, x1, y1, color, width, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0);
+      ctx.lineTo(x1, y1);
+      ctx.stroke();
+      var a = Math.atan2(y1 - y0, x1 - x0);
+      var s = 9 + width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x1 - s * Math.cos(a - 0.4), y1 - s * Math.sin(a - 0.4));
+      ctx.lineTo(x1 - s * Math.cos(a + 0.4), y1 - s * Math.sin(a + 0.4));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function draw() {
+      var w = c.clientWidth || 700, h = H;
+      ctx.clearRect(0, 0, w, h);
+      var thetaI = (+angEl.value) * Math.PI / 180;
+      var ior = (+iorEl.value) / 100;
+      var n1 = fromAir ? 1.0 : ior;
+      var n2 = fromAir ? ior : 1.0;
+
+      var by = h * 0.5, cx = w * 0.5;
+
+      // Medien-Hintergründe
+      ctx.fillStyle = fromAir ? '#eef5ff' : '#bfdbfe';
+      ctx.fillRect(0, 0, w, by);
+      ctx.fillStyle = fromAir ? '#bfdbfe' : '#eef5ff';
+      ctx.fillRect(0, by, w, h - by);
+
+      // Grenzfläche
+      ctx.strokeStyle = '#1e3a8a';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(w, by); ctx.stroke();
+
+      // Normale (gestrichelt)
+      ctx.save();
+      ctx.strokeStyle = '#64748b';
+      ctx.setLineDash([6, 5]);
+      ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(cx, 24); ctx.lineTo(cx, h - 24); ctx.stroke();
+      ctx.restore();
+
+      // Medien-Labels
+      ctx.fillStyle = '#1e3a8a';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.fillText('Medium oben  n₁ = ' + n1.toFixed(2), 12, 20);
+      ctx.fillText('Medium unten  n₂ = ' + n2.toFixed(2), 12, h - 12);
+
+      var L = Math.min(w, h) * 0.42;
+
+      // Fresnel (Schlick)
+      var R0 = Math.pow((n1 - n2) / (n1 + n2), 2);
+      var cosI = Math.cos(thetaI);
+      // Snellius
+      var sinT = (n1 / n2) * Math.sin(thetaI);
+      var tir = sinT > 1.0;
+      var thetaT = tir ? 0 : Math.asin(Math.min(1, sinT));
+      // bei Übergang ins dünnere Medium Fresnel über Transmissionswinkel
+      var cosForSchlick = (n1 <= n2) ? cosI : Math.cos(thetaT);
+      var R = tir ? 1.0 : (R0 + (1 - R0) * Math.pow(1 - cosForSchlick, 5));
+      R = Math.max(0, Math.min(1, R));
+      var T = 1 - R;
+
+      // einfallender Strahl (oben links -> Auftreffpunkt)
+      var ix = cx - Math.sin(thetaI) * L, iy = by - Math.cos(thetaI) * L;
+      arrow(ix, iy, cx, by, '#f97316', 3, 1.0);
+
+      // reflektierter Strahl (oben rechts)
+      var rx = cx + Math.sin(thetaI) * L, ry = by - Math.cos(thetaI) * L;
+      arrow(cx, by, rx, ry, '#2563eb', 1.5 + 4 * R, 0.25 + 0.75 * R);
+
+      // gebrochener Strahl (unten) – außer bei Totalreflexion
+      if (!tir) {
+        var tx = cx + Math.sin(thetaT) * L, ty = by + Math.cos(thetaT) * L;
+        arrow(cx, by, tx, ty, '#16a34a', 1.5 + 4 * T, 0.2 + 0.8 * T);
+      }
+
+      // Auftreffpunkt
+      ctx.fillStyle = '#111827';
+      ctx.beginPath(); ctx.arc(cx, by, 4, 0, Math.PI * 2); ctx.fill();
+
+      out.textContent =
+        'Reflexion ' + Math.round(R * 100) + '% · Transmission ' + Math.round(T * 100) + '%' +
+        (tir ? ' · Totalreflexion!' : ' · Brechungswinkel γ = ' + Math.round(thetaT * 180 / Math.PI) + '°');
+    }
+
+    function fit() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = c.clientWidth || 700;
+      c.style.height = H + 'px';
+      c.width = Math.round(w * dpr);
+      c.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    angEl.addEventListener('input', draw);
+    iorEl.addEventListener('input', draw);
+    swapEl.addEventListener('click', function () {
+      fromAir = !fromAir;
+      swapEl.classList.toggle('off', fromAir);
+      swapEl.textContent = fromAir ? 'Richtung: Luft → Medium' : 'Richtung: Medium → Luft';
+      draw();
+    });
+    window.addEventListener('resize', fit);
+    fit();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</section>
+<section id="schatten" class="level2">
+<h2 class="anchored" data-anchor-id="schatten">Schattenstrahlen &amp; der Sichtbarkeits-Faktor <span class="math inline">\(g\)</span></h2>
+<p>Ob ein Punkt beleuchtet ist, hängt davon ab, ob er die Lichtquelle <strong>„sehen“</strong> kann. Genau das prüft ein <strong>Schattenstrahl</strong>: ein Strahl vom Treffpunkt zur Lampe. Wird er von einem Objekt blockiert, ist der Sichtbarkeitsterm <span class="math inline">\(g = 0\)</span> – der Punkt liegt im <strong>Schatten</strong>.</p>
+<p>Schalte die Schattenstrahlen unten an und aus. Ohne sie verhält sich das Modell wie das <strong>lokale Standardmodell</strong> ohne Schatten (eine Vereinfachung von <span class="math inline">\(g\)</span>):</p>
+<div class="rtx-fig">
+  <div class="rtx-fig__head">🌑 Schattenstrahlen – Sichtbarkeit zur Lichtquelle</div>
+  <canvas id="shadowCanvas" class="rtx-canvas"></canvas>
+  <div class="rtx-fig__controls">
+    <button id="shadowToggle" class="rtx-toggle" type="button">Schattenstrahlen: AN</button>
+    <label class="rtx-ctrl">Lichtposition
+      <input id="shadowLight" type="range" min="0" max="100" value="50">
+    </label>
+    <span class="rtx-readout" id="shadowOut"></span>
+  </div>
+  <p class="rtx-fig__note">
+    Gelbe Strahlen erreichen die Lampe (<strong>g = 1</strong>, beleuchtet),
+    rote gestrichelte werden vom Objekt blockiert (<strong>g = 0</strong>, Schatten).
+    Schalte die Strahlen aus: Der Schatten verschwindet – wie beim lokalen Modell.
+  </p>
+</div>
+
+<script>
+(function () {
+  function init() {
+    var c = document.getElementById('shadowCanvas');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var toggle = document.getElementById('shadowToggle');
+    var lightEl = document.getElementById('shadowLight');
+    var out = document.getElementById('shadowOut');
+    var H = 300;
+    var shadows = true;
+
+    function segCircle(ax, ay, bx, by, cx, cy, r) {
+      var dx = bx - ax, dy = by - ay;
+      var fx = ax - cx, fy = ay - cy;
+      var A = dx * dx + dy * dy;
+      var B = 2 * (fx * dx + fy * dy);
+      var C = fx * fx + fy * fy - r * r;
+      var disc = B * B - 4 * A * C;
+      if (disc < 0) return false;
+      disc = Math.sqrt(disc);
+      var t1 = (-B - disc) / (2 * A), t2 = (-B + disc) / (2 * A);
+      return (t1 > 0.001 && t1 < 0.999) || (t2 > 0.001 && t2 < 0.999);
+    }
+
+    function draw() {
+      var w = c.clientWidth || 700, h = H;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, w, h);
+
+      var groundY = h - 42;
+      var lx = 60 + (w - 120) * (+lightEl.value) / 100;
+      var ly = 40;
+      var ocx = w * 0.5, ocy = h * 0.46, ocr = 34;
+
+      // Boden
+      ctx.fillStyle = '#e5e7eb'; ctx.fillRect(0, groundY, w, h - groundY);
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+
+      var n = 15, lit = 0, shad = 0;
+      for (var i = 0; i < n; i++) {
+        var px = 60 + (w - 120) * i / (n - 1);
+        var blocked = shadows && segCircle(px, groundY, lx, ly, ocx, ocy, ocr);
+        if (blocked) {
+          shad++;
+          ctx.save();
+          ctx.strokeStyle = '#ef4444';
+          ctx.globalAlpha = 0.55;
+          ctx.setLineDash([4, 4]);
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(px, groundY); ctx.lineTo(lx, ly); ctx.stroke();
+          ctx.restore();
+        } else {
+          lit++;
+          ctx.save();
+          ctx.strokeStyle = '#f59e0b';
+          ctx.globalAlpha = 0.5;
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(px, groundY); ctx.lineTo(lx, ly); ctx.stroke();
+          ctx.restore();
+        }
+        // Bodenpunkt
+        ctx.fillStyle = blocked ? '#475569' : '#fbbf24';
+        ctx.beginPath(); ctx.arc(px, groundY, 4.5, 0, Math.PI * 2); ctx.fill();
+      }
+
+      // Occluder
+      ctx.fillStyle = '#6d5ae6';
+      ctx.beginPath(); ctx.arc(ocx, ocy, ocr, 0, Math.PI * 2); ctx.fill();
+
+      // Lampe
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath(); ctx.arc(lx, ly, 13, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2;
+      for (var k = 0; k < 8; k++) {
+        var a = k * Math.PI / 4;
+        ctx.beginPath();
+        ctx.moveTo(lx + Math.cos(a) * 17, ly + Math.sin(a) * 17);
+        ctx.lineTo(lx + Math.cos(a) * 23, ly + Math.sin(a) * 23);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#1f2937';
+      ctx.font = '12px system-ui, sans-serif';
+      ctx.fillText('Lichtquelle', lx - 28, ly - 22);
+
+      out.textContent = shadows
+        ? (lit + ' beleuchtet · ' + shad + ' im Schatten')
+        : (n + ' Punkte beleuchtet (keine Sichtbarkeitsprüfung)');
+    }
+
+    function fit() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = c.clientWidth || 700;
+      c.style.height = H + 'px';
+      c.width = Math.round(w * dpr);
+      c.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    toggle.addEventListener('click', function () {
+      shadows = !shadows;
+      toggle.classList.toggle('off', !shadows);
+      toggle.textContent = 'Schattenstrahlen: ' + (shadows ? 'AN' : 'AUS');
+      draw();
+    });
+    lightEl.addEventListener('input', draw);
+    window.addEventListener('resize', fit);
+    fit();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</section>
+<section id="rekursion" class="level2">
+<h2 class="anchored" data-anchor-id="rekursion">Rekursion: Spiegelungen in Spiegelungen</h2>
+<p>An spiegelnden Flächen erzeugt Ray Tracing einen <strong>neuen Strahl</strong> in Reflexionsrichtung – und an dessen Treffpunkt wieder einen, und wieder … Das ist <strong>Rekursion</strong>. Die <strong>Rekursionstiefe</strong> begrenzt, wie oft das passiert. Mehr Tiefe = mehr Spiegelungen, aber auch mehr Rechenaufwand. Mit jedem Bounce geht zudem Energie verloren (das Material schluckt einen Teil).</p>
+<p>Schieb die Rekursionstiefe hoch und beobachte, wie der Strahl weiter durch den „Spiegelsaal“ wandert:</p>
+<div class="rtx-fig">
+  <div class="rtx-fig__head">🪞 Rekursionstiefe im Spiegelsaal</div>
+  <canvas id="recurCanvas" class="rtx-canvas"></canvas>
+  <div class="rtx-fig__controls">
+    <label class="rtx-ctrl">Rekursionstiefe
+      <input id="recurDepth" type="range" min="0" max="12" value="4">
+    </label>
+    <label class="rtx-ctrl">Startwinkel
+      <input id="recurAngle" type="range" min="10" max="80" value="32">
+    </label>
+    <span class="rtx-readout" id="recurOut"></span>
+  </div>
+  <p class="rtx-fig__note">
+    Der <strong>orange</strong> Punkt ist das Auge/der Strahlstart. Jeder Bounce
+    reflektiert an der Wand (Einfallswinkel = Ausfallswinkel) und wird etwas
+    blasser – die <strong>Strahlung verliert Energie</strong>. Bei Tiefe 0 sieht
+    man nur den Primärstrahl, ganz ohne Spiegelung.
+  </p>
+</div>
+
+<script>
+(function () {
+  function init() {
+    var c = document.getElementById('recurCanvas');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var depthEl = document.getElementById('recurDepth');
+    var angEl = document.getElementById('recurAngle');
+    var out = document.getElementById('recurOut');
+    var H = 300;
+
+    function draw() {
+      var w = c.clientWidth || 700, h = H;
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#0b1020'; ctx.fillRect(0, 0, w, h);
+
+      var m = 34;
+      var x0 = m, y0 = m, x1 = w - m, y1 = h - m;
+      // Spiegel-Rahmen
+      ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 3;
+      ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(56,189,248,0.25)'; ctx.lineWidth = 1;
+      for (var g = 1; g < 8; g++) {
+        var gx = x0 + (x1 - x0) * g / 8;
+        ctx.beginPath(); ctx.moveTo(gx, y0); ctx.lineTo(gx, y1); ctx.stroke();
+      }
+      ctx.restore();
+
+      var depth = +depthEl.value;
+      var ang = (+angEl.value) * Math.PI / 180;
+      var px = x0 + 24, py = y1 - 30;
+      var dx = Math.cos(ang), dy = -Math.sin(ang);
+
+      // Auge / Start
+      ctx.fillStyle = '#f97316';
+      ctx.beginPath(); ctx.arc(px, py, 6, 0, Math.PI * 2); ctx.fill();
+
+      var bounces = 0;
+      for (var i = 0; i <= depth; i++) {
+        // nächste Wand finden
+        var tx = Infinity, ty = Infinity;
+        if (dx > 0) tx = (x1 - px) / dx; else if (dx < 0) tx = (x0 - px) / dx;
+        if (dy > 0) ty = (y1 - py) / dy; else if (dy < 0) ty = (y0 - py) / dy;
+        var t = Math.min(tx, ty);
+        if (!isFinite(t) || t < 0) break;
+        var nx = px + dx * t, ny = py + dy * t;
+
+        var alpha = Math.pow(0.78, i);
+        var hue = 28 + i * 16;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0.12, alpha);
+        ctx.strokeStyle = 'hsl(' + hue + ',95%,62%)';
+        ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(nx, ny); ctx.stroke();
+        ctx.restore();
+
+        if (i === depth) break;
+
+        // Reflexionspunkt
+        ctx.fillStyle = 'rgba(226,232,240,' + Math.max(0.2, alpha) + ')';
+        ctx.beginPath(); ctx.arc(nx, ny, 3.2, 0, Math.PI * 2); ctx.fill();
+
+        // reflektieren
+        if (t === tx) dx = -dx; else dy = -dy;
+        px = nx; py = ny;
+        bounces++;
+      }
+
+      out.textContent = 'Tiefe ' + depth + ' · ' + bounces + ' Reflexion' + (bounces === 1 ? '' : 'en');
+    }
+
+    function fit() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = c.clientWidth || 700;
+      c.style.height = H + 'px';
+      c.width = Math.round(w * dpr);
+      c.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    depthEl.addEventListener('input', draw);
+    angEl.addEventListener('input', draw);
+    window.addEventListener('resize', fit);
+    fit();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</section>
+<section id="aa" class="level2">
+<h2 class="anchored" data-anchor-id="aa">Anti-Aliasing: mehrere Strahlen pro Pixel</h2>
+<p>Mit nur <strong>einem</strong> Strahl pro Pixel entstehen harte <strong>Treppenstufen</strong> (Aliasing) an schrägen Kanten. Schießen wir <strong>mehrere</strong> Strahlen pro Pixel und mitteln das Ergebnis, werden Kanten weich. Vergleiche links (1 Strahl) mit rechts (einstellbar):</p>
+<div class="rtx-fig">
+  <div class="rtx-fig__head">🪜 Anti-Aliasing – 1 Strahl vs. mehrere Strahlen pro Pixel</div>
+  <canvas id="aaCanvas" class="rtx-canvas"></canvas>
+  <div class="rtx-fig__controls">
+    <label class="rtx-ctrl">Samples pro Pixel (rechts)
+      <input id="aaSamples" type="range" min="1" max="4" value="3">
+    </label>
+    <span class="rtx-readout" id="aaOut"></span>
+  </div>
+  <p class="rtx-fig__note">
+    Beide Seiten zeigen dieselbe Kante in grober Pixelauflösung. <strong>Links</strong>
+    wird pro Pixel nur 1 Strahl (Mitte) genutzt → harte Stufen. <strong>Rechts</strong>
+    mitteln mehrere Strahlen die Teil-Abdeckung → glatte Übergänge.
+  </p>
+</div>
+
+<script>
+(function () {
+  function init() {
+    var c = document.getElementById('aaCanvas');
+    if (!c) return;
+    var ctx = c.getContext('2d');
+    var sampEl = document.getElementById('aaSamples');
+    var out = document.getElementById('aaOut');
+    var H = 320;
+
+    // Form: Kreis-Scheibe; Abdeckung pro Pixel bestimmt Grauwert
+    function coverage(cxN, cyN, side, gx, gy, cellsX, cellsY) {
+      // Pixel (gx,gy) in normierten Koordinaten [0,1]; side = Samples pro Achse
+      var inside = 0, total = side * side;
+      for (var sy = 0; sy < side; sy++) {
+        for (var sx = 0; sx < side; sx++) {
+          var u = (gx + (sx + 0.5) / side) / cellsX;
+          var v = (gy + (sy + 0.5) / side) / cellsY;
+          var dx = u - cxN, dy = v - cyN;
+          if (dx * dx + dy * dy <= 0.34 * 0.34) inside++;
+        }
+      }
+      return inside / total;
+    }
+
+    function paintPanel(ox, ow, h, side, title) {
+      var cells = 16;
+      var cellW = ow / cells, cellH = (h - 30) / cells;
+      var cxN = 0.52, cyN = 0.54;
+      for (var gy = 0; gy < cells; gy++) {
+        for (var gx = 0; gx < cells; gx++) {
+          var cov = coverage(cxN, cyN, side, gx, gy, cells, cells);
+          // dunkle Scheibe (indigo) auf hellem Grund
+          var r = Math.round(255 + (90 - 255) * cov);
+          var gg = Math.round(255 + (85 - 255) * cov);
+          var b = Math.round(255 + (230 - 255) * cov);
+          ctx.fillStyle = 'rgb(' + r + ',' + gg + ',' + b + ')';
+          ctx.fillRect(ox + gx * cellW, 30 + gy * cellH, cellW + 0.6, cellH + 0.6);
+        }
+      }
+      // Titelband
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(ox, 0, ow, 30);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px system-ui, sans-serif';
+      ctx.fillText(title, ox + 12, 20);
+    }
+
+    function draw() {
+      var w = c.clientWidth || 700, h = H;
+      ctx.clearRect(0, 0, w, h);
+      var side = +sampEl.value;
+      var samples = side * side;
+      var half = Math.floor(w / 2);
+      paintPanel(0, half - 1, h, 1, '1 Strahl/Pixel (Aliasing)');
+      paintPanel(half + 1, w - half - 1, h, side, samples + ' Strahlen/Pixel');
+      // Trenner
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(half - 1, 0, 2, h);
+      out.textContent = 'rechts: ' + samples + ' Sample' + (samples === 1 ? '' : 's') + ' pro Pixel';
+    }
+
+    function fit() {
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var w = c.clientWidth || 700;
+      c.style.height = H + 'px';
+      c.width = Math.round(w * dpr);
+      c.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    sampEl.addEventListener('input', draw);
+    window.addEventListener('resize', fit);
+    fit();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</section>
 <section id="stufen" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="stufen">Die 6 Stufen des Ray Tracings</h2>
-<p>Klick dich im Demo unten Schritt für Schritt durch diese sechs Stufen:</p>
+<h2 class="anchored" data-anchor-id="stufen">Live-Ray-Tracer: alle Stufen in 3D</h2>
+<p>Genug Einzelteile – jetzt alles zusammen! Der folgende Mini-Ray-Tracer läuft echt im Browser (als Shader). Klick dich durch die <strong>sechs Stufen</strong> und nutze die Regler. Du kannst die Szene mit der Maus drehen.</p>
 <ol type="1">
 <li><strong>Primärstrahl</strong> pro Pixel</li>
 <li><strong>Oberflächennormalen</strong> sichtbar machen</li>
@@ -186,6 +896,11 @@ ul.task-list li input[type="checkbox"] {
     border: 1px solid #e2e8f0;
     background: linear-gradient(180deg, #fbfdff, #eef2fb);
     box-shadow: 0 10px 30px -18px rgba(79, 70, 229, 0.45);
+    /* Kein Text-Markieren beim Ziehen von Reglern/Canvas */
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
   }
 
   .rtx-toolbar {
@@ -306,6 +1021,7 @@ ul.task-list li input[type="checkbox"] {
     flex: 1;
     min-width: 120px;
     accent-color: #5a47d6;
+    touch-action: none;
   }
 
   .rtx-hint {
@@ -389,7 +1105,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
   const STAGES = [
     {
-      name: '1) Primaerstrahlen',
+      name: '1) Primärstrahlen',
       text: 'Ein Ray pro Pixel trifft Szene oder Himmel. So entsteht das Grundbild.',
       spp: 1,
       bounces: 1,
@@ -399,7 +1115,7 @@ window.addEventListener('DOMContentLoaded', function () {
     },
     {
       name: '2) Normalen',
-      text: 'Farben codieren Oberflaechennormalen. Damit siehst du die lokale Orientierung jedes Treffpunkts.',
+      text: 'Farben codieren Oberflächennormalen. Damit siehst du die lokale Orientierung jedes Treffpunkts.',
       spp: 1,
       bounces: 1,
       mode: 1,
@@ -426,7 +1142,7 @@ window.addEventListener('DOMContentLoaded', function () {
     },
     {
       name: '5) Diffuse Bounces (Lambert)',
-      text: 'Rays streuen zufaellig in der Halbkugel. Jeder Bounce verliert Energie gemaess Materialfarbe.',
+      text: 'Rays streuen zufällig in der Halbkugel. Jeder Bounce verliert Energie gemäß Materialfarbe.',
       spp: 10,
       bounces: 4,
       mode: 3,
@@ -701,6 +1417,7 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 
   canvas.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
     dragging = true;
     lastX = e.clientX;
     lastY = e.clientY;
@@ -843,8 +1560,8 @@ window.addEventListener('DOMContentLoaded', function () {
     }
 
     const hits = [
-      { name: 'Spiegel-Sphaere', t: hitSphere(new BABYLON.Vector3(-1.1, 1.0, 0.15), 1.0) },
-      { name: 'Diffuse Sphaere', t: hitSphere(new BABYLON.Vector3(1.55, 0.72, 0.65), 0.7) }
+      { name: 'Spiegel-Sphäre', t: hitSphere(new BABYLON.Vector3(-1.1, 1.0, 0.15), 1.0) },
+      { name: 'Diffuse Sphäre', t: hitSphere(new BABYLON.Vector3(1.55, 0.72, 0.65), 0.7) }
     ].filter(function (h) { return h.t !== null; });
 
     if (hits.length === 0) return 'trifft Himmel/Background';
@@ -893,14 +1610,106 @@ window.addEventListener('DOMContentLoaded', function () {
   });
 });
 </script>
-</section>
-<section id="abschluss" class="level2">
-<h2 class="anchored" data-anchor-id="abschluss">Geschafft?</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Stark! Du hast gesehen, wie aus einzelnen Strahlen ein Bild entsteht. Markiere das Level als abgeschlossen, um das Path-Tracing-Level freizuschalten.</p>
+<p>Beachte Stufe 5 &amp; 6: Sobald wir <strong>zufällige Bounces</strong> und <strong>Spiegelungen</strong> zulassen, werten wir das Integral der Rendering-Gleichung näherungsweise aus – genau hier beginnt <strong>globale Beleuchtung</strong>. Im nächsten Level treiben wir das mit Path Tracing auf die Spitze. 🌌</p>
 </div>
-<div data-vcde-complete="ray-tracing">
-
+</section>
+<section id="quiz" class="level2">
+<h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Strahlen-Detektiv</h2>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Zeit für die Abschlussprüfung! 🚀 Beantworte mindestens <strong>6 von 8 Fragen</strong> richtig, dann markiere ich Level 2 als abgeschlossen und schalte <strong>Path Tracing</strong> frei. Lies bei Bedarf die Erklärungen und versuch es einfach nochmal – Fehler sind erlaubt!</p>
+</div>
+<div data-vcde-quiz="ray-tracing">
+  <script type="application/json">
+  {
+    "levelId": "ray-tracing",
+    "title": "Abschluss-Quiz: Ray Tracing 🔦",
+    "intro": "8 Fragen rund um Strahlen, Schatten, Reflexion und die Rendering-Gleichung. Du brauchst mindestens 6 richtige Antworten.",
+    "passRatio": 0.7,
+    "questions": [
+      {
+        "q": "Wo startet ein Primärstrahl beim Ray Tracing und wohin geht er?",
+        "options": [
+          "Im Augpunkt (Kamera) durch einen Pixel der Bildebene in die Szene",
+          "In der Lichtquelle direkt zum nächsten Objekt",
+          "Auf der Oberfläche eines Objekts in Richtung Kamera"
+        ],
+        "answer": 0,
+        "explain": "Ray Tracing arbeitet rückwärts: Pro Pixel startet ein Strahl im Augpunkt und geht durch die Bildebene in die Szene."
+      },
+      {
+        "q": "Was berechnet der Strahl-Objekt-Schnitttest entlang eines Strahls?",
+        "options": [
+          "Den nächstgelegenen Treffpunkt (kleinstes t > 0) mit einem Objekt",
+          "Die Farbe der Lichtquelle",
+          "Die Bildauflösung in Pixeln"
+        ],
+        "answer": 0,
+        "explain": "Sichtbar ist der erste Treffer entlang des Strahls, also der Schnittpunkt mit dem kleinsten positiven Abstand t."
+      },
+      {
+        "q": "Wozu dient ein Schattenstrahl?",
+        "options": [
+          "Er prüft, ob ein Treffpunkt die Lichtquelle 'sieht' (Sichtbarkeit, g-Term)",
+          "Er erhöht die Auflösung des Bildes",
+          "Er ersetzt die Kamera durch eine zweite Lichtquelle"
+        ],
+        "answer": 0,
+        "explain": "Der Schattenstrahl testet die Sichtbarkeit zur Lampe. Wird er blockiert, ist g = 0 und der Punkt liegt im Schatten."
+      },
+      {
+        "q": "Wie lautet das Reflexionsgesetz an einer glatten Oberfläche?",
+        "options": [
+          "Einfallswinkel = Ausfallswinkel (jeweils zur Normalen gemessen)",
+          "Einfallswinkel = doppelter Ausfallswinkel",
+          "Der reflektierte Strahl steht immer senkrecht zur Oberfläche"
+        ],
+        "answer": 0,
+        "explain": "Bei idealer Spiegelung gilt α = β: Einfalls- und Ausfallswinkel zur Flächennormalen sind gleich."
+      },
+      {
+        "q": "Brechung folgt dem Snellius-Gesetz. Welcher Zusammenhang gilt?",
+        "options": [
+          "sin α / sin γ = n₂ / n₁",
+          "α + γ = 90°",
+          "n₁ · n₂ = 1 unabhängig vom Winkel"
+        ],
+        "answer": 0,
+        "explain": "Snellius: sin(Einfallswinkel)/sin(Brechungswinkel) = n₂/n₁. Der Strahl knickt beim Medienwechsel ab."
+      },
+      {
+        "q": "Was sagt der Fresnel-Effekt über flache (streifende) Blickwinkel?",
+        "options": [
+          "Der Reflexionsanteil steigt – sogar Wasser/Glas wirken dann wie Spiegel",
+          "Die Reflexion verschwindet völlig",
+          "Die Farbe der Oberfläche ändert sich in Rot"
+        ],
+        "answer": 0,
+        "explain": "Je flacher der Blickwinkel, desto mehr wird reflektiert und desto weniger transmittiert – ein zentraler Fresnel-Effekt."
+      },
+      {
+        "q": "Du erhöhst die Anzahl der Strahlen pro Pixel (Samples). Was passiert?",
+        "options": [
+          "Kanten werden glatter, weil Teil-Abdeckungen gemittelt werden (Anti-Aliasing)",
+          "Das Bild wird automatisch dunkler",
+          "Die Kamera verändert ihre Position"
+        ],
+        "answer": 0,
+        "explain": "Mehrere gemittelte Strahlen pro Pixel reduzieren Treppenstufen (Aliasing) an Kanten – das ist Anti-Aliasing."
+      },
+      {
+        "q": "Wie hängt Path Tracing mit der Rendering-Gleichung zusammen?",
+        "options": [
+          "Es löst das Integral näherungsweise per Monte-Carlo und erfasst so globale Beleuchtung",
+          "Es ignoriert das Integral und nutzt nur den Ambient-Term",
+          "Es ist identisch zum lokalen Phong-Blinn-Modell"
+        ],
+        "answer": 0,
+        "explain": "Path Tracing schätzt das Integral ∫ b·L dx'' mit Zufallspfaden (Monte-Carlo) und liefert damit echte globale Beleuchtung."
+      }
+    ]
+  }
+  </script>
 </div>
 
 

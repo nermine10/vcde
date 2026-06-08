@@ -49,18 +49,60 @@
     "text": "Boss-Quiz: Licht-Detektiv\n\nZeit für die Abschlussprüfung! 🚀 Es warten 10 Fragen rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du mindestens 7 richtig, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!\n\n\n\n\n  \n    \n      Fortschritt\n      0 / 10 richtig · benötigt: 7\n    \n    \n  \n\n  \n\n  \n    Auswerten 🔎\n    Neu starten ↺\n  \n  Bitte beantworte zuerst alle Fragen."
   },
   {
+    "objectID": "levels/ray-tracing.html#was",
+    "href": "levels/ray-tracing.html#was",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Was ist Ray Tracing?",
+    "text": "Was ist Ray Tracing?\nBeim Rasterisieren (klassische Echtzeit-Grafik) fragt man: „Wo landet jedes Dreieck auf dem Bildschirm?“ Ray Tracing dreht die Frage um und arbeitet bildbasiert: „Welches Licht erreicht das Auge durch genau diesen Pixel?“\nDazu schießen wir Strahlen (Rays) in die Szene und verfolgen, was sie treffen. Der Grundalgorithmus besteht aus wenigen Bausteinen:\n\nPrimärstrahl – Für jeden Pixel startet ein Strahl im Augpunkt und geht durch die Bildebene in die Szene hinein.\nStrahl-Objekt-Schnitt – Wir berechnen den nächstgelegenen Treffpunkt entlang des Strahls (z. B. Kugel- oder Ebenen-Schnitt). Dieser Punkt ist sichtbar.\nSchattenstrahl – Vom Treffpunkt schießen wir einen Strahl zur Lichtquelle. Wird er blockiert, liegt der Punkt im Schatten.\nSekundärstrahlen – An glatten Oberflächen erzeugen wir rekursiv neue Strahlen: Reflexion (Spiegelung) und Brechung (Transmission).\nAnti-Aliasing – Mehrere Strahlen pro Pixel glätten Treppenstufen an Kanten.\n\n\nMerk dir den Perspektivwechsel: Ray Tracing geht vom Auge aus rückwärts zum Licht. Das ist clever, denn so berechnen wir nur die Strahlen, die wir auch wirklich sehen. 👀"
+  },
+  {
+    "objectID": "levels/ray-tracing.html#gleichung",
+    "href": "levels/ray-tracing.html#gleichung",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Ray Tracing & die Rendering-Gleichung",
+    "text": "Ray Tracing & die Rendering-Gleichung\nIm letzten Level stand die Rendering-Gleichung im Mittelpunkt. Sie beschreibt das Licht \\(L\\), das von einem Punkt in eine Richtung abgestrahlt wird:\n\\[\nL(x, x', \\lambda) = g(x, x', \\lambda) \\cdot \\left(\n\\underbrace{L_e(x, x', \\lambda)}_{\\text{Emission}}\n+ \\underbrace{\\int_S b(x, x', x'', \\lambda)\\, L(x', x'', \\lambda)\\, dx''}_{\\text{einfallendes Licht über alle Flächen } S}\n\\right)\n\\]\nRay Tracing ist nichts anderes als ein Rezept, um genau diese Terme auszuwerten – Strahl für Strahl:\n\n\n\n\n\n\n\n\nTerm\nBedeutung (aus der Vorlesung)\nWie Ray Tracing ihn liefert\n\n\n\n\n\\(g(x,x',\\lambda)\\)\nGeometrie- & Sichtbarkeits-Faktor (0, falls verdeckt)\nPrimär- und Schattenstrahlen prüfen, was sich „sieht“\n\n\n\\(L_e\\)\nEigenleuchten der Fläche\nTrifft ein Strahl eine Lampe/den Himmel, liefert sie \\(L_e\\)\n\n\n\\(b(\\cdot)\\)\nBRDF – Reflexionsverhalten des Materials\nBestimmt Richtung & Stärke der Sekundärstrahlen\n\n\n\\(\\int_S \\dots\\, dx''\\)\neinfallendes Licht aus allen Richtungen\nRekursive Strahlen sammeln dieses Licht ein\n\n\n\nKlassisches Ray Tracing wertet das Integral nur für wenige, wichtige Richtungen aus (ideale Spiegelung & Brechung) – das ist schnell, aber eine Näherung. Path Tracing (nächstes Level) löst das volle Integral per Monte-Carlo und liefert echte globale Beleuchtung.\n\n\n\n\n\n\nNoteLokal vs. global – nochmal kurz\n\n\n\nDas Phong-Blinn-Modell aus der Vorlesung ist lokal: Es betrachtet nur direktes Licht und ersetzt das Integral durch einen konstanten Ambient-Term (und kennt ohne Zusatz keine Schatten – eine Vereinfachung von \\(g\\)). Ray Tracing fügt Sichtbarkeit (Schatten) und Sekundärstrahlen hinzu und nähert sich so der globalen Beleuchtung an.\nQuelle: Vorlesung „Rendering-Pipeline: Beleuchtung“ (Prof. Dr. Markus Friedrich, HM) sowie Nischwitz et al., „Computergrafik – Band I“, Kap. 12."
+  },
+  {
+    "objectID": "levels/ray-tracing.html#fresnel",
+    "href": "levels/ray-tracing.html#fresnel",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Reflexion, Brechung & der Fresnel-Effekt",
+    "text": "Reflexion, Brechung & der Fresnel-Effekt\nAn einer glatten Grenzfläche passieren zwei Dinge gleichzeitig (geometrische Optik):\n\nReflexion: Einfallswinkel \\(\\alpha\\) = Ausfallswinkel \\(\\beta\\) (Spiegelgesetz).\nBrechung (Transmission): Der Strahl knickt nach dem Snellius-Gesetz ab: \\(\\dfrac{\\sin\\alpha}{\\sin\\gamma} = \\dfrac{n_2}{n_1}\\).\n\nWie viel Licht reflektiert und wie viel gebrochen wird, regelt der Fresnel-Effekt: Je flacher du auf eine Fläche blickst (großer Winkel), desto spiegelnder wird sie – selbst Wasser oder Glas. Probier es aus:\n\n  🔬 Reflexion & Brechung – mit Fresnel-Aufteilung\n  \n  \n    Einfallswinkel\n      \n    \n    Brechungsindex n₂\n      \n    \n    Richtung: Luft → Medium\n    \n  \n  \n    Die orangene Linie ist der einfallende Strahl, blau\n    der reflektierte, grün der gebrochene. Ihre Deckkraft zeigt\n    den Fresnel-Anteil. Tipp: Schalte auf Medium → Luft und erhöhe\n    den Winkel – ab dem Grenzwinkel tritt Totalreflexion auf."
+  },
+  {
+    "objectID": "levels/ray-tracing.html#schatten",
+    "href": "levels/ray-tracing.html#schatten",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Schattenstrahlen & der Sichtbarkeits-Faktor \\(g\\)",
+    "text": "Schattenstrahlen & der Sichtbarkeits-Faktor \\(g\\)\nOb ein Punkt beleuchtet ist, hängt davon ab, ob er die Lichtquelle „sehen“ kann. Genau das prüft ein Schattenstrahl: ein Strahl vom Treffpunkt zur Lampe. Wird er von einem Objekt blockiert, ist der Sichtbarkeitsterm \\(g = 0\\) – der Punkt liegt im Schatten.\nSchalte die Schattenstrahlen unten an und aus. Ohne sie verhält sich das Modell wie das lokale Standardmodell ohne Schatten (eine Vereinfachung von \\(g\\)):\n\n  🌑 Schattenstrahlen – Sichtbarkeit zur Lichtquelle\n  \n  \n    Schattenstrahlen: AN\n    Lichtposition\n      \n    \n    \n  \n  \n    Gelbe Strahlen erreichen die Lampe (g = 1, beleuchtet),\n    rote gestrichelte werden vom Objekt blockiert (g = 0, Schatten).\n    Schalte die Strahlen aus: Der Schatten verschwindet – wie beim lokalen Modell."
+  },
+  {
+    "objectID": "levels/ray-tracing.html#rekursion",
+    "href": "levels/ray-tracing.html#rekursion",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Rekursion: Spiegelungen in Spiegelungen",
+    "text": "Rekursion: Spiegelungen in Spiegelungen\nAn spiegelnden Flächen erzeugt Ray Tracing einen neuen Strahl in Reflexionsrichtung – und an dessen Treffpunkt wieder einen, und wieder … Das ist Rekursion. Die Rekursionstiefe begrenzt, wie oft das passiert. Mehr Tiefe = mehr Spiegelungen, aber auch mehr Rechenaufwand. Mit jedem Bounce geht zudem Energie verloren (das Material schluckt einen Teil).\nSchieb die Rekursionstiefe hoch und beobachte, wie der Strahl weiter durch den „Spiegelsaal“ wandert:\n\n  🪞 Rekursionstiefe im Spiegelsaal\n  \n  \n    Rekursionstiefe\n      \n    \n    Startwinkel\n      \n    \n    \n  \n  \n    Der orange Punkt ist das Auge/der Strahlstart. Jeder Bounce\n    reflektiert an der Wand (Einfallswinkel = Ausfallswinkel) und wird etwas\n    blasser – die Strahlung verliert Energie. Bei Tiefe 0 sieht\n    man nur den Primärstrahl, ganz ohne Spiegelung."
+  },
+  {
+    "objectID": "levels/ray-tracing.html#aa",
+    "href": "levels/ray-tracing.html#aa",
+    "title": "Level 2 – Ray Tracing",
+    "section": "Anti-Aliasing: mehrere Strahlen pro Pixel",
+    "text": "Anti-Aliasing: mehrere Strahlen pro Pixel\nMit nur einem Strahl pro Pixel entstehen harte Treppenstufen (Aliasing) an schrägen Kanten. Schießen wir mehrere Strahlen pro Pixel und mitteln das Ergebnis, werden Kanten weich. Vergleiche links (1 Strahl) mit rechts (einstellbar):\n\n  🪜 Anti-Aliasing – 1 Strahl vs. mehrere Strahlen pro Pixel\n  \n  \n    Samples pro Pixel (rechts)\n      \n    \n    \n  \n  \n    Beide Seiten zeigen dieselbe Kante in grober Pixelauflösung. Links\n    wird pro Pixel nur 1 Strahl (Mitte) genutzt → harte Stufen. Rechts\n    mitteln mehrere Strahlen die Teil-Abdeckung → glatte Übergänge."
+  },
+  {
     "objectID": "levels/ray-tracing.html#stufen",
     "href": "levels/ray-tracing.html#stufen",
     "title": "Level 2 – Ray Tracing",
-    "section": "Die 6 Stufen des Ray Tracings",
-    "text": "Die 6 Stufen des Ray Tracings\nKlick dich im Demo unten Schritt für Schritt durch diese sechs Stufen:\n\nPrimärstrahl pro Pixel\nOberflächennormalen sichtbar machen\nPixelmatrix (sichtbar blockig)\nAnti-Aliasing (mehrere Strahlen pro Pixel)\nDiffuse Zufalls-Bounces (Lambert)\nReflektierende Oberflächen + Farbtransport + Gamma\n\n\n\n\n  \n\n  \n    \n      🎥 Ray-Tracing Kamera + Pixelmatrix\n      \n      \n    \n\n    \n      💡 Erklärung\n      \n        Stage\n        \n\n        Kamera: \n        Zentraler Ray: \n        Samples/Pixel: \n        Bounces: \n\n        \n          Pixelgröße\n          \n        \n\n        \n          SPP (manuell)\n          \n        \n\n        🖱️ Ziehen = Orbit · Mausrad = Zoom"
+    "section": "Live-Ray-Tracer: alle Stufen in 3D",
+    "text": "Live-Ray-Tracer: alle Stufen in 3D\nGenug Einzelteile – jetzt alles zusammen! Der folgende Mini-Ray-Tracer läuft echt im Browser (als Shader). Klick dich durch die sechs Stufen und nutze die Regler. Du kannst die Szene mit der Maus drehen.\n\nPrimärstrahl pro Pixel\nOberflächennormalen sichtbar machen\nPixelmatrix (sichtbar blockig)\nAnti-Aliasing (mehrere Strahlen pro Pixel)\nDiffuse Zufalls-Bounces (Lambert)\nReflektierende Oberflächen + Farbtransport + Gamma\n\n\n\n\n  \n\n  \n    \n      🎥 Ray-Tracing Kamera + Pixelmatrix\n      \n      \n    \n\n    \n      💡 Erklärung\n      \n        Stage\n        \n\n        Kamera: \n        Zentraler Ray: \n        Samples/Pixel: \n        Bounces: \n\n        \n          Pixelgröße\n          \n        \n\n        \n          SPP (manuell)\n          \n        \n\n        🖱️ Ziehen = Orbit · Mausrad = Zoom\n      \n    \n  \n\n\n\n\nBeachte Stufe 5 & 6: Sobald wir zufällige Bounces und Spiegelungen zulassen, werten wir das Integral der Rendering-Gleichung näherungsweise aus – genau hier beginnt globale Beleuchtung. Im nächsten Level treiben wir das mit Path Tracing auf die Spitze. 🌌"
   },
   {
-    "objectID": "levels/ray-tracing.html#abschluss",
-    "href": "levels/ray-tracing.html#abschluss",
+    "objectID": "levels/ray-tracing.html#quiz",
+    "href": "levels/ray-tracing.html#quiz",
     "title": "Level 2 – Ray Tracing",
-    "section": "Geschafft?",
-    "text": "Geschafft?\n\nStark! Du hast gesehen, wie aus einzelnen Strahlen ein Bild entsteht. Markiere das Level als abgeschlossen, um das Path-Tracing-Level freizuschalten."
+    "section": "Boss-Quiz: Strahlen-Detektiv",
+    "text": "Boss-Quiz: Strahlen-Detektiv\n\nZeit für die Abschlussprüfung! 🚀 Beantworte mindestens 6 von 8 Fragen richtig, dann markiere ich Level 2 als abgeschlossen und schalte Path Tracing frei. Lies bei Bedarf die Erklärungen und versuch es einfach nochmal – Fehler sind erlaubt!"
   },
   {
     "objectID": "levels/path-tracing.html#path-tracing-erklaerung-auf-deutsch",
