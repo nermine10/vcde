@@ -21,41 +21,6 @@
     "text": "Warum überhaupt „realistisches“ Licht?\nBevor wir in die Theorie eintauchen, ein kurzer Blick darauf, worum es geht. Der folgende Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look (nur lokale Beleuchtung), rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht – ein erster Vorgeschmack darauf, was globale Beleuchtung ausmacht.\n\n\n\n    \n        Früher: stilisiert und unrealistisch\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        Kaum Schatten, wenig Materialdetails.\n    \n\n    \n        Heute: realistischer und dichter\n        \n            Gleiche Geometrie und Kamera\n            \n        \n        PBR-Materialien, weichere Beleuchtung und dynamische Schatten.\n    \n\n\n\n\n\n\n\n\n\nTipBereit?\n\n\n\n\n\nKlick oben in der Landkarte auf Level 1 – Lokal vs. Global. Dort lernst du die Rendering-Gleichung kennen – das Herzstück, das alle weiteren Level verbindet."
   },
   {
-    "objectID": "levels/local-vs-global.html#worum",
-    "href": "levels/local-vs-global.html#worum",
-    "title": "Level 1 – Lokal vs. Global",
-    "section": "Worum geht es?",
-    "text": "Worum geht es?\nEine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden (Allaire and Teague 2024):\n\nLokale Beleuchtung (z. B. Phong-Blinn): Jeder Punkt wird nur aus der direkten Lichtquelle und seinem eigenen Material beleuchtet. Schnell, aber „indirektes“ Licht fehlt – Schatten werden tiefschwarz, Farben strahlen nicht aufeinander ab.\nGlobale Beleuchtung (Global Illumination): Licht wird auch zwischen Oberflächen weitergereicht. Eine rote Wand färbt den Boden leicht rötlich, Schatten werden weicher, Räume wirken stimmig.\n\nDie Rendering-Gleichung fasst beides in einer Formel zusammen."
-  },
-  {
-    "objectID": "levels/local-vs-global.html#gleichung",
-    "href": "levels/local-vs-global.html#gleichung",
-    "title": "Level 1 – Lokal vs. Global",
-    "section": "Die Rendering-Gleichung",
-    "text": "Die Rendering-Gleichung\nSie beschreibt das Licht, das von einem Punkt in eine Richtung abgestrahlt wird – als Summe aus selbst emittiertem Licht und reflektiertem einfallendem Licht:\n\\[\nL(x, x', \\lambda)\n= g(x, x', \\lambda) \\cdot \\left(\n\\underbrace{L_e(x, x', \\lambda)}_{\\text{Emission}}\n+ \\underbrace{\\int_S b(x, x', x'', \\lambda) \\cdot L(x', x'', \\lambda) \\, d x''}_{\\text{indirektes Licht}}\n\\right)\n\\]\nJeder Buchstabe hat eine anschauliche Bedeutung:\n\n\n\n\n\n\n\n\nTerm\nBedeutung\nAnschaulich\n\n\n\n\n\\(L(x, x', \\lambda)\\)\nLicht zwischen zwei Punkten\n„Wie hell ist dieser Punkt aus dieser Richtung?“\n\n\n\\(g(x, x', \\lambda)\\)\nGeometrie-/Sichtbarkeitsfaktor\n„Sehen sich die Punkte überhaupt?“\n\n\n\\(L_e(x, x', \\lambda)\\)\nemittiertes Licht\n„Leuchtet die Fläche selbst?“ (Lampe, Bildschirm)\n\n\n\\(b(x, x', x'', \\lambda)\\)\nReflexions-/Streufunktion (BRDF)\n„Wie wirft das Material Licht zurück?“\n\n\n\\(\\int_S \\dots\\, dx''\\)\nindirektes Licht über alle Flächen \\(S\\)\n„Sammle Licht aus allen Richtungen ein.“\n\n\n\n\nDer Trick steckt im Integral: Es summiert das Licht, das von allen anderen Oberflächen kommt. Genau dieses „Licht von überall“ ist der Unterschied zwischen lokaler und globaler Beleuchtung. Lokale Verfahren lassen das Integral einfach weg!"
-  },
-  {
-    "objectID": "levels/local-vs-global.html#re-walkthrough",
-    "href": "levels/local-vs-global.html#re-walkthrough",
-    "title": "Level 1 – Lokal vs. Global",
-    "section": "Schritt für Schritt: die Rendering-Gleichung",
-    "text": "Schritt für Schritt: die Rendering-Gleichung\nWie im Video von Eric Arnebäck gehen wir dieselbe Cornell-Box Term für Term durch – diesmal als interaktive 3D-Szene in Babylon.js. Klicke die Stufen durch, drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.\n\n\n\n  \n\n  \n    \n      Cornell-Box · 3D-Walkthrough\n      \n        Cornell-Box wird geladen …\n        \n      \n      Ziehen = drehen · Mausrad = zoomen · Stufen oben wählen\n    \n\n    \n      Gleichung & Erklärung\n      \n        Stufe\n        \n        \n\n        \n          Hemisphären-Strahlen\n          \n          8\n        \n\n        \n          \n          Cosinus-Gewichtung (ωi·n) anzeigen\n        \n\n        \n          ← Zurück\n          Weiter →\n        \n\n        \n          💡\n          \n            Lumi\n            \n          \n        \n      \n    \n  \n\n\n\n\nSuper! Du hast die Gleichung live durchgespielt. 🎬 Als Nächstes schauen wir uns an, wie die BRDF das Material beschreibt – und danach darfst du GI selbst ein- und ausschalten.\n\n\nDas Materialverhalten: die BRDF \\(b(\\cdot)\\)\nDer Term \\(b(\\cdot)\\) – die BRDF – beschreibt, in welche Richtungen eine Oberfläche eingehendes Licht zurückwirft. Eine diffuse Fläche streut breit in alle Richtungen (matte Wand), eine glänzende Fläche bündelt das Licht eng um die Spiegelrichtung. Die folgenden „Reflexionskeulen“ zeigen das in Polarkoordinaten:\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ntheta = np.linspace(-np.pi / 2, np.pi / 2, 400)\ndiffuse = np.cos(theta)          # breite Lambert-Keule\nglossy = np.cos(theta) ** 40     # schmale spekulare Keule\n\nfig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(5.2, 4.2))\nax.plot(theta, diffuse, color='#4f46e5', linewidth=2, label='diffus (Lambert)')\nax.plot(theta, glossy, color='#f59e0b', linewidth=2, label='glänzend (spekular)')\nax.fill(theta, diffuse, color='#4f46e5', alpha=0.10)\nax.fill(theta, glossy, color='#f59e0b', alpha=0.15)\n\nax.set_theta_zero_location('N')      # 0° = Oberflächennormale\nax.set_theta_direction(-1)\nax.set_thetamin(-90)\nax.set_thetamax(90)\nax.set_rticks([0.5, 1.0])\nax.set_rlabel_position(0)\nax.set_title('BRDF-Reflexionskeulen', pad=18)\nax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=False)\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\nFigure 1: Reflexionskeulen der BRDF: eine diffuse Fläche (breit) streut Licht gleichmäßig, eine glänzende Fläche (schmal) bündelt es um die Spiegelrichtung.\n\n\n\n\n\n\nStark! Du hast die Formel geknackt. 🔍 Jetzt wird’s praktisch: Im nächsten Abschnitt darfst du das Integral ein- und ausschalten und live sehen, was passiert. Achte besonders auf die Schatten und die Wandfarben!"
-  },
-  {
-    "objectID": "levels/local-vs-global.html#demo",
-    "href": "levels/local-vs-global.html#demo",
-    "title": "Level 1 – Lokal vs. Global",
-    "section": "Interaktiv: mit vs. ohne Global Illumination",
-    "text": "Interaktiv: mit vs. ohne Global Illumination\nGenug Theorie – schau es dir an! Die folgende Szene ist eine kleine „Cornell-Box“ mit einer roten und einer grünen Wand. Schalte zwischen lokaler Beleuchtung (nur direktes Licht) und globaler Beleuchtung (mit indirektem Licht und Farbabstrahlung) um und achte auf:\n\ndie Schatten: tiefschwarz vs. weich aufgehellt,\nden Boden und die Kugel: nehmen sie die Wandfarben an? (Color Bleeding),\ndie allgemeine Stimmigkeit des Raums.\n\n\n\n\n  \n    Globale Beleuchtung: AUS\n    Modus: nur lokale (direkte) Beleuchtung\n  \n  \n    Cornell-Box (Ziehen = drehen, Mausrad = zoomen)\n    \n    \n      Ohne GI bleibt alles dunkel, was nicht direkt beleuchtet wird – Schatten\n      werden tiefschwarz und die Wände färben nichts ab.\n    \n  \n\n\n\n\n\n\n\n\n\nNoteWichtig zu wissen\n\n\n\nDiese Demo ist eine Veranschaulichung, kein physikalisch exakter GI-Renderer. Echte globale Beleuchtung berechnet das Integral der Rendering-Gleichung – genau das machen Ray Tracing und Path Tracing in den nächsten Leveln."
-  },
-  {
-    "objectID": "levels/local-vs-global.html#quiz",
-    "href": "levels/local-vs-global.html#quiz",
-    "title": "Level 1 – Lokal vs. Global",
-    "section": "Boss-Quiz: Licht-Detektiv",
-    "text": "Boss-Quiz: Licht-Detektiv\n\nZeit für die Abschlussprüfung! 🚀 Es warten 15 Fragen rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du mindestens 11 richtig, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!\n\n\n\n\n  \n    \n      Fortschritt\n      0 / 15 richtig · benötigt: 11\n    \n    \n  \n\n  \n\n  \n    Auswerten 🔎\n    Neu starten ↺\n  \n  Bitte beantworte zuerst alle Fragen."
-  },
-  {
     "objectID": "levels/ray-tracing.html#was",
     "href": "levels/ray-tracing.html#was",
     "title": "Level 2 – Ray Tracing",
@@ -110,6 +75,41 @@
     "title": "Level 2 – Ray Tracing",
     "section": "Boss-Quiz: Strahlen-Detektiv",
     "text": "Boss-Quiz: Strahlen-Detektiv\n\nZeit für die Abschlussprüfung! 🚀 Beantworte mindestens 6 von 8 Fragen richtig, dann markiere ich Level 2 als abgeschlossen und schalte Path Tracing frei. Lies bei Bedarf die Erklärungen und versuch es einfach nochmal – Fehler sind erlaubt!"
+  },
+  {
+    "objectID": "levels/local-vs-global.html#worum",
+    "href": "levels/local-vs-global.html#worum",
+    "title": "Level 1 – Lokal vs. Global",
+    "section": "Worum geht es?",
+    "text": "Worum geht es?\nEine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden (Allaire and Teague 2024):\n\nLokale Beleuchtung (z. B. Phong-Blinn): Jeder Punkt wird nur aus der direkten Lichtquelle und seinem eigenen Material beleuchtet. Schnell, aber „indirektes“ Licht fehlt – Schatten werden tiefschwarz, Farben strahlen nicht aufeinander ab.\nGlobale Beleuchtung (Global Illumination): Licht wird auch zwischen Oberflächen weitergereicht. Eine rote Wand färbt den Boden leicht rötlich, Schatten werden weicher, Räume wirken stimmig.\n\nDie Rendering-Gleichung fasst beides in einer Formel zusammen."
+  },
+  {
+    "objectID": "levels/local-vs-global.html#gleichung",
+    "href": "levels/local-vs-global.html#gleichung",
+    "title": "Level 1 – Lokal vs. Global",
+    "section": "Die Rendering-Gleichung",
+    "text": "Die Rendering-Gleichung\nSie beschreibt das Licht, das von einem Punkt in eine Richtung abgestrahlt wird – als Summe aus selbst emittiertem Licht und reflektiertem einfallendem Licht:\n\\[\nL(x, x', \\lambda)\n= g(x, x', \\lambda) \\cdot \\left(\n\\underbrace{L_e(x, x', \\lambda)}_{\\text{Emission}}\n+ \\underbrace{\\int_S b(x, x', x'', \\lambda) \\cdot L(x', x'', \\lambda) \\, d x''}_{\\text{indirektes Licht}}\n\\right)\n\\]\nJeder Buchstabe hat eine anschauliche Bedeutung:\n\n\n\n\n\n\n\n\nTerm\nBedeutung\nAnschaulich\n\n\n\n\n\\(L(x, x', \\lambda)\\)\nLicht zwischen zwei Punkten\n„Wie hell ist dieser Punkt aus dieser Richtung?“\n\n\n\\(g(x, x', \\lambda)\\)\nGeometrie-/Sichtbarkeitsfaktor\n„Sehen sich die Punkte überhaupt?“\n\n\n\\(L_e(x, x', \\lambda)\\)\nemittiertes Licht\n„Leuchtet die Fläche selbst?“ (Lampe, Bildschirm)\n\n\n\\(b(x, x', x'', \\lambda)\\)\nReflexions-/Streufunktion (BRDF)\n„Wie wirft das Material Licht zurück?“\n\n\n\\(\\int_S \\dots\\, dx''\\)\nindirektes Licht über alle Flächen \\(S\\)\n„Sammle Licht aus allen Richtungen ein.“\n\n\n\n\nDer Trick steckt im Integral: Es summiert das Licht, das von allen anderen Oberflächen kommt. Genau dieses „Licht von überall“ ist der Unterschied zwischen lokaler und globaler Beleuchtung. Lokale Verfahren lassen das Integral einfach weg!"
+  },
+  {
+    "objectID": "levels/local-vs-global.html#re-walkthrough",
+    "href": "levels/local-vs-global.html#re-walkthrough",
+    "title": "Level 1 – Lokal vs. Global",
+    "section": "Schritt für Schritt: die Rendering-Gleichung",
+    "text": "Schritt für Schritt: die Rendering-Gleichung\nWie im Video von Eric Arnebäck gehen wir dieselbe Cornell-Box Term für Term durch – diesmal als interaktive 3D-Szene in Babylon.js. Klicke die Stufen durch, drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.\n\n\n\n  \n\n  \n    Cornell-Box wird geladen …\n    \n    Ziehen = drehen · Mausrad = zoomen\n\n    \n      \n        Stufe\n        \n        \n\n        \n          Hemisphären-Strahlen\n          \n          8\n        \n\n        \n          \n          Cosinus-Gewichtung (ωi·n) anzeigen\n        \n\n        \n          ← Zurück\n          Weiter →\n        \n\n        \n          💡\n          \n            Lumi\n            \n          \n        \n      \n    \n  \n\n\n\n\nSuper! Du hast die Gleichung live durchgespielt. 🎬 Als Nächstes schauen wir uns an, wie die BRDF das Material beschreibt – und danach darfst du GI selbst ein- und ausschalten.\n\n\nDas Materialverhalten: die BRDF \\(b(\\cdot)\\)\nDer Term \\(b(\\cdot)\\) – die BRDF – beschreibt, in welche Richtungen eine Oberfläche eingehendes Licht zurückwirft. Eine diffuse Fläche streut breit in alle Richtungen (matte Wand), eine glänzende Fläche bündelt das Licht eng um die Spiegelrichtung. Die folgenden „Reflexionskeulen“ zeigen das in Polarkoordinaten:\n\nimport numpy as np\nimport matplotlib.pyplot as plt\n\ntheta = np.linspace(-np.pi / 2, np.pi / 2, 400)\ndiffuse = np.cos(theta)          # breite Lambert-Keule\nglossy = np.cos(theta) ** 40     # schmale spekulare Keule\n\nfig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(5.2, 4.2))\nax.plot(theta, diffuse, color='#4f46e5', linewidth=2, label='diffus (Lambert)')\nax.plot(theta, glossy, color='#f59e0b', linewidth=2, label='glänzend (spekular)')\nax.fill(theta, diffuse, color='#4f46e5', alpha=0.10)\nax.fill(theta, glossy, color='#f59e0b', alpha=0.15)\n\nax.set_theta_zero_location('N')      # 0° = Oberflächennormale\nax.set_theta_direction(-1)\nax.set_thetamin(-90)\nax.set_thetamax(90)\nax.set_rticks([0.5, 1.0])\nax.set_rlabel_position(0)\nax.set_title('BRDF-Reflexionskeulen', pad=18)\nax.legend(loc='lower center', bbox_to_anchor=(0.5, -0.22), ncol=2, frameon=False)\nplt.tight_layout()\nplt.show()\n\n\n\n\n\n\n\nFigure 1: Reflexionskeulen der BRDF: eine diffuse Fläche (breit) streut Licht gleichmäßig, eine glänzende Fläche (schmal) bündelt es um die Spiegelrichtung.\n\n\n\n\n\n\nStark! Du hast die Formel geknackt. 🔍 Jetzt wird’s praktisch: Im nächsten Abschnitt darfst du das Integral ein- und ausschalten und live sehen, was passiert. Achte besonders auf die Schatten und die Wandfarben!"
+  },
+  {
+    "objectID": "levels/local-vs-global.html#demo",
+    "href": "levels/local-vs-global.html#demo",
+    "title": "Level 1 – Lokal vs. Global",
+    "section": "Interaktiv: mit vs. ohne Global Illumination",
+    "text": "Interaktiv: mit vs. ohne Global Illumination\nGenug Theorie – schau es dir an! Die folgende Szene ist eine kleine „Cornell-Box“ mit einer roten und einer grünen Wand. Schalte zwischen lokaler Beleuchtung (nur direktes Licht) und globaler Beleuchtung (mit indirektem Licht und Farbabstrahlung) um und achte auf:\n\ndie Schatten: tiefschwarz vs. weich aufgehellt,\nden Boden und die Kugel: nehmen sie die Wandfarben an? (Color Bleeding),\ndie allgemeine Stimmigkeit des Raums.\n\n\n\n\n  \n    Globale Beleuchtung: AUS\n    Modus: nur lokale (direkte) Beleuchtung\n  \n  \n    Cornell-Box (Ziehen = drehen, Mausrad = zoomen)\n    \n    \n      Ohne GI bleibt alles dunkel, was nicht direkt beleuchtet wird – Schatten\n      werden tiefschwarz und die Wände färben nichts ab.\n    \n  \n\n\n\n\n\n\n\n\n\nNoteWichtig zu wissen\n\n\n\nDiese Demo ist eine Veranschaulichung, kein physikalisch exakter GI-Renderer. Echte globale Beleuchtung berechnet das Integral der Rendering-Gleichung – genau das machen Ray Tracing und Path Tracing in den nächsten Leveln."
+  },
+  {
+    "objectID": "levels/local-vs-global.html#quiz",
+    "href": "levels/local-vs-global.html#quiz",
+    "title": "Level 1 – Lokal vs. Global",
+    "section": "Boss-Quiz: Licht-Detektiv",
+    "text": "Boss-Quiz: Licht-Detektiv\n\nZeit für die Abschlussprüfung! 🚀 Es warten 15 Fragen rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du mindestens 11 richtig, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!\n\n\n\n\n  \n    \n      Fortschritt\n      0 / 15 richtig · benötigt: 11\n    \n    \n  \n\n  \n\n  \n    Auswerten 🔎\n    Neu starten ↺\n  \n  Bitte beantworte zuerst alle Fragen."
   },
   {
     "objectID": "levels/path-tracing.html#path-tracing-erklaerung-auf-deutsch",
