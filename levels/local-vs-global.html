@@ -96,7 +96,7 @@ div.csl-indent {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-e25895f8420b891f4d3deaee1a87d265.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-d019ed662885cc1933b891e8f187e2a4.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -216,7 +216,8 @@ window.Quarto = {
    
   <ul>
   <li><a href="#worum" id="toc-worum" class="nav-link active" data-scroll-target="#worum">Worum geht es?</a></li>
-  <li><a href="#gleichung" id="toc-gleichung" class="nav-link" data-scroll-target="#gleichung">Die Rendering-Gleichung</a>
+  <li><a href="#gleichung" id="toc-gleichung" class="nav-link" data-scroll-target="#gleichung">Die Rendering-Gleichung</a></li>
+  <li><a href="#re-walkthrough" id="toc-re-walkthrough" class="nav-link" data-scroll-target="#re-walkthrough">Schritt für Schritt: die Rendering-Gleichung</a>
   <ul class="collapse">
   <li><a href="#brdf" id="toc-brdf" class="nav-link" data-scroll-target="#brdf">Das Materialverhalten: die BRDF <span class="math inline">\(b(\cdot)\)</span></a></li>
   </ul></li>
@@ -226,7 +227,7 @@ window.Quarto = {
 </nav>
     </div>
 <!-- main -->
-<main class="content column-page-left" id="quarto-document-content">
+<main class="content page-columns page-full column-page-left" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -391,6 +392,691 @@ L(x, x', \lambda)
 </table>
 <div data-vcde-mascot="true" data-name="Lumi">
 <p>Der Trick steckt im <strong>Integral</strong>: Es summiert das Licht, das von <em>allen</em> anderen Oberflächen kommt. Genau dieses „Licht von überall“ ist der Unterschied zwischen lokaler und globaler Beleuchtung. Lokale Verfahren lassen das Integral einfach weg!</p>
+</div>
+</section>
+<section id="re-walkthrough" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="re-walkthrough">Schritt für Schritt: die Rendering-Gleichung</h2>
+<p>Wie im Video von Eric Arnebäck gehen wir dieselbe Cornell-Box <strong>Term für Term</strong> durch – diesmal als interaktive <strong>3D-Szene</strong> in Babylon.js. Klicke die Stufen durch, drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.</p>
+<style>
+  .req-wrap {
+    margin: 1.25rem 0 2rem;
+    padding: 0.95rem;
+    border-radius: 16px;
+    border: 1px solid #d1d5db;
+    background: linear-gradient(180deg, #fbfdff, #f0f4ff);
+    box-shadow: 0 10px 28px rgba(30, 41, 59, 0.08);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .req-toolbar {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+  }
+  .req-btn {
+    border: 1px solid #c7d2fe;
+    background: #fff;
+    color: #3730a3;
+    border-radius: 999px;
+    padding: 0.34rem 0.72rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
+  }
+  .req-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px -6px rgba(79, 70, 229, 0.55);
+  }
+  .req-btn.active {
+    background: linear-gradient(180deg, #6d5ae6, #5a47d6);
+    border-color: #5a47d6;
+    color: #fff;
+    box-shadow: 0 4px 12px -5px rgba(79, 70, 229, 0.65);
+  }
+  .req-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  .req-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 0.85rem;
+    align-items: start;
+  }
+  .req-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .req-grid aside.req-card {
+    position: sticky;
+    top: 0.75rem;
+    align-self: start;
+  }
+  .req-head {
+    margin: 0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-bottom: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #f8fafc, #eef2fb);
+    color: #1f2937;
+  }
+  .req-viewport {
+    position: relative;
+    background: #0f172a;
+  }
+  #reqCanvas3d {
+    width: 100%;
+    height: 460px;
+    display: block;
+    touch-action: none;
+    outline: none;
+  }
+  .req-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.92);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 2;
+  }
+  .req-loading--hide { display: none; }
+  .req-panel {
+    padding: 0.7rem 0.8rem 0.85rem;
+    font-size: 0.86rem;
+    color: #374151;
+    line-height: 1.45;
+  }
+  .req-stage {
+    margin: 0 0 0.4rem;
+    font-weight: 800;
+    color: #4338ca;
+    font-size: 0.92rem;
+  }
+  .req-eq {
+    margin: 0.65rem 0 0.5rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    text-align: center;
+    color: #1f2937;
+  }
+  .req-eq .hl {
+    background: linear-gradient(180deg, #fef08a, #fde047);
+    border-radius: 4px;
+    padding: 0 0.15rem;
+    box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.35);
+    font-weight: 700;
+  }
+  .req-eq .dim { color: #9ca3af; }
+  .req-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+    flex-wrap: wrap;
+  }
+  .req-row label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+  }
+  .req-range {
+    flex: 1;
+    min-width: 100px;
+    accent-color: #5a47d6;
+    touch-action: none;
+  }
+  .req-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+  }
+  .req-toggle input { accent-color: #5a47d6; }
+  .req-lumi {
+    display: none;
+    margin-top: 0.65rem;
+    padding: 0.55rem 0.7rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #eef2ff, #ecfeff);
+    border: 1px solid #c7d2fe;
+    font-size: 0.82rem;
+    color: #1e3a5f;
+    line-height: 1.4;
+  }
+  .req-lumi--show { display: flex; gap: 0.55rem; align-items: flex-start; }
+  .req-lumi__icon {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #c7d2fe, #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+  .req-lumi__text { margin: 0; }
+  .req-lumi__name { font-weight: 800; color: #4f46e5; font-size: 0.78rem; }
+  .req-nav {
+    display: flex;
+    gap: 0.45rem;
+    margin-top: 0.55rem;
+  }
+  .req-nav .req-btn { font-size: 0.82rem; }
+  .req-hint {
+    margin: 0;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.78rem;
+    color: #64748b;
+    border-top: 1px solid #eef1f6;
+    background: #fafbfe;
+  }
+  @media (max-width: 900px) {
+    .req-grid { grid-template-columns: 1fr; }
+    .req-grid aside.req-card { position: static; }
+    #reqCanvas3d { height: 320px; }
+  }
+</style>
+
+<div class="req-wrap page-columns page-full" id="reqWalkthrough">
+  <div class="req-toolbar" id="reqToolbar"></div>
+
+  <div class="req-grid page-columns page-full">
+    <article class="req-card">
+      <h3 class="req-head anchored">Cornell-Box · 3D-Walkthrough</h3>
+      <div class="req-viewport">
+        <div class="req-loading" id="reqLoading">Cornell-Box wird geladen …</div>
+        <canvas id="reqCanvas3d"></canvas>
+      </div>
+      <p class="req-hint">Ziehen = drehen · Mausrad = zoomen · Stufen oben wählen</p>
+    </article>
+
+    <aside class="req-card">
+      <h3 class="req-head anchored">Gleichung &amp; Erklärung</h3>
+      <div class="req-panel">
+        <p class="req-stage" id="reqStageTitle">Stufe</p>
+        <p id="reqStageText"></p>
+        <div class="req-eq" id="reqEquation"></div>
+
+        <div class="req-row" id="reqRayRow">
+          <label for="reqRayCount">Hemisphären-Strahlen</label>
+          <input id="reqRayCount" class="req-range" type="range" min="3" max="24" value="8">
+          <span id="reqRayVal" style="font-size:0.8rem;font-weight:700;color:#4338ca;">8</span>
+        </div>
+
+        <label class="req-toggle" id="reqCosRow">
+          <input type="checkbox" id="reqCosToggle" checked="">
+          Cosinus-Gewichtung (ω<sub>i</sub>·n) anzeigen
+        </label>
+
+        <div class="req-nav">
+          <button type="button" class="req-btn" id="reqPrev">← Zurück</button>
+          <button type="button" class="req-btn" id="reqNext">Weiter →</button>
+        </div>
+
+        <div class="req-lumi" id="reqLumi">
+          <span class="req-lumi__icon">💡</span>
+          <div>
+            <p class="req-lumi__name">Lumi</p>
+            <p class="req-lumi__text" id="reqLumiText"></p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+  if (!window.BABYLON) return;
+
+  var canvas = document.getElementById('reqCanvas3d');
+  var loading = document.getElementById('reqLoading');
+  var toolbar = document.getElementById('reqToolbar');
+  var stageTitle = document.getElementById('reqStageTitle');
+  var stageText = document.getElementById('reqStageText');
+  var eqEl = document.getElementById('reqEquation');
+  var lumiBox = document.getElementById('reqLumi');
+  var lumiText = document.getElementById('reqLumiText');
+  var raySlider = document.getElementById('reqRayCount');
+  var rayVal = document.getElementById('reqRayVal');
+  var cosToggle = document.getElementById('reqCosToggle');
+  var prevBtn = document.getElementById('reqPrev');
+  var nextBtn = document.getElementById('reqNext');
+  var rayRow = document.getElementById('reqRayRow');
+  var cosRow = document.getElementById('reqCosRow');
+  if (!canvas || !toolbar) return;
+
+  function prefix() {
+    return /\/levels\//.test(window.location.pathname) ? '../' : '';
+  }
+
+  var STAGES = [
+    {
+      id: 'cam', name: '1) Kamerastrahl',
+      text: 'Die Kamera schießt einen Strahl durch ein Pixel. Er trifft den Boden im Punkt <strong>x</strong> – genau dort berechnen wir die Pixel-Farbe.',
+      hl: 'Lo', lumi: '', showRays: false, showCos: false,
+      view: { alpha: -Math.PI / 2.15, beta: 1.35, radius: 11, target: [0.15, 1.2, 0.2] }
+    },
+    {
+      id: 'lo', name: '2) L<sub>o</sub> am Trefferpunkt',
+      text: 'Die Pixel-Farbe ist die ausgehende Helligkeit L<sub>o</sub>(x, ω<sub>o</sub>): Licht, das von x in Richtung der Kamera (ω<sub>o</sub>) abgestrahlt wird.',
+      hl: 'Lo', lumi: 'ω<sub>o</sub> zeigt zurück zur Kamera – so „sieht“ das Pixel den Punkt x.',
+      showRays: false, showCos: false,
+      view: { alpha: -Math.PI / 2.4, beta: 1.05, radius: 6.5, target: [0.15, 0.4, 0.35] }
+    },
+    {
+      id: 'le', name: '3) Emission L<sub>e</sub>',
+      text: 'L<sub>o</sub> beginnt mit L<sub>e</sub>: leuchtet x selbst? Der graue Boden ist nicht emissiv → L<sub>e</sub> = 0. Nur die gelbe Deckenlampe hat L<sub>e</sub> > 0.',
+      hl: 'Le', lumi: 'Nicht jede Fläche leuchtet von selbst – der Boden reflektiert nur!',
+      showRays: false, showCos: false,
+      view: { alpha: -Math.PI / 2.1, beta: 1.25, radius: 9, target: [0, 1.8, 0] }
+    },
+    {
+      id: 'hemi', name: '4) Hemisphäre / Integral',
+      text: 'Der Rest kommt vom Integral ∫<sub>Ω</sub>: Wir müssen alle möglichen eingehenden Richtungen ω<sub>i</sub> auf der Hemisphäre über der Normalen n betrachten.',
+      hl: 'int', lumi: 'Stell dir eine Halbkugel auf den Boden – jeder Strahl ist ein Kandidat für eingehendes Licht.',
+      showRays: true, showCos: false,
+      view: { alpha: -Math.PI / 2.3, beta: 0.95, radius: 5.5, target: [0.15, 0.35, 0.35] }
+    },
+    {
+      id: 'wi', name: '5) Ein Strahl ω<sub>i</sub>',
+      text: 'Wir verfolgen einen konkreten ω<sub>i</sub>-Strahl von x. Er trifft die Decke – dort ist L<sub>e</sub> ebenfalls 0 (weiße Decke leuchtet nicht).',
+      hl: 'int', lumi: '', showRays: false, showCos: false, singleWi: true,
+      view: { alpha: -Math.PI / 2.5, beta: 1.1, radius: 7, target: [0.1, 1.5, 0.2] }
+    },
+    {
+      id: 'li', name: '6) Rekursion & L<sub>i</sub>',
+      text: 'Von der Decke schicken wir einen weiteren Strahl zur Lampe. L<sub>i</sub>(x, ω<sub>i</sub>) ist die Radiance, die bei x aus Richtung ω<sub>i</sub> ankommt – berechnet durch Rekursion am Trefferpunkt.',
+      hl: 'Li', lumi: 'L<sub>i</sub> ist „Licht von woanders“ – wir verfolgen den Strahl weiter, bis eine Quelle L<sub>e</sub> > 0 liefert.',
+      showRays: false, showCos: false, recurse: true,
+      view: { alpha: -Math.PI / 2.15, beta: 1.3, radius: 8.5, target: [0, 2.2, 0.1] }
+    },
+    {
+      id: 'cos', name: '7) Cosinus (ω<sub>i</sub>·n)',
+      text: 'Der Term (ω<sub>i</sub>·n) ist das Skalarprodukt aus eingehender Richtung und Normalen. Steht ω<sub>i</sub> senkrecht auf der Fläche, trägt der Strahl voll bei; liegt er flach, fast gar nicht.',
+      hl: 'cos', lumi: 'Das ist das Lambert’sche Cosinus-Gesetz – schräges Licht wirkt schwächer.',
+      showRays: false, showCos: true, singleWi: true,
+      view: { alpha: -Math.PI / 2.35, beta: 0.88, radius: 4.8, target: [0.15, 0.32, 0.35] }
+    },
+    {
+      id: 'brdf', name: '8) BRDF f<sub>r</sub>',
+      text: 'f<sub>r</sub> beschreibt das Material: Wie viel einfallendes Licht wird in Richtung ω<sub>o</sub> reflektiert? Diffuser Boden ≈ 0,7, perfektes Schwarz = 0, Spiegel → 1 in Spiegelrichtung.',
+      hl: 'fr', lumi: 'Die BRDF ist die „Farbe und Oberflächenart“ in der Formel.',
+      showRays: false, showCos: false, singleWi: true,
+      view: { alpha: -Math.PI / 2.4, beta: 0.92, radius: 4.5, target: [0.15, 0.28, 0.35] }
+    },
+    {
+      id: 'sum', name: '9) Summe = Integral',
+      text: 'Für jeden Hemisphären-Strahl werten wir f<sub>r</sub> · L<sub>i</sub> · (ω<sub>i</sub>·n) aus und addieren – das Integral ist die große Summe über alle ω<sub>i</sub>. Ergebnis + L<sub>e</sub> = L<sub>o</sub>.',
+      hl: 'int', lumi: 'Geschafft! Genau so arbeiten Ray- und Path Tracer – nur mit vielen Strahlen statt einer Handvoll.',
+      showRays: true, showCos: true, sum: true,
+      view: { alpha: -Math.PI / 2.2, beta: 1.15, radius: 7.5, target: [0.15, 0.6, 0.3] }
+    }
+  ];
+
+  var stageIdx = 0;
+  var stageButtons = [];
+  var camGoal = null;
+
+  var S = 2.5, H = 2.5;
+  var HIT = new BABYLON.Vector3(0.15, 0.02, 0.35);
+  var CAM_POS = new BABYLON.Vector3(0, 1.85, -7.0);
+  var CEIL_HIT = new BABYLON.Vector3(0.05, H - 0.04, 0.28);
+  var LIGHT_POS = new BABYLON.Vector3(0, H - 0.06, 0);
+  var NORMAL = new BABYLON.Vector3(0, 1, 0);
+
+  var WI = CEIL_HIT.clone().subtract(HIT).normalize();
+  var WO = CAM_POS.clone().subtract(HIT).normalize();
+
+  var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+  var scene = new BABYLON.Scene(engine);
+  scene.clearColor = new BABYLON.Color4(0.06, 0.07, 0.10, 1);
+
+  var camera = new BABYLON.ArcRotateCamera('reqCam', -Math.PI / 2, 1.2, 11,
+    new BABYLON.Vector3(0, 1.2, 0), scene);
+  camera.attachControl(canvas, true);
+  camera.lowerRadiusLimit = 3.5;
+  camera.upperRadiusLimit = 16;
+  camera.wheelPrecision = 35;
+  camera.panningSensibility = 0;
+
+  var hemi = new BABYLON.HemisphericLight('reqFill', new BABYLON.Vector3(0, 1, 0), scene);
+  hemi.intensity = 0.55;
+  hemi.groundColor = new BABYLON.Color3(0.35, 0.35, 0.38);
+
+  var lamp = new BABYLON.PointLight('reqLamp', LIGHT_POS.clone(), scene);
+  lamp.intensity = 0.65;
+  lamp.diffuse = new BABYLON.Color3(1, 0.96, 0.88);
+
+  var overlay = new BABYLON.TransformNode('reqOverlay', scene);
+  var vizMeshes = [];
+
+  function eqHtml(hl) {
+    var Lo = hl === 'Lo' ? '<span class="hl">L<sub>o</sub>(x,ω<sub>o</sub>)</span>' : '<span class="dim">L<sub>o</sub>(x,ω<sub>o</sub>)</span>';
+    var Le = hl === 'Le' ? '<span class="hl">L<sub>e</sub>(x,ω<sub>o</sub>)</span>' : 'L<sub>e</sub>(x,ω<sub>o</sub>)';
+    var fr = hl === 'fr' ? '<span class="hl">f<sub>r</sub>(x,ω<sub>i</sub>→ω<sub>o</sub>)</span>' : 'f<sub>r</sub>(x,ω<sub>i</sub>→ω<sub>o</sub>)';
+    var Li = hl === 'Li' ? '<span class="hl">L<sub>i</sub>(x,ω<sub>i</sub>)</span>' : 'L<sub>i</sub>(x,ω<sub>i</sub>)';
+    var cos = hl === 'cos' ? '<span class="hl">(ω<sub>i</sub>·n)</span>' : '(ω<sub>i</sub>·n)';
+    var integ = hl === 'int' ? '<span class="hl">∫<sub>Ω</sub> … dω<sub>i</sub></span>' : '∫<sub>Ω</sub> … dω<sub>i</sub>';
+    return Lo + ' = ' + Le + ' + ' + integ.replace('…', fr + ' ' + Li + ' ' + cos);
+  }
+
+  function color3(hex) {
+    var c = BABYLON.Color3.FromHexString(hex);
+    return c;
+  }
+
+  function clearViz() {
+    vizMeshes.forEach(function (m) { m.dispose(); });
+    vizMeshes = [];
+  }
+
+  function addLine(name, a, b, col, width) {
+    var pts = [a.clone(), b.clone()];
+    var line = BABYLON.MeshBuilder.CreateLines(name, { points: pts }, scene);
+    line.color = col;
+    line.parent = overlay;
+    if (width && width > 1) {
+      try {
+        var tube = BABYLON.MeshBuilder.CreateTube(name + 'Tube', {
+          path: pts, radius: 0.025 * width, tessellation: 8, updatable: false
+        }, scene);
+        var tm = new BABYLON.StandardMaterial(name + 'Mat', scene);
+        tm.emissiveColor = col;
+        tm.disableLighting = true;
+        tube.material = tm;
+        tube.parent = overlay;
+        line.dispose();
+        vizMeshes.push(tube);
+        return tube;
+      } catch (e) { /* fallback to line */ }
+    }
+    vizMeshes.push(line);
+    return line;
+  }
+
+  function addSphere(name, pos, dia, col, emissive) {
+    var sp = BABYLON.MeshBuilder.CreateSphere(name, { diameter: dia, segments: 16 }, scene);
+    sp.position = pos.clone();
+    sp.parent = overlay;
+    var m = new BABYLON.StandardMaterial(name + 'Mat', scene);
+    m.diffuseColor = col;
+    m.emissiveColor = emissive ? col.scale(0.85) : col.scale(0.2);
+    m.disableLighting = !!emissive;
+    sp.material = m;
+    vizMeshes.push(sp);
+    return sp;
+  }
+
+  function addDisc(name, pos, radius, col) {
+    var disc = BABYLON.MeshBuilder.CreateDisc(name, { radius: radius, tessellation: 48, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    disc.position = pos.clone();
+    disc.rotation.x = Math.PI / 2;
+    disc.parent = overlay;
+    var m = new BABYLON.StandardMaterial(name + 'Mat', scene);
+    m.diffuseColor = col;
+    m.alpha = 0.22;
+    m.backFaceCulling = false;
+    disc.material = m;
+    vizMeshes.push(disc);
+    return disc;
+  }
+
+  function hemiDirections(count) {
+    var dirs = [];
+    var golden = Math.PI * (3 - Math.sqrt(5));
+    for (var i = 0; i < count; i++) {
+      var t = (i + 0.5) / count;
+      var y = t;
+      var r = Math.sqrt(Math.max(0, 1 - y * y));
+      var phi = golden * i;
+      dirs.push(new BABYLON.Vector3(Math.cos(phi) * r, y, Math.sin(phi) * r));
+    }
+    return dirs;
+  }
+
+  function buildCameraMesh() {
+    var body = BABYLON.MeshBuilder.CreateBox('camBody', { width: 0.55, height: 0.38, depth: 0.7 }, scene);
+    body.position = CAM_POS.clone();
+    body.lookAt(HIT);
+    var cm = new BABYLON.StandardMaterial('camMat', scene);
+    cm.diffuseColor = new BABYLON.Color3(0.15, 0.18, 0.25);
+    cm.emissiveColor = new BABYLON.Color3(0.05, 0.06, 0.08);
+    body.material = cm;
+    body.parent = overlay;
+    vizMeshes.push(body);
+
+    var lens = BABYLON.MeshBuilder.CreateCylinder('camLens', { height: 0.18, diameter: 0.22 }, scene);
+    lens.parent = body;
+    lens.rotation.x = Math.PI / 2;
+    lens.position.z = 0.42;
+    var lm = new BABYLON.StandardMaterial('camLensMat', scene);
+    lm.emissiveColor = new BABYLON.Color3(0.35, 0.55, 0.95);
+    lm.disableLighting = true;
+    lens.material = lm;
+    vizMeshes.push(lens);
+  }
+
+  function buildViz() {
+    clearViz();
+    var s = STAGES[stageIdx];
+    var rayCount = parseInt(raySlider.value, 10);
+    var weightCos = cosToggle.checked;
+    var dotWiN = BABYLON.Vector3.Dot(WI, NORMAL);
+
+    buildCameraMesh();
+
+    addSphere('hitX', HIT, 0.16, color3('#fbbf24'), true);
+
+    if (stageIdx >= 0) {
+      addLine('camRay', CAM_POS, HIT, color3('#f97316'), 2.5);
+    }
+
+    if (stageIdx >= 1) {
+      addLine('woRay', HIT, HIT.clone().add(WO.clone().scale(2.2)), color3('#a78bfa'), 2);
+    }
+
+    if (stageIdx === 2 || stageIdx >= 2) {
+      addSphere('leLight', LIGHT_POS, 0.28, color3('#fde047'), true);
+      if (stageIdx === 2) {
+        addSphere('leZero', HIT.clone().add(new BABYLON.Vector3(0.35, 0.08, 0)), 0.12, color3('#ef4444'), true);
+      }
+    }
+
+    if (s.showRays) {
+      addDisc('hemiDisc', HIT.clone().add(new BABYLON.Vector3(0, 0.01, 0)), 1.05, color3('#38bdf8'));
+      var dirs = hemiDirections(rayCount);
+      dirs.forEach(function (d, i) {
+        var cosW = BABYLON.Vector3.Dot(d, NORMAL);
+        if (cosW <= 0) return;
+        var len = (s.id === 'sum' && weightCos) ? 1.1 + 1.4 * cosW : 1.8;
+        var alpha = (s.id === 'sum' && weightCos) ? 0.25 + 0.55 * cosW : 0.55;
+        var end = HIT.clone().add(d.clone().scale(len));
+        var col = color3('#38bdf8').scale(alpha);
+        addLine('hemi' + i, HIT, end, col, 1);
+      });
+    }
+
+    if (s.singleWi || s.id === 'cos' || s.id === 'brdf') {
+      addLine('wiRay', HIT, CEIL_HIT, color3('#22d3ee'), 2.5);
+      addSphere('wiHit', CEIL_HIT, 0.12, color3('#22d3ee'), true);
+    }
+
+    if (s.recurse || s.id === 'sum') {
+      addLine('recurseRay', CEIL_HIT, LIGHT_POS, color3('#4ade80'), 2);
+      addSphere('recurseHit', LIGHT_POS, 0.14, color3('#4ade80'), true);
+    }
+
+    if (s.showCos || (s.id === 'sum' && weightCos)) {
+      addLine('normalN', HIT, HIT.clone().add(NORMAL.clone().scale(1.3)), color3('#f472b6'), 2);
+      var proj = NORMAL.clone().scale(Math.max(0, dotWiN) * 1.1);
+      addLine('cosProj', HIT, HIT.clone().add(proj), color3('#ec4899'), 2.5);
+    }
+
+    if (s.id === 'brdf') {
+      addDisc('brdfRing', HIT.clone().add(new BABYLON.Vector3(0, 0.015, 0)), 0.55, color3('#f59e0b'));
+    }
+
+    if (s.id === 'sum') {
+      var ring = BABYLON.MeshBuilder.CreateTorus('sumRing', { diameter: 1.6, thickness: 0.04, tessellation: 32 }, scene);
+      ring.position = HIT.clone().add(new BABYLON.Vector3(0, 0.03, 0));
+      ring.rotation.x = Math.PI / 2;
+      ring.parent = overlay;
+      var rm = new BABYLON.StandardMaterial('sumRingMat', scene);
+      rm.emissiveColor = color3('#6366f1');
+      rm.disableLighting = true;
+      rm.alpha = 0.75;
+      ring.material = rm;
+      vizMeshes.push(ring);
+    }
+  }
+
+  function setCamGoal(view) {
+    camGoal = {
+      alpha: view.alpha,
+      beta: view.beta,
+      radius: view.radius,
+      target: new BABYLON.Vector3(view.target[0], view.target[1], view.target[2])
+    };
+  }
+
+  function updateUI() {
+    var s = STAGES[stageIdx];
+    stageTitle.innerHTML = s.name;
+    stageText.innerHTML = s.text;
+    eqEl.innerHTML = eqHtml(s.hl);
+
+    rayRow.style.display = s.showRays ? 'flex' : 'none';
+    cosRow.style.display = (s.showCos || s.id === 'sum') ? 'flex' : 'none';
+
+    if (s.lumi) {
+      lumiText.innerHTML = s.lumi;
+      lumiBox.classList.add('req-lumi--show');
+    } else {
+      lumiBox.classList.remove('req-lumi--show');
+    }
+
+    stageButtons.forEach(function (b, i) {
+      b.classList.toggle('active', i === stageIdx);
+    });
+
+    prevBtn.disabled = stageIdx === 0;
+    nextBtn.disabled = stageIdx === STAGES.length - 1;
+
+    setCamGoal(s.view);
+    buildViz();
+  }
+
+  STAGES.forEach(function (st, idx) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'req-btn';
+    btn.innerHTML = st.name;
+    btn.addEventListener('click', function () {
+      stageIdx = idx;
+      updateUI();
+    });
+    toolbar.appendChild(btn);
+    stageButtons.push(btn);
+  });
+
+  prevBtn.addEventListener('click', function () {
+    if (stageIdx > 0) { stageIdx--; updateUI(); }
+  });
+  nextBtn.addEventListener('click', function () {
+    if (stageIdx < STAGES.length - 1) { stageIdx++; updateUI(); }
+  });
+  raySlider.addEventListener('input', function () {
+    rayVal.textContent = raySlider.value;
+    buildViz();
+  });
+  cosToggle.addEventListener('change', buildViz);
+
+  var modelRoot = prefix() + 'assets/models/';
+  BABYLON.SceneLoader.ImportMeshAsync('', modelRoot, 'cornell-box.glb', scene).then(function () {
+    scene.meshes.forEach(function (m) {
+      if (m.name === '__root__' || m.getTotalVertices() === 0) return;
+      m.receiveShadows = true;
+      if (m.material) {
+        m.material.backFaceCulling = false;
+        if (m.material.name === 'light' || m.name.indexOf('light') >= 0) {
+          m.material.emissiveColor = new BABYLON.Color3(1, 0.94, 0.72);
+          m.material.disableLighting = true;
+        }
+      }
+    });
+    if (loading) loading.classList.add('req-loading--hide');
+    updateUI();
+  }).catch(function () {
+    if (loading) loading.textContent = 'Modell nicht gefunden – lade Fallback …';
+    buildFallbackRoom();
+    if (loading) loading.classList.add('req-loading--hide');
+    updateUI();
+  });
+
+  function buildFallbackRoom() {
+    var RED = new BABYLON.Color3(0.82, 0.18, 0.18);
+    var GREEN = new BABYLON.Color3(0.20, 0.62, 0.24);
+    var WHITE = new BABYLON.Color3(0.86, 0.86, 0.86);
+    function mat(name, color, emissive) {
+      var m = new BABYLON.StandardMaterial(name, scene);
+      m.diffuseColor = color;
+      m.emissiveColor = emissive || color.scale(0);
+      m.backFaceCulling = false;
+      if (emissive) m.disableLighting = true;
+      return m;
+    }
+    function wall(name, opts, pos, rot, color) {
+      var w = BABYLON.MeshBuilder.CreatePlane(name, opts, scene);
+      w.position = pos; w.rotation = rot; w.material = mat(name + 'M', color); w.sideOrientation = BABYLON.Mesh.DOUBLESIDE;
+    }
+    wall('floor', { width: 2 * S, height: 2 * S, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
+      new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(Math.PI / 2, 0, 0), WHITE);
+    wall('ceil', { width: 2 * S, height: 2 * S, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
+      new BABYLON.Vector3(0, H, 0), new BABYLON.Vector3(-Math.PI / 2, 0, 0), WHITE);
+    wall('back', { width: 2 * S, height: H, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
+      new BABYLON.Vector3(0, H / 2, S), new BABYLON.Vector3(0, Math.PI, 0), WHITE);
+    wall('left', { width: 2 * S, height: H, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
+      new BABYLON.Vector3(-S, H / 2, 0), new BABYLON.Vector3(0, -Math.PI / 2, 0), RED);
+    wall('right', { width: 2 * S, height: H, sideOrientation: BABYLON.Mesh.DOUBLESIDE },
+      new BABYLON.Vector3(S, H / 2, 0), new BABYLON.Vector3(0, Math.PI / 2, 0), GREEN);
+    var lp = BABYLON.MeshBuilder.CreatePlane('light_panel', { width: 2.4, height: 2.4, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+    lp.position = LIGHT_POS.clone();
+    lp.rotation.x = -Math.PI / 2;
+    lp.material = mat('lightM', new BABYLON.Color3(1, 0.96, 0.85), new BABYLON.Color3(1, 0.94, 0.72));
+  }
+
+  scene.registerBeforeRender(function () {
+    if (!camGoal) return;
+    var t = 0.12;
+    camera.alpha += (camGoal.alpha - camera.alpha) * t;
+    camera.beta += (camGoal.beta - camera.beta) * t;
+    camera.radius += (camGoal.radius - camera.radius) * t;
+    camera.target = BABYLON.Vector3.Lerp(camera.target, camGoal.target, t);
+  });
+
+  engine.runRenderLoop(function () { scene.render(); });
+  window.addEventListener('resize', function () { engine.resize(); });
+});
+</script>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Super! Du hast die Gleichung <strong>live</strong> durchgespielt. 🎬 Als Nächstes schauen wir uns an, wie die BRDF das Material beschreibt – und danach darfst du GI selbst ein- und ausschalten.</p>
 </div>
 <section id="brdf" class="level3">
 <h3 class="anchored" data-anchor-id="brdf">Das Materialverhalten: die BRDF <span class="math inline">\(b(\cdot)\)</span></h3>
@@ -677,7 +1363,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <section id="quiz" class="level2">
 <h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Licht-Detektiv</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Zeit für die Abschlussprüfung! 🚀 Es warten <strong>10 Fragen</strong> rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du <strong>mindestens 7 richtig</strong>, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!</p>
+<p>Zeit für die Abschlussprüfung! 🚀 Es warten <strong>15 Fragen</strong> rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du <strong>mindestens 11 richtig</strong>, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!</p>
 </div>
 <style>
   .lvg-quiz {
@@ -833,7 +1519,7 @@ window.addEventListener('DOMContentLoaded', function () {
   <div class="lvg-quiz__barwrap">
     <div class="lvg-quiz__barhead">
       <span>Fortschritt</span>
-      <span class="lvg-quiz__score" id="lvgScore">0 / 10 richtig · benötigt: 7</span>
+      <span class="lvg-quiz__score" id="lvgScore">0 / 15 richtig · benötigt: 11</span>
     </div>
     <div class="lvg-quiz__bar"><div class="lvg-quiz__fill" id="lvgFill"></div></div>
   </div>
@@ -852,7 +1538,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <script>
 (function () {
   var LEVEL_ID = "local-vs-global";
-  var PASS = 7;
+  var PASS = 11;
 
   var QUESTIONS = [
     {
@@ -954,6 +1640,56 @@ window.addEventListener('DOMContentLoaded', function () {
       ],
       answer: 0,
       explain: "Beide lösen (näherungsweise) das Rendering-Integral und erfassen damit indirektes Licht – also globale Beleuchtung."
+    },
+    {
+      q: "Warum ist L_e = 0 auf dem grauen Boden in der Cornell-Box?",
+      options: [
+        "Weil der Boden selbst kein Licht emittiert – er reflektiert nur eingehendes Licht",
+        "Weil die Kamera den Boden nicht sieht",
+        "Weil das Integral auf dem Boden nicht definiert ist"
+      ],
+      answer: 0,
+      explain: "L_e gilt nur für emissive Flächen (Lampen, Bildschirme). Ein diffuser Boden hat L_e = 0 und bekommt sein Licht über das Integral."
+    },
+    {
+      q: "Was bewirkt der Cosinus-Term (ω_i·n) in der Rendering-Gleichung?",
+      options: [
+        "Er gewichtet eingehendes Licht nach dem Einfallswinkel zur Normalen – flacher = schwächer",
+        "Er dreht die Kamera um die Normalenachse",
+        "Er ersetzt die BRDF bei diffusen Materialien"
+      ],
+      answer: 0,
+      explain: "Das Skalarprodukt aus ω_i und Normalen n ist das Lambert'sche Cosinusgesetz: senkrechter Einfall trägt voll, streifender fast nicht."
+    },
+    {
+      q: "Was beschreibt die BRDF f_r (bzw. b) in der Rendering-Gleichung?",
+      options: [
+        "Wie ein Material eingehendes Licht in eine ausgehende Richtung zurückstreut",
+        "Die Position der Lichtquelle in der Szene",
+        "Die Anzahl der Pixel pro Zeile"
+      ],
+      answer: 0,
+      explain: "f_r ist eine Material-Eigenschaft: breite Keule bei diffus, schmale bei glänzend. Sie sagt, wie viel von L_i in Richtung ω_o reflektiert wird."
+    },
+    {
+      q: "Was ist L_i(x, ω_i) und wie wird es typischerweise berechnet?",
+      options: [
+        "Eingehende Radiance aus Richtung ω_i – oft per Rekursion am Strahltrefferpunkt",
+        "Die Helligkeit der Kamera-Blende",
+        "Der Emissionsterm der gleichen Fläche"
+      ],
+      answer: 0,
+      explain: "L_i ist das Licht, das von außen ankommt. In Ray/Path Tracing verfolgt man den Strahl weiter, bis L_e > 0 oder ein Hintergrund gefunden wird."
+    },
+    {
+      q: "Warum ist das Integral ∫_Ω … dω_i eine „große Summe über Hemisphären-Strahlen“?",
+      options: [
+        "Weil man in der Praxis viele Richtungen ω_i auf der Hemisphäre abtastet und die Beiträge addiert",
+        "Weil nur eine einzige Richtung pro Pixel erlaubt ist",
+        "Weil das Integral nur für emissive Flächen gilt"
+      ],
+      answer: 0,
+      explain: "Das Integral sammelt Licht aus allen Richtungen. Monte-Carlo-Verfahren ersetzen es durch eine Summe vieler zufälliger ω_i-Strahlen."
     }
   ];
 
