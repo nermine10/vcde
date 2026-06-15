@@ -43,7 +43,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-ecdc54eacc22dfa32f521e740fd7a90d.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="site_libs/bootstrap/bootstrap-ca3b0bad74abff5a4150c4bb03718eca.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -325,7 +325,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="warum-überhaupt-realistisches-licht" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="warum-überhaupt-realistisches-licht">Warum überhaupt „realistisches“ Licht?</h2>
-<p>Bevor wir in die Theorie eintauchen, ein kurzer Blick darauf, worum es geht. Der folgende Vergleich zeigt, wie stark sich Echtzeitgrafik verändert hat: links ein stark vereinfachter Retro-Look (nur <strong>lokale</strong> Beleuchtung), rechts eine modernere Darstellung mit PBR-Material, Schatten und weicherem Licht – ein erster Vorgeschmack darauf, was <strong>globale</strong> Beleuchtung ausmacht.</p>
+<p>Bevor wir in die Theorie eintauchen, ein kurzer Blick darauf, worum es geht. <strong>Dieselbe Szene mit roter und grüner Wand, dieselbe Kamera – aber zwei Welten:</strong> Links die Echtzeitgrafik früher (nur <strong>lokale</strong> Beleuchtung). Rechts heutige <strong>Global Illumination</strong>: Das Licht prallt von den Wänden ab und <strong>färbt Boden und Objekte ein</strong> (Color Bleeding) – plus weiche Schatten und Reflexionen.</p>
 <style>
     .era-compare {
         --retro-bg: #f8f5ef;
@@ -361,6 +361,13 @@ ul.task-list li input[type="checkbox"] {
         display: block;
         touch-action: none;
         background: #f3f4f6;
+    }
+
+    /* Retro-Canvas bewusst hart hochskalieren -> sichtbare Pixelblöcke */
+    #retroCanvas {
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+        background: #b8b5a8;
     }
 
     .era-canvas-wrap {
@@ -404,7 +411,7 @@ ul.task-list li input[type="checkbox"] {
             <span class="era-overlay">Gleiche Geometrie und Kamera</span>
             <canvas id="retroCanvas" class="era-canvas"></canvas>
         </div>
-        <p class="era-note">Kaum Schatten, wenig Materialdetails.</p>
+        <p class="era-note">Grobe Facetten, keine Schatten – und das Rot/Grün der Wände bleibt <strong>auf der Wand</strong> (rein lokal).</p>
     </article>
 
     <article class="era-card">
@@ -413,7 +420,7 @@ ul.task-list li input[type="checkbox"] {
             <span class="era-overlay">Gleiche Geometrie und Kamera</span>
             <canvas id="modernCanvas" class="era-canvas"></canvas>
         </div>
-        <p class="era-note">PBR-Materialien, weichere Beleuchtung und dynamische Schatten.</p>
+        <p class="era-note">Achte auf den Boden &amp; Sockel: die Wände <strong>färben ab</strong> (Color Bleeding) – das ist Global Illumination.</p>
     </article>
 </div>
 
@@ -425,13 +432,22 @@ ul.task-list li input[type="checkbox"] {
         const modernCanvas = document.getElementById('modernCanvas');
         if (!retroCanvas || !modernCanvas) return;
 
-        const retroEngine = new BABYLON.Engine(retroCanvas, true);
-        const modernEngine = new BABYLON.Engine(modernCanvas, true);
+        const retroEngine = new BABYLON.Engine(retroCanvas, true, { antialias: false });
+        const modernEngine = new BABYLON.Engine(modernCanvas, true, { antialias: true });
 
-        function addSharedComposition(scene, materialMode) {
+        // Gemeinsame Kamera-Ausrichtung, damit beide Seiten exakt gleich stehen.
+        const CAM_ALPHA = -Math.PI / 3.4;
+        const CAM_BETA = Math.PI / 2.7;
+        const CAM_RADIUS = 7.1;
+        const CAM_TARGET = new BABYLON.Vector3(0, 1.0, 0);
+
+        function buildGeometry(scene, lowPoly) {
+            // Vor 30 Jahren: extrem grobe Polygonzahl. Heute: glatt & hochaufgelöst.
             const ground = BABYLON.MeshBuilder.CreateGround('ground', { width: 8, height: 8 }, scene);
-            const pedestal = BABYLON.MeshBuilder.CreateCylinder('pedestal', { diameter: 2.0, height: 0.7, tessellation: 24 }, scene);
-            const hero = BABYLON.MeshBuilder.CreateSphere('hero', { diameter: 1.45, segments: 48 }, scene);
+            const pedestal = BABYLON.MeshBuilder.CreateCylinder('pedestal',
+                { diameter: 2.0, height: 0.7, tessellation: lowPoly ? 7 : 48 }, scene);
+            const hero = BABYLON.MeshBuilder.CreateSphere('hero',
+                { diameter: 1.45, segments: lowPoly ? 6 : 64 }, scene);
             const leftColumn = BABYLON.MeshBuilder.CreateBox('leftColumn', { width: 0.7, depth: 0.7, height: 2.1 }, scene);
             const rightColumn = BABYLON.MeshBuilder.CreateBox('rightColumn', { width: 0.7, depth: 0.7, height: 2.1 }, scene);
 
@@ -441,90 +457,179 @@ ul.task-list li input[type="checkbox"] {
             leftColumn.position.set(-2.1, 1.05, -0.7);
             rightColumn.position.set(2.1, 1.05, 0.7);
 
-            if (materialMode === 'retro') {
-                const groundMat = new BABYLON.StandardMaterial('retroGroundMat', scene);
-                groundMat.diffuseColor = new BABYLON.Color3(0.73, 0.72, 0.66);
-                groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
-                ground.material = groundMat;
+            // Farbige Seitenwände (rot/grün) wie in einer Cornell-Box -> macht
+            // GI-Farbbleeding sichtbar.
+            const leftWall = BABYLON.MeshBuilder.CreatePlane('leftWall',
+                { width: 8, height: 5, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+            leftWall.rotation.y = -Math.PI / 2; // Normale zeigt ins Zimmer (+X)
+            leftWall.position.set(-3.6, 2.5, 0);
+            const rightWall = BABYLON.MeshBuilder.CreatePlane('rightWall',
+                { width: 8, height: 5, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene);
+            rightWall.rotation.y = Math.PI / 2; // Normale zeigt ins Zimmer (-X)
+            rightWall.position.set(3.6, 2.5, 0);
 
-                const solidMat = new BABYLON.StandardMaterial('retroSolidMat', scene);
-                solidMat.diffuseColor = new BABYLON.Color3(0.2, 0.45, 0.72);
-                solidMat.specularColor = new BABYLON.Color3(0, 0, 0);
-                pedestal.material = solidMat;
-                hero.material = solidMat;
-                leftColumn.material = solidMat;
-                rightColumn.material = solidMat;
-            } else {
-                const groundMat = new BABYLON.PBRMaterial('modernGroundMat', scene);
-                groundMat.albedoColor = new BABYLON.Color3(0.73, 0.79, 0.82);
-                groundMat.roughness = 0.9;
-                ground.material = groundMat;
-
-                const solidMat = new BABYLON.PBRMaterial('modernSolidMat', scene);
-                solidMat.albedoColor = new BABYLON.Color3(0.1, 0.44, 0.75);
-                solidMat.metallic = 0.35;
-                solidMat.roughness = 0.22;
-                pedestal.material = solidMat;
-                hero.material = solidMat;
-                leftColumn.material = solidMat;
-                rightColumn.material = solidMat;
-            }
-
-            return { ground, hero, pedestal, leftColumn, rightColumn };
+            return { ground, hero, pedestal, leftColumn, rightColumn, leftWall, rightWall };
         }
 
+        // ---- FRÜHER (~90er): flach schattiert, grob, pixelig, keine Schatten ----
         function createRetroScene(engine, canvas) {
             const scene = new BABYLON.Scene(engine);
-            scene.clearColor = new BABYLON.Color3(0.94, 0.93, 0.89);
+            scene.clearColor = new BABYLON.Color3(0.72, 0.71, 0.64);
+            scene.ambientColor = new BABYLON.Color3(0.28, 0.28, 0.28);
 
-            const camera = new BABYLON.ArcRotateCamera('retroCam', -Math.PI / 3.4, Math.PI / 2.7, 7.1, new BABYLON.Vector3(0, 1.0, 0), scene);
+            const camera = new BABYLON.ArcRotateCamera('retroCam', CAM_ALPHA, CAM_BETA, CAM_RADIUS, CAM_TARGET.clone(), scene);
             camera.attachControl(canvas, true);
             camera.lowerRadiusLimit = 5.2;
             camera.upperRadiusLimit = 10;
 
-            const light = new BABYLON.HemisphericLight('retroLight', new BABYLON.Vector3(0, 1, 0), scene);
-            light.intensity = 0.85;
+            // Eine harte gerichtete Lichtquelle + minimaler Ambient -> krasse Facetten.
+            const sun = new BABYLON.DirectionalLight('retroSun', new BABYLON.Vector3(-0.6, -1, -0.4), scene);
+            sun.intensity = 1.15;
+            const fill = new BABYLON.HemisphericLight('retroFill', new BABYLON.Vector3(0, 1, 0), scene);
+            fill.intensity = 0.25;
 
-            const objects = addSharedComposition(scene, 'retro');
-            objects.ground.receiveShadows = false;
+            const o = buildGeometry(scene, true);
 
-            scene.registerBeforeRender(function () {
-                objects.hero.rotation.y += 0.008;
+            const groundMat = new BABYLON.StandardMaterial('retroGroundMat', scene);
+            groundMat.diffuseColor = new BABYLON.Color3(0.62, 0.66, 0.70);
+            groundMat.specularColor = new BABYLON.Color3(0, 0, 0);
+            groundMat.emissiveColor = new BABYLON.Color3(0.04, 0.04, 0.04);
+            o.ground.material = groundMat;
+
+            // Gleiche Farben wie rechts – nur anderes Rendering (flat, grob, lokal).
+            const bodyMat = new BABYLON.StandardMaterial('retroBodyMat', scene);
+            bodyMat.diffuseColor = new BABYLON.Color3(0.78, 0.78, 0.80);
+            bodyMat.specularColor = new BABYLON.Color3(0, 0, 0);
+            [o.pedestal, o.leftColumn, o.rightColumn].forEach(function (m) {
+                m.material = bodyMat;
+                m.convertToFlatShadedMesh();
             });
 
+            const heroMat = new BABYLON.StandardMaterial('retroHeroMat', scene);
+            heroMat.diffuseColor = new BABYLON.Color3(0.10, 0.44, 0.78);
+            heroMat.specularColor = new BABYLON.Color3(0, 0, 0);
+            o.hero.material = heroMat;
+            o.hero.convertToFlatShadedMesh();
+
+            // Wände flach eingefärbt – aber KEIN Lichtaustausch: das Rot/Grün
+            // bleibt auf der Wand, nichts färbt ab (rein lokale Beleuchtung).
+            const redMat = new BABYLON.StandardMaterial('retroRed', scene);
+            redMat.diffuseColor = new BABYLON.Color3(0.78, 0.12, 0.12);
+            redMat.ambientColor = new BABYLON.Color3(0.78, 0.12, 0.12);
+            redMat.specularColor = new BABYLON.Color3(0, 0, 0);
+            redMat.backFaceCulling = false;
+            o.leftWall.material = redMat;
+            const greenMat = new BABYLON.StandardMaterial('retroGreen', scene);
+            greenMat.diffuseColor = new BABYLON.Color3(0.12, 0.62, 0.20);
+            greenMat.ambientColor = new BABYLON.Color3(0.12, 0.62, 0.20);
+            greenMat.specularColor = new BABYLON.Color3(0, 0, 0);
+            greenMat.backFaceCulling = false;
+            o.rightWall.material = greenMat;
+
+            o.ground.receiveShadows = false; // keine Schatten "von früher"
+
+            // Niedrige Renderauflösung -> sichtbare Pixelblöcke (alte Displays).
+            engine.setHardwareScalingLevel(4.5);
+
+            scene.registerBeforeRender(function () { o.hero.rotation.y += 0.01; });
+            scene._heroRef = o.hero;
             return scene;
         }
 
+        // ---- HEUTE: PBR, Umgebungsreflexionen (IBL), weiche Schatten, Tone-Mapping ----
         function createModernScene(engine, canvas) {
             const scene = new BABYLON.Scene(engine);
-            scene.clearColor = new BABYLON.Color3(0.89, 0.95, 1.0);
+            scene.clearColor = new BABYLON.Color3(0.82, 0.90, 0.99);
 
-            const camera = new BABYLON.ArcRotateCamera('modernCam', -Math.PI / 3.4, Math.PI / 2.7, 7.1, new BABYLON.Vector3(0, 1.0, 0), scene);
+            const camera = new BABYLON.ArcRotateCamera('modernCam', CAM_ALPHA, CAM_BETA, CAM_RADIUS, CAM_TARGET.clone(), scene);
             camera.attachControl(canvas, true);
             camera.lowerRadiusLimit = 5.2;
             camera.upperRadiusLimit = 10;
 
+            // Bild-basierte Beleuchtung (IBL): liefert realistische Reflexionen + Ambient.
+            try {
+                scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+                    'https://assets.babylonjs.com/environments/environmentSpecular.env', scene);
+                scene.environmentIntensity = 0.7;
+            } catch (e) { /* Fallback: nur Lichter unten */ }
+
             const hemi = new BABYLON.HemisphericLight('modernSky', new BABYLON.Vector3(0, 1, 0), scene);
-            hemi.intensity = 0.4;
+            hemi.intensity = 0.35;
             const sun = new BABYLON.DirectionalLight('modernSun', new BABYLON.Vector3(-0.6, -1, -0.4), scene);
-            sun.intensity = 1.0;
+            sun.intensity = 2.0;
             sun.position = new BABYLON.Vector3(3, 5, 2);
 
-            const objects = addSharedComposition(scene, 'modern');
-            objects.ground.receiveShadows = true;
+            const o = buildGeometry(scene, false);
+
+            const groundMat = new BABYLON.PBRMaterial('modernGroundMat', scene);
+            groundMat.albedoColor = new BABYLON.Color3(0.62, 0.66, 0.70);
+            groundMat.metallic = 0.1;
+            groundMat.roughness = 0.55; // leicht reflektierender Boden
+            o.ground.material = groundMat;
+
+            // Heldenkugel: poliertes Metall -> spiegelt die Umgebung (Realismus!).
+            const heroMat = new BABYLON.PBRMaterial('modernHeroMat', scene);
+            heroMat.albedoColor = new BABYLON.Color3(0.10, 0.44, 0.78);
+            heroMat.metallic = 0.9;
+            heroMat.roughness = 0.12;
+            o.hero.material = heroMat;
+
+            const bodyMat = new BABYLON.PBRMaterial('modernBodyMat', scene);
+            bodyMat.albedoColor = new BABYLON.Color3(0.78, 0.78, 0.80); // neutral -> Bleeding sichtbar
+            bodyMat.metallic = 0.05;
+            bodyMat.roughness = 0.55;
+            [o.pedestal, o.leftColumn, o.rightColumn].forEach(function (m) { m.material = bodyMat; });
+
+            // Cornell-Wände als matte, farbige Flächen.
+            const redMat = new BABYLON.PBRMaterial('modernRed', scene);
+            redMat.albedoColor = new BABYLON.Color3(0.78, 0.12, 0.12);
+            redMat.metallic = 0.0; redMat.roughness = 0.95; redMat.backFaceCulling = false;
+            o.leftWall.material = redMat;
+            const greenMat = new BABYLON.PBRMaterial('modernGreen', scene);
+            greenMat.albedoColor = new BABYLON.Color3(0.12, 0.62, 0.20);
+            greenMat.metallic = 0.0; greenMat.roughness = 0.95; greenMat.backFaceCulling = false;
+            o.rightWall.material = greenMat;
+
+            // GI-Annäherung: farbige "Bounce"-Lichter aus Richtung der Wände – als
+            // käme das Licht von ihnen zurück. Gerichtet = gleichmäßiges Color
+            // Bleeding ohne Überstrahlen naher Objekte.
+            const redBounce = new BABYLON.DirectionalLight('redBounce', new BABYLON.Vector3(1, -0.15, 0), scene);
+            redBounce.diffuse = new BABYLON.Color3(0.95, 0.18, 0.18);
+            redBounce.specular = new BABYLON.Color3(0, 0, 0);
+            redBounce.intensity = 3.6;
+            const greenBounce = new BABYLON.DirectionalLight('greenBounce', new BABYLON.Vector3(-1, -0.15, 0), scene);
+            greenBounce.diffuse = new BABYLON.Color3(0.16, 0.78, 0.26);
+            greenBounce.specular = new BABYLON.Color3(0, 0, 0);
+            greenBounce.intensity = 3.6;
+            // Bounce-Licht soll nur die Objekte/Boden einfärben, nicht die Wände selbst.
+            redBounce.excludedMeshes = [o.leftWall, o.rightWall];
+            greenBounce.excludedMeshes = [o.leftWall, o.rightWall];
+
+            o.ground.receiveShadows = true;
 
             const shadowGenerator = new BABYLON.ShadowGenerator(1024, sun);
             shadowGenerator.useBlurExponentialShadowMap = true;
-            shadowGenerator.blurKernel = 16;
-            shadowGenerator.addShadowCaster(objects.hero);
-            shadowGenerator.addShadowCaster(objects.pedestal);
-            shadowGenerator.addShadowCaster(objects.leftColumn);
-            shadowGenerator.addShadowCaster(objects.rightColumn);
-
-            scene.registerBeforeRender(function () {
-                objects.hero.rotation.y += 0.01;
+            shadowGenerator.blurKernel = 32; // weiche Schattenkanten
+            [o.hero, o.pedestal, o.leftColumn, o.rightColumn].forEach(function (m) {
+                shadowGenerator.addShadowCaster(m);
             });
 
+            // Filmisches Tone-Mapping + leichtes Bloom + FXAA -> moderner Look.
+            scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+            scene.imageProcessingConfiguration.exposure = 1.05;
+            scene.imageProcessingConfiguration.contrast = 1.25;
+            try {
+                const pipe = new BABYLON.DefaultRenderingPipeline('modernPipe', true, scene, [camera]);
+                pipe.fxaaEnabled = true;
+                pipe.bloomEnabled = true;
+                pipe.bloomThreshold = 0.75;
+                pipe.bloomWeight = 0.10;
+                pipe.bloomKernel = 48;
+            } catch (e) { /* Pipeline optional */ }
+
+            scene.registerBeforeRender(function () { o.hero.rotation.y += 0.01; });
+            scene._heroRef = o.hero;
             return scene;
         }
 
