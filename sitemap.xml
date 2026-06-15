@@ -2,18 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://nermine10.github.io/vcde/index.html</loc>
-    <lastmod>2026-06-10T17:46:28.484Z</lastmod>
+    <lastmod>2026-06-15T15:20:45.374Z</lastmod>
   </url>
   <url>
-    <loc>https://nermine10.github.io/vcde/levels/ray-tracing.html</loc>
-    <lastmod>2026-06-10T17:46:28.488Z</lastmod>
+    <loc>https://nermine10.github.io/vcde/levels/radiosity-vergleich.html</loc>
+    <lastmod>2026-06-15T15:20:45.377Z</lastmod>
   </url>
   <url>
     <loc>https://nermine10.github.io/vcde/levels/local-vs-global.html</loc>
-    <lastmod>2026-06-10T17:46:28.485Z</lastmod>
+    <lastmod>2026-06-15T15:20:45.374Z</lastmod>
+  </url>
+  <url>
+    <loc>https://nermine10.github.io/vcde/levels/ray-tracing.html</loc>
+    <lastmod>2026-06-15T15:20:45.377Z</lastmod>
   </url>
   <url>
     <loc>https://nermine10.github.io/vcde/levels/path-tracing.html</loc>
-    <lastmod>2026-06-10T17:46:28.487Z</lastmod>
+    <lastmod>2026-06-15T15:20:45.377Z</lastmod>
   </url>
 </urlset>

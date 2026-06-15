@@ -23,7 +23,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -138,10 +157,14 @@ window.Quarto = {
     <a class="nav-link" href="../levels/path-tracing.html"> 
 <span class="menu-text">Path Tracing</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/radiosity-vergleich.html"> 
+<span class="menu-text">Radiosity &amp; Vergleich</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://github.com/nermine10/vcde"> <i class="bi bi-github" role="img" aria-label="GitHub">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -357,7 +380,7 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
 </div>
 <div class="callout-body-container callout-body">
 <p>Das <strong>Phong-Blinn-Modell</strong> aus der Vorlesung ist <em>lokal</em>: Es betrachtet nur direktes Licht und ersetzt das Integral durch einen konstanten <strong>Ambient-Term</strong> (und kennt ohne Zusatz keine Schatten – eine Vereinfachung von <span class="math inline">\(g\)</span>). Ray Tracing fügt <strong>Sichtbarkeit (Schatten)</strong> und <strong>Sekundärstrahlen</strong> hinzu und nähert sich so der globalen Beleuchtung an.</p>
-<p><em>Quelle: Vorlesung „Rendering-Pipeline: Beleuchtung“ (Prof.&nbsp;Dr.&nbsp;Markus Friedrich, HM) sowie Nischwitz et al., „Computergrafik – Band I“, Kap. 12.</em></p>
+<p><em>Quelle: Nischwitz et al., „Bildverarbeitung und Computergrafik“, Kap. 12 <span class="citation" data-cites="nischwitz2020">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>)</span>.</em></p>
 </div>
 </div>
 </section>
@@ -1713,9 +1736,14 @@ window.addEventListener('DOMContentLoaded', function () {
 </div>
 
 
+
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-nischwitz2020" class="csl-entry" role="listitem">
+Nischwitz, Alfred, Max Fischer, Peter Haberäcker, and Gudrun Socher. 2020. <em>Bildverarbeitung Und Computergrafik</em>. 4th ed. Springer Vieweg.
+</div>
+</div></section></div></main> <!-- /main -->
 <script>
 // site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
 // include-after-body nicht, liefert aber auf jeder Seite den korrekten

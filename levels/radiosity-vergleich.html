@@ -1,0 +1,1574 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Level 4 – Radiosity &amp; Vergleich – GI Lernwelt</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f6e687e90be492cf6a591bc47b87de33.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">GI Lernwelt</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Start</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/local-vs-global.html"> 
+<span class="menu-text">Lokal vs.&nbsp;Global</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/ray-tracing.html"> 
+<span class="menu-text">Ray Tracing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/path-tracing.html"> 
+<span class="menu-text">Path Tracing</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../levels/radiosity-vergleich.html" aria-current="page"> 
+<span class="menu-text">Radiosity &amp; Vergleich</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/nermine10/vcde"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Auf dieser Seite</h2>
+   
+  <ul>
+  <li><a href="#worum" id="toc-worum" class="nav-link active" data-scroll-target="#worum">Worum geht es?</a></li>
+  <li><a href="#gleichung" id="toc-gleichung" class="nav-link" data-scroll-target="#gleichung">Die Radiosity-Gleichung</a></li>
+  <li><a href="#brdf" id="toc-brdf" class="nav-link" data-scroll-target="#brdf">Welcher Teil der BRDF? Nur der diffuse!</a>
+  <ul class="collapse">
+  <li><a href="#brdf-2d" id="toc-brdf-2d" class="nav-link" data-scroll-target="#brdf-2d">Interaktiv: BRDF zerlegen (2D)</a></li>
+  <li><a href="#brdf-3d" id="toc-brdf-3d" class="nav-link" data-scroll-target="#brdf-3d">Interaktiv: BRDF-Lobe in 3D</a></li>
+  </ul></li>
+  <li><a href="#demo" id="toc-demo" class="nav-link" data-scroll-target="#demo">Interaktiv in 3D: Radiosity in der Cornell-Box</a>
+  <ul class="collapse">
+  <li><a href="#direkt-vs-radiosity" id="toc-direkt-vs-radiosity" class="nav-link" data-scroll-target="#direkt-vs-radiosity">Direkt vs.&nbsp;Radiosity – der direkte Vergleich</a></li>
+  </ul></li>
+  <li><a href="#vergleich" id="toc-vergleich" class="nav-link" data-scroll-target="#vergleich">Der große Vergleich</a>
+  <ul class="collapse">
+  <li><a href="#finder" id="toc-finder" class="nav-link" data-scroll-target="#finder">Methoden-Finder</a></li>
+  </ul></li>
+  <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz">Boss-Quiz: Methoden-Meister</a></li>
+  <li><a href="#abschluss" id="toc-abschluss" class="nav-link" data-scroll-target="#abschluss">Geschafft!</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Level 4 – Radiosity &amp; Vergleich</h1>
+<p class="subtitle lead">Diffuse Energiebilanz und der große Methodenvergleich</p>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div data-vcde-levelbar="radiosity-vergleich">
+
+</div>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Letztes Level! 🟩🟥 Path Tracing hat das Lichtintegral <em>zufällig</em> geschätzt. <strong>Radiosity</strong> geht es anders an: Es berechnet die diffuse Energiebilanz zwischen allen Flächen <strong>direkt</strong> – ganz ohne Strahlen-Zufall. Danach vergleichen wir alle Verfahren der Lernreise.</p>
+</div>
+<section id="worum" class="level2">
+<h2 class="anchored" data-anchor-id="worum">Worum geht es?</h2>
+<p>Radiosity stammt aus der Wärmeübertragung und wurde 1984 in die Computergrafik gebracht <span class="citation" data-cites="goral1984">(<a href="#ref-goral1984" role="doc-biblioref">Goral et al. 1984</a>)</span>. Die Idee: Man zerlegt die Szene in viele kleine Flächen (<strong>Patches</strong>) und berechnet, wie viel Lichtenergie jede Fläche abgibt und von den anderen empfängt – bis sich ein <strong>Gleichgewicht</strong> einstellt.</p>
+<ul>
+<li><strong>Nur diffus.</strong> Radiosity nimmt an, dass alle Flächen das Licht gleichmäßig in alle Richtungen streuen (Lambert). Spiegelungen kann es daher nicht.</li>
+<li><strong>Blickwinkel-unabhängig (view-independent).</strong> Das Ergebnis ist eine Helligkeit <em>pro Fläche</em>, nicht pro Pixel. Einmal berechnet, kann man frei durch die Szene fliegen, ohne neu zu rendern – ideal für Architektur-Walkthroughs.</li>
+<li><strong>Physikalisch über Energieerhaltung.</strong> Es löst ein lineares Gleichungssystem, statt Pfade zu würfeln. Dadurch ist es <strong>rauschfrei</strong>.</li>
+</ul>
+</section>
+<section id="gleichung" class="level2">
+<h2 class="anchored" data-anchor-id="gleichung">Die Radiosity-Gleichung</h2>
+<p>Für jede Fläche <span class="math inline">\(i\)</span> gilt: ihre abgestrahlte Energie (Radiosity) <span class="math inline">\(B_i\)</span> ist die <strong>Eigenemission</strong> <span class="math inline">\(E_i\)</span> plus das, was sie von allen anderen Flächen empfängt und mit ihrem Reflexionsgrad <span class="math inline">\(\rho_i\)</span> zurückwirft:</p>
+<p><span class="math display">\[
+B_i \;=\; E_i \;+\; \rho_i \sum_{j} F_{ij}\, B_j
+\]</span></p>
+<ul>
+<li><span class="math inline">\(E_i\)</span>: <strong>Eigenleuchten</strong> (nur bei Lichtquellen <span class="math inline">\(&gt; 0\)</span>).</li>
+<li><span class="math inline">\(\rho_i\)</span>: <strong>Reflexionsgrad</strong> (Albedo) der Fläche – eine rote Wand reflektiert vor allem Rot.</li>
+<li><span class="math inline">\(F_{ij}\)</span>: der <strong>Formfaktor</strong> – der Anteil der Energie, der von Fläche <span class="math inline">\(j\)</span> direkt bei Fläche <span class="math inline">\(i\)</span> ankommt. Er hängt von Abstand, Orientierung und Sichtbarkeit ab.</li>
+</ul>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Das ist dieselbe Rendering-Gleichung wie immer 🔁 – nur <strong>vereinfacht</strong>: rein diffus und pro Fläche statt pro Richtung. Man löst sie iterativ: Erst leuchtet nur die Lampe, dann der Boden, dann färben die Wände den Boden ein … bis sich nichts mehr ändert.</p>
+</div>
+</section>
+<section id="brdf" class="level2">
+<h2 class="anchored" data-anchor-id="brdf">Welcher Teil der BRDF? Nur der diffuse!</h2>
+<p>Jede BRDF lässt sich gedanklich in drei Anteile zerlegen <span class="citation" data-cites="nischwitz2020">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>)</span>: einen <strong>diffusen</strong> (Licht streut gleichmäßig in alle Richtungen), einen <strong>spiegelnden</strong> (Mirror, ein scharfer Reflexionsstrahl) und einen <strong>glänzenden</strong> (Glossy, ein gerichteter Lichtkegel um die Spiegelrichtung).</p>
+<p><span class="math display">\[
+f_r \;=\; \underbrace{f_{\text{diffus}}}_{\text{Lambert}} \;+\;
+\underbrace{f_{\text{spiegelnd}}}_{\text{Mirror}} \;+\;
+\underbrace{f_{\text{glänzend}}}_{\text{Glossy}}
+\]</span></p>
+<p><strong>Klassisches Radiosity verwendet ausschließlich den diffusen Anteil.</strong> Deshalb kann es kein Spiegelbild und kein Glanzlicht – aber genau deshalb ist die Energiebilanz blickwinkel-unabhängig und stabil lösbar.</p>
+<section id="brdf-2d" class="level3">
+<h3 class="anchored" data-anchor-id="brdf-2d">Interaktiv: BRDF zerlegen (2D)</h3>
+<p>Schiebe die Anteile und beobachte, wie sich der reflektierte Lichtanteil (graue Kurve = Summe) verändert. Mit dem Schalter siehst du, <strong>was Radiosity davon übrig lässt</strong>.</p>
+<style>
+    .brdf-wrap {
+        margin: 1rem 0 2rem;
+        padding: 0.95rem;
+        border-radius: 14px;
+        border: 1px solid #d1d5db;
+        background: linear-gradient(180deg, #fbfdff, #f3f7fd);
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+    .brdf-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0.9rem; }
+    @media (max-width: 900px) { .brdf-grid { grid-template-columns: 1fr; } }
+    .brdf-card { border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: #fff; }
+    .brdf-head { margin: 0; padding: 0.58rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-bottom: 1px solid #d1d5db; background: #f8fafc; color: #1f2937; }
+    #brdfCanvas { width: 100%; height: 360px; display: block; background: #fff; }
+    .brdf-panel { padding: 0.75rem 0.85rem 0.9rem; font-size: 0.9rem; color: #374151; line-height: 1.4; }
+    .brdf-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.55rem 0; flex-wrap: wrap; }
+    .brdf-row label { flex: 0 0 6.2rem; font-weight: 600; }
+    .brdf-row input[type=range] { flex: 1 1 auto; touch-action: none; }
+    .brdf-row .val { flex: 0 0 2.6rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .brdf-btn { border: 1px solid #4f46e5; background: #4f46e5; color: #fff; border-radius: 999px; padding: 0.4rem 0.85rem; font-size: 0.84rem; font-weight: 700; cursor: pointer; }
+    .brdf-btn.secondary { background: #fff; color: #4f46e5; }
+    .brdf-legend { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: 0.5rem; font-size: 0.82rem; }
+    .brdf-legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .brdf-line { width: 1.2rem; height: 0.2rem; border-radius: 2px; display: inline-block; }
+</style>
+
+<div class="brdf-wrap">
+    <div class="brdf-grid">
+        <article class="brdf-card">
+            <h3 class="brdf-head anchored">BRDF-Lobes (2D-Schnitt durch die Hemisphäre)</h3>
+            <canvas id="brdfCanvas" width="900" height="360"></canvas>
+        </article>
+        <section class="brdf-card">
+            <h3 class="brdf-head anchored">Anteile</h3>
+            <div class="brdf-panel">
+                <div class="brdf-row"><label>Diffus</label><input id="brdfDiff" type="range" min="0" max="100" value="60"><span class="val" id="brdfDiffV">0.60</span></div>
+                <div class="brdf-row"><label>Spiegelnd</label><input id="brdfSpec" type="range" min="0" max="100" value="45"><span class="val" id="brdfSpecV">0.45</span></div>
+                <div class="brdf-row"><label>Glanz (glossy)</label><input id="brdfGloss" type="range" min="0" max="100" value="55"><span class="val" id="brdfGlossV">0.55</span></div>
+                <div class="brdf-row"><label>Glanz-Schärfe</label><input id="brdfShine" type="range" min="2" max="60" value="18"><span class="val" id="brdfShineV">18</span></div>
+                <div class="brdf-row"><label>Einfallswinkel</label><input id="brdfAngle" type="range" min="-80" max="80" value="-35"><span class="val" id="brdfAngleV">-35°</span></div>
+
+                <div class="brdf-row" style="margin-top:0.7rem">
+                    <button class="brdf-btn" id="brdfRad">Nur Radiosity (diffus)</button>
+                </div>
+
+                <div class="brdf-legend">
+                    <span><i class="brdf-line" style="background:#f59e0b"></i> Einfallendes Licht</span>
+                    <span><i class="brdf-line" style="background:#3b82f6"></i> Diffus</span>
+                    <span><i class="brdf-line" style="background:#ef4444"></i> Spiegelnd</span>
+                    <span><i class="brdf-line" style="background:#10b981"></i> Glossy</span>
+                    <span><i class="brdf-line" style="background:#111827"></i> Summe (BRDF)</span>
+                </div>
+
+                <p id="brdfNote" style="margin:0.8rem 0 0; font-size:0.86rem; color:#374151;">
+                    Die schwarze Kurve ist die gesamte BRDF. Radiosity behält nur den blauen
+                    (diffusen) Halbkreis.
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('brdfCanvas');
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var els = {
+        diff: document.getElementById('brdfDiff'),
+        spec: document.getElementById('brdfSpec'),
+        gloss: document.getElementById('brdfGloss'),
+        shine: document.getElementById('brdfShine'),
+        angle: document.getElementById('brdfAngle'),
+        diffV: document.getElementById('brdfDiffV'),
+        specV: document.getElementById('brdfSpecV'),
+        glossV: document.getElementById('brdfGlossV'),
+        shineV: document.getElementById('brdfShineV'),
+        angleV: document.getElementById('brdfAngleV'),
+        rad: document.getElementById('brdfRad'),
+        note: document.getElementById('brdfNote')
+    };
+    var radOnly = false;
+
+    function draw() {
+        var w = canvas.width, h = canvas.height;
+        var cx = w / 2, cy = h - 40;
+        var R = h - 80;
+        var kd = els.diff.value / 100;
+        var ks = els.spec.value / 100;
+        var kg = els.gloss.value / 100;
+        var shine = parseInt(els.shine.value, 10);
+        var angDeg = parseInt(els.angle.value, 10);
+        var ang = angDeg * Math.PI / 180; // gemessen von der Normalen (oben)
+
+        els.diffV.textContent = kd.toFixed(2);
+        els.specV.textContent = ks.toFixed(2);
+        els.glossV.textContent = kg.toFixed(2);
+        els.shineV.textContent = String(shine);
+        els.angleV.textContent = angDeg + '°';
+
+        if (radOnly) { ks = 0; kg = 0; }
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+
+        // Oberfläche + Normale
+        ctx.strokeStyle = '#9ca3af';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(40, cy); ctx.lineTo(w - 40, cy); ctx.stroke();
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - R - 10); ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Richtungskonvention: Winkel theta von Normale aus.
+        // Einfallsrichtung (Lichtquelle -> Punkt) zeigt von oben herab.
+        function dir(theta) { return { x: Math.sin(theta), y: -Math.cos(theta) }; }
+
+        // Einfallendes Licht (Pfeil von außen zum Ursprung)
+        var inD = dir(ang);
+        var Lstart = { x: cx + inD.x * R, y: cy + inD.y * R };
+        ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(Lstart.x, Lstart.y); ctx.lineTo(cx, cy); ctx.stroke();
+        // Pfeilspitze
+        (function () {
+            var a = Math.atan2(cy - Lstart.y, cx - Lstart.x);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx - 12 * Math.cos(a - 0.4), cy - 12 * Math.sin(a - 0.4));
+            ctx.lineTo(cx - 12 * Math.cos(a + 0.4), cy - 12 * Math.sin(a + 0.4));
+            ctx.closePath(); ctx.fillStyle = '#f59e0b'; ctx.fill();
+        })();
+
+        // Spiegelrichtung: theta gespiegelt an Normale -> -ang auf die andere Seite
+        var reflTheta = -ang; // Reflexion an der Normalen
+        var reflD = dir(reflTheta);
+
+        // Lobe-Funktionen über Ausfallswinkel phi in [-pi/2, pi/2]
+        function lobeValue(phi) {
+            var outD = dir(phi);
+            var diffuse = kd * Math.max(0, Math.cos(phi)); // Lambert ~ cos
+            // Glossy: cos^n um Spiegelrichtung
+            var cosAlpha = outD.x * reflD.x + outD.y * reflD.y;
+            var glossy = kg * Math.pow(Math.max(0, cosAlpha), shine);
+            return { diffuse: diffuse, glossy: glossy, total: diffuse + glossy };
+        }
+
+        function plotLobe(pick, color, width) {
+            ctx.strokeStyle = color; ctx.lineWidth = width;
+            ctx.beginPath();
+            var first = true;
+            for (var d = -90; d <= 90; d += 1.5) {
+                var phi = d * Math.PI / 180;
+                var v = pick(lobeValue(phi));
+                var rr = v * R;
+                var p = dir(phi);
+                var x = cx + p.x * rr, y = cy + p.y * rr;
+                if (first) { ctx.moveTo(x, y); first = false; } else { ctx.lineTo(x, y); }
+            }
+            ctx.stroke();
+        }
+
+        // Diffus (blau)
+        if (kd > 0) plotLobe(function (v) { return v.diffuse; }, '#3b82f6', 2);
+        // Glossy (grün)
+        if (kg > 0 && !radOnly) plotLobe(function (v) { return v.glossy; }, '#10b981', 2);
+        // Summe (schwarz)
+        plotLobe(function (v) { return v.total; }, '#111827', 2.6);
+
+        // Mirror (roter scharfer Strahl)
+        if (ks > 0 && !radOnly) {
+            ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 3;
+            var mEnd = { x: cx + reflD.x * R * ks, y: cy + reflD.y * R * ks };
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(mEnd.x, mEnd.y); ctx.stroke();
+            (function () {
+                var a = Math.atan2(mEnd.y - cy, mEnd.x - cx);
+                ctx.beginPath();
+                ctx.moveTo(mEnd.x, mEnd.y);
+                ctx.lineTo(mEnd.x - 11 * Math.cos(a - 0.4), mEnd.y - 11 * Math.sin(a - 0.4));
+                ctx.lineTo(mEnd.x - 11 * Math.cos(a + 0.4), mEnd.y - 11 * Math.sin(a + 0.4));
+                ctx.closePath(); ctx.fillStyle = '#ef4444'; ctx.fill();
+            })();
+        }
+
+        // Ursprungspunkt
+        ctx.fillStyle = '#111827';
+        ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.fill();
+    }
+
+    ['diff', 'spec', 'gloss', 'shine', 'angle'].forEach(function (k) {
+        els[k].addEventListener('input', draw);
+    });
+    els.rad.addEventListener('click', function () {
+        radOnly = !radOnly;
+        els.rad.classList.toggle('secondary', radOnly);
+        els.rad.textContent = radOnly ? 'Volle BRDF zeigen' : 'Nur Radiosity (diffus)';
+        els.note.innerHTML = radOnly
+            ? '<strong>Radiosity-Sicht:</strong> Nur der diffuse (blaue) Halbkreis bleibt. Spiegelung und Glanz sind weg – genau das kann klassisches Radiosity nicht.'
+            : 'Die schwarze Kurve ist die gesamte BRDF. Radiosity behält nur den blauen (diffusen) Halbkreis.';
+        draw();
+    });
+
+    draw();
+});
+</script>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Klick auf <strong>„Nur Radiosity (diffus)“</strong> 🔵: Spiegel- und Glanz-Lobe verschwinden, nur der diffuse Halbkreis bleibt. Das ist die Annahme hinter Radiosity – und der Grund, warum es perfekt für matte Wände, aber nicht für Spiegel ist.</p>
+</div>
+</section>
+<section id="brdf-3d" class="level3">
+<h3 class="anchored" data-anchor-id="brdf-3d">Interaktiv: BRDF-Lobe in 3D</h3>
+<p>Dieselbe Idee, aber räumlich: Die Lobe ist eine <strong>3D-Fläche</strong> über der Hemisphäre. Drehe die Ansicht mit der Maus und schiebe die Rauheit – von scharfem Spiegel-Lobe bis zur diffusen Halbkugel.</p>
+<style>
+    .b3-wrap { margin: 1rem 0 2rem; padding: 0.95rem; border-radius: 14px; border: 1px solid #d1d5db; background: linear-gradient(180deg, #fbfdff, #f3f7fd); }
+    .b3-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 0.9rem; }
+    @media (max-width: 900px) { .b3-grid { grid-template-columns: 1fr; } }
+    .b3-card { border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: #fff; }
+    .b3-head { margin: 0; padding: 0.58rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-bottom: 1px solid #d1d5db; background: #f8fafc; color: #1f2937; }
+    #brdf3dCanvas { width: 100%; height: 380px; display: block; background: #0f172a; touch-action: none; }
+    .b3-panel { padding: 0.75rem 0.85rem 0.9rem; font-size: 0.9rem; color: #374151; line-height: 1.4; }
+    .b3-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.55rem 0; flex-wrap: wrap; }
+    .b3-row label { flex: 0 0 6.2rem; font-weight: 600; }
+    .b3-row input[type=range] { flex: 1 1 auto; touch-action: none; }
+    .b3-row .val { flex: 0 0 2.8rem; text-align: right; font-variant-numeric: tabular-nums; }
+</style>
+
+<div class="b3-wrap">
+    <div class="b3-grid">
+        <article class="b3-card">
+            <h3 class="b3-head anchored">BRDF-Lobe (3D) · Maus zum Drehen</h3>
+            <canvas id="brdf3dCanvas"></canvas>
+        </article>
+        <section class="b3-card">
+            <h3 class="b3-head anchored">Material</h3>
+            <div class="b3-panel">
+                <div class="b3-row"><label>Rauheit</label><input id="b3Rough" type="range" min="0" max="100" value="20"><span class="val" id="b3RoughV">0.20</span></div>
+                <div class="b3-row"><label>Diffus-Anteil</label><input id="b3Diff" type="range" min="0" max="100" value="35"><span class="val" id="b3DiffV">0.35</span></div>
+                <div class="b3-row"><label>Lichtwinkel</label><input id="b3Angle" type="range" min="-75" max="75" value="-35"><span class="val" id="b3AngleV">-35°</span></div>
+                <p style="margin:0.7rem 0 0; font-size:0.86rem;">
+                    Niedrige Rauheit = scharfer <strong>Spiegel-Lobe</strong>. Hohe Rauheit = breiter
+                    <strong>Glanz</strong>. Der Diffus-Anteil bläht die Form zur <strong>Halbkugel</strong> auf –
+                    das ist der Teil, den Radiosity nutzt.
+                </p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('brdf3dCanvas');
+    if (!canvas || !window.BABYLON) return;
+    var rough = document.getElementById('b3Rough');
+    var diff = document.getElementById('b3Diff');
+    var angle = document.getElementById('b3Angle');
+    var roughV = document.getElementById('b3RoughV');
+    var diffV = document.getElementById('b3DiffV');
+    var angleV = document.getElementById('b3AngleV');
+
+    var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true });
+    var scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.06, 0.09, 0.16, 1);
+
+    var camera = new BABYLON.ArcRotateCamera('cam', -Math.PI / 2.2, Math.PI / 2.6, 5.2, new BABYLON.Vector3(0, 0.3, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 3; camera.upperRadiusLimit = 9;
+    new BABYLON.HemisphericLight('h', new BABYLON.Vector3(0, 1, 0), scene).intensity = 0.9;
+
+    // Grundfläche (Oberfläche)
+    var ground = BABYLON.MeshBuilder.CreateDisc('g', { radius: 1.6, tessellation: 48 }, scene);
+    ground.rotation.x = Math.PI / 2;
+    var gm = new BABYLON.StandardMaterial('gm', scene);
+    gm.diffuseColor = new BABYLON.Color3(0.22, 0.25, 0.32);
+    gm.specularColor = new BABYLON.Color3(0, 0, 0);
+    ground.material = gm;
+
+    // Normale (Pfeil nach oben)
+    var normal = BABYLON.MeshBuilder.CreateLines('n', { points: [new BABYLON.Vector3(0, 0, 0), new BABYLON.Vector3(0, 1.7, 0)] }, scene);
+    normal.color = new BABYLON.Color3(0.6, 0.65, 0.75);
+
+    var lightRay = null, lobe = null;
+
+    function buildLobe() {
+        var r = rough.value / 100;
+        var kd = diff.value / 100;
+        var aDeg = parseInt(angle.value, 10);
+        roughV.textContent = r.toFixed(2);
+        diffV.textContent = kd.toFixed(2);
+        angleV.textContent = aDeg + '°';
+        var a = aDeg * Math.PI / 180;
+        var shine = Math.max(1, Math.pow(1 - r, 2) * 120 + 1); // niedrige Rauheit -> hoher Exponent
+
+        // Einfallsrichtung (von oben, geneigt in x)
+        var inDir = new BABYLON.Vector3(Math.sin(a), Math.cos(a), 0);
+        // Spiegelrichtung = an Normale (y) gespiegelt
+        var reflDir = new BABYLON.Vector3(-Math.sin(a), Math.cos(a), 0);
+
+        if (lightRay) lightRay.dispose();
+        var lightStart = inDir.scale(2.2);
+        lightRay = BABYLON.MeshBuilder.CreateLines('lr', { points: [lightStart, BABYLON.Vector3.Zero()] }, scene);
+        lightRay.color = new BABYLON.Color3(0.96, 0.62, 0.04);
+
+        // Lobe als Kugel-förmiges Gitter, radial moduliert
+        var seg = 48;
+        var positions = [], indices = [], colors = [];
+        var rows = seg / 2;
+        function radius(dir) {
+            var cosO = BABYLON.Vector3.Dot(dir, BABYLON.Vector3.Up());
+            if (cosO <= 0) return 0;
+            var diffuse = kd * cosO;
+            var cosAlpha = Math.max(0, BABYLON.Vector3.Dot(dir, reflDir));
+            var glossy = (1 - kd) * Math.pow(cosAlpha, shine);
+            return (diffuse + glossy) * 1.7;
+        }
+        for (var iy = 0; iy <= rows; iy++) {
+            var theta = (iy / rows) * (Math.PI / 2); // 0..90° von der Normalen
+            for (var ix = 0; ix <= seg; ix++) {
+                var phi = (ix / seg) * Math.PI * 2;
+                var dir = new BABYLON.Vector3(
+                    Math.sin(theta) * Math.cos(phi),
+                    Math.cos(theta),
+                    Math.sin(theta) * Math.sin(phi)
+                );
+                var rr = radius(dir);
+                positions.push(dir.x * rr, dir.y * rr, dir.z * rr);
+                var t = Math.min(1, rr / 1.7);
+                colors.push(0.2 + 0.7 * t, 0.4 + 0.3 * (1 - t), 0.9 - 0.5 * t, 1);
+            }
+        }
+        var cols = seg + 1;
+        for (var y = 0; y < rows; y++) {
+            for (var x = 0; x < seg; x++) {
+                var i0 = y * cols + x, i1 = i0 + 1, i2 = i0 + cols, i3 = i2 + 1;
+                indices.push(i0, i2, i1, i1, i2, i3);
+            }
+        }
+        if (lobe) lobe.dispose();
+        lobe = new BABYLON.Mesh('lobe', scene);
+        var vd = new BABYLON.VertexData();
+        vd.positions = positions; vd.indices = indices; vd.colors = colors;
+        var normals = []; BABYLON.VertexData.ComputeNormals(positions, indices, normals);
+        vd.normals = normals;
+        vd.applyToMesh(lobe);
+        var lm = new BABYLON.StandardMaterial('lm', scene);
+        lm.backFaceCulling = false;
+        lm.emissiveColor = new BABYLON.Color3(0.15, 0.25, 0.45);
+        lm.specularColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+        lobe.material = lm;
+        lobe.useVertexColors = true;
+    }
+
+    [rough, diff, angle].forEach(function (el) { el.addEventListener('input', buildLobe); });
+    buildLobe();
+    engine.runRenderLoop(function () { scene.render(); });
+    window.addEventListener('resize', function () { engine.resize(); });
+    var ro = new ResizeObserver(function () { engine.resize(); });
+    ro.observe(canvas);
+});
+</script>
+</section>
+</section>
+<section id="demo" class="level2">
+<h2 class="anchored" data-anchor-id="demo">Interaktiv in 3D: Radiosity in der Cornell-Box</h2>
+<p>Dieselbe Szene wie im Video – jetzt <strong>räumlich</strong> (3D-Modell aus Blender). Mit dem Schieberegler baust du das Licht <strong>Bounce für Bounce</strong> auf und siehst, wie aus direktem Licht nach und nach indirektes Licht und <strong>Farbbleeding</strong> entsteht. Mit dem Modus <strong>„Direkt vs.&nbsp;Radiosity”</strong> vergleichst du beide Zustände per Knopfdruck. Ziehe mit der Maus, um die Box zu drehen.</p>
+<style>
+    .r3-wrap { margin: 1rem 0 1rem; padding: 0.95rem; border-radius: 14px; border: 1px solid #d1d5db; background: linear-gradient(180deg, #fbfdff, #f3f7fd); user-select: none; -webkit-user-select: none; }
+    .r3-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 0.9rem; }
+    @media (max-width: 900px) { .r3-grid { grid-template-columns: 1fr; } }
+    .r3-card { border: 1px solid #d1d5db; border-radius: 12px; overflow: hidden; background: #fff; position: relative; }
+    .r3-head { margin: 0; padding: 0.58rem 0.75rem; font-size: 0.92rem; font-weight: 700; border-bottom: 1px solid #d1d5db; background: #f8fafc; color: #1f2937; }
+    #r3Canvas { width: 100%; height: 460px; display: block; background: #0b1020; touch-action: none; }
+    .r3-loading { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(11,16,32,0.85); color: #e2e8f0; font-size: 0.9rem; transition: opacity 0.3s; }
+    .r3-loading.hide { opacity: 0; pointer-events: none; }
+    .r3-panel { padding: 0.8rem 0.85rem 0.95rem; font-size: 0.9rem; color: #374151; line-height: 1.4; }
+    .r3-modes { display: flex; gap: 0.5rem; margin-bottom: 0.8rem; }
+    .r3-btn { border: 1px solid #4f46e5; background: #fff; color: #4f46e5; border-radius: 999px; padding: 0.4rem 0.8rem; font-size: 0.82rem; font-weight: 700; cursor: pointer; flex: 1 1 auto; }
+    .r3-btn.active { background: #4f46e5; color: #fff; }
+    .r3-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.6rem 0; flex-wrap: wrap; }
+    .r3-range { width: 100%; touch-action: none; }
+    .r3-toggle { border: 1px solid #4f46e5; background: #4f46e5; color: #fff; border-radius: 999px; padding: 0.45rem 0.9rem; font-size: 0.86rem; font-weight: 700; cursor: pointer; }
+    .r3-stage { font-weight: 700; color: #111827; margin: 0.2rem 0 0.4rem; }
+    .r3-hidden { display: none; }
+</style>
+
+<div class="r3-wrap">
+    <div class="r3-grid">
+        <article class="r3-card">
+            <h3 class="r3-head anchored">Cornell-Box · 3D (Maus zum Drehen)</h3>
+            <canvas id="r3Canvas"></canvas>
+            <div class="r3-loading" id="r3Loading">3D-Szene wird geladen …</div>
+        </article>
+        <section class="r3-card">
+            <h3 class="r3-head anchored">Steuerung</h3>
+            <div class="r3-panel">
+                <div class="r3-modes">
+                    <button class="r3-btn active" id="r3ModeBounce">Bounce für Bounce</button>
+                    <button class="r3-btn" id="r3ModeCompare">Direkt vs. Radiosity</button>
+                </div>
+
+                <div id="r3BounceCtrl">
+                    <div class="r3-row"><strong>Bounces:</strong>&nbsp;<span id="r3BounceVal">0</span></div>
+                    <input id="r3BounceSlider" class="r3-range" type="range" min="0" max="6" step="1" value="0">
+                </div>
+
+                <div id="r3CompareCtrl" class="r3-hidden">
+                    <div class="r3-row">
+                        <button class="r3-toggle" id="r3Toggle">Zeige: Direkt</button>
+                    </div>
+                </div>
+
+                <p class="r3-stage" id="r3Stage">Nur die Lampe leuchtet</p>
+                <p id="r3Text">Bei 0 Bounces ist nur die Deckenlampe sichtbar – der Rest der Box ist dunkel.</p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('r3Canvas');
+    if (!canvas || !window.BABYLON) return;
+    function prefix() { return /\/levels\//.test(window.location.pathname) ? '../' : ''; }
+
+    var loading = document.getElementById('r3Loading');
+    var stage = document.getElementById('r3Stage');
+    var text = document.getElementById('r3Text');
+    var bounceCtrl = document.getElementById('r3BounceCtrl');
+    var compareCtrl = document.getElementById('r3CompareCtrl');
+    var bounceSlider = document.getElementById('r3BounceSlider');
+    var bounceVal = document.getElementById('r3BounceVal');
+    var toggle = document.getElementById('r3Toggle');
+    var modeBounce = document.getElementById('r3ModeBounce');
+    var modeCompare = document.getElementById('r3ModeCompare');
+
+    var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true });
+    var scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.04, 0.06, 0.12, 1);
+
+    var camera = new BABYLON.ArcRotateCamera('c', Math.PI / 2, Math.PI / 2.5, 12.5, new BABYLON.Vector3(0, 1.3, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 7; camera.upperRadiusLimit = 20;
+    camera.wheelDeltaPercentage = 0.01;
+
+    // Lichter, die wir je nach Bounce-Zahl ein-/ausblenden:
+    var ambient = new BABYLON.HemisphericLight('amb', new BABYLON.Vector3(0, 1, 0), scene);
+    ambient.intensity = 0.0;
+    var lamp = new BABYLON.PointLight('lamp', new BABYLON.Vector3(0, 2.3, 0), scene);
+    lamp.intensity = 0.0; lamp.diffuse = new BABYLON.Color3(1.0, 0.96, 0.8);
+    // Indirekte "Bleed"-Lichter von den farbigen Wänden (Annäherung an Radiosity):
+    var bleedRed = new BABYLON.PointLight('bleedR', new BABYLON.Vector3(-2.0, 1.2, 0.3), scene);
+    bleedRed.intensity = 0.0; bleedRed.diffuse = new BABYLON.Color3(0.85, 0.16, 0.16);
+    var bleedGreen = new BABYLON.PointLight('bleedG', new BABYLON.Vector3(2.0, 1.2, 0.3), scene);
+    bleedGreen.intensity = 0.0; bleedGreen.diffuse = new BABYLON.Color3(0.16, 0.72, 0.28);
+
+    var lampMesh = null;
+
+    function buildFallback() {
+        var S = 2.5, H = 2.9;
+        function plane(name, w, h) { return BABYLON.MeshBuilder.CreatePlane(name, { width: w, height: h, sideOrientation: BABYLON.Mesh.DOUBLESIDE }, scene); }
+        function mat(name, r, g, b) { var m = new BABYLON.StandardMaterial(name, scene); m.diffuseColor = new BABYLON.Color3(r, g, b); m.specularColor = new BABYLON.Color3(0, 0, 0); return m; }
+        var floor = plane('floor', 2 * S, 2 * S); floor.rotation.x = Math.PI / 2; floor.position.y = 0; floor.material = mat('mFloor', 0.8, 0.8, 0.8);
+        var ceil = plane('ceil', 2 * S, 2 * S); ceil.rotation.x = -Math.PI / 2; ceil.position.y = H; ceil.material = mat('mCeil', 0.8, 0.8, 0.8);
+        var back = plane('back', 2 * S, H); back.position.z = -S; back.position.y = H / 2; back.material = mat('mBack', 0.8, 0.8, 0.8);
+        var left = plane('left', 2 * S, H); left.rotation.y = Math.PI / 2; left.position.x = -S; left.position.y = H / 2; left.material = mat('mLeft', 0.85, 0.16, 0.16);
+        var right = plane('right', 2 * S, H); right.rotation.y = -Math.PI / 2; right.position.x = S; right.position.y = H / 2; right.material = mat('mRight', 0.16, 0.72, 0.28);
+        var b1 = BABYLON.MeshBuilder.CreateBox('b1', { width: 1.0, height: 1.5, depth: 1.0 }, scene); b1.position = new BABYLON.Vector3(-0.8, 0.75, -0.6); b1.rotation.y = 0.3; b1.material = mat('mb1', 0.8, 0.8, 0.8);
+        var b2 = BABYLON.MeshBuilder.CreateBox('b2', { width: 0.9, height: 0.9, depth: 0.9 }, scene); b2.position = new BABYLON.Vector3(0.9, 0.45, 0.4); b2.rotation.y = -0.4; b2.material = mat('mb2', 0.8, 0.8, 0.8);
+        lampMesh = BABYLON.MeshBuilder.CreatePlane('lampM', { width: 1.4, height: 1.4 }, scene); lampMesh.rotation.x = -Math.PI / 2; lampMesh.position.y = H - 0.02;
+        var lm = new BABYLON.StandardMaterial('mLamp', scene); lm.emissiveColor = new BABYLON.Color3(1, 0.95, 0.75); lm.disableLighting = true; lampMesh.material = lm;
+    }
+
+    function afterLoad() {
+        if (loading) loading.classList.add('hide');
+        setMode('bounce');
+        engine.runRenderLoop(function () { scene.render(); });
+    }
+
+    var modelRoot = prefix() + 'assets/models/';
+    BABYLON.SceneLoader.ImportMeshAsync('', modelRoot, 'cornell-box.glb', scene).then(function () {
+        scene.meshes.forEach(function (m) {
+            if (m.name === '__root__' || m.getTotalVertices() === 0) return;
+            if (m.material) {
+                m.material.backFaceCulling = false;
+                var mn = (m.material.name || '') + ' ' + m.name.toLowerCase();
+                if (mn.indexOf('light') >= 0 || mn.indexOf('lamp') >= 0 || mn.indexOf('emit') >= 0) {
+                    m.material.emissiveColor = new BABYLON.Color3(1, 0.95, 0.75);
+                    if ('disableLighting' in m.material) m.material.disableLighting = true;
+                    lampMesh = m;
+                }
+            }
+        });
+        afterLoad();
+    }).catch(function () {
+        buildFallback();
+        afterLoad();
+    });
+
+    // Beleuchtungs-Zustand je Bounce-Zahl (0..6) als Annäherung an die iterative
+    // Radiosity-Lösung: 0 = nur Lampe, 1 = direktes Licht, >=2 = zunehmend
+    // indirektes Licht + Farbbleeding der farbigen Wände.
+    function applyBounces(n) {
+        if (n <= 0) {
+            ambient.intensity = 0.03; lamp.intensity = 0.0;
+            bleedRed.intensity = 0.0; bleedGreen.intensity = 0.0;
+        } else if (n === 1) {
+            ambient.intensity = 0.08; lamp.intensity = 1.2;
+            bleedRed.intensity = 0.0; bleedGreen.intensity = 0.0;
+        } else {
+            var t = Math.min(1, (n - 1) / 4);
+            ambient.intensity = 0.10 + 0.18 * t;
+            lamp.intensity = 1.2;
+            bleedRed.intensity = 0.55 * t;
+            bleedGreen.intensity = 0.55 * t;
+        }
+    }
+
+    var mode = 'bounce';
+    var compareRadiosity = false;
+
+    function describe(n) {
+        if (n <= 0) { stage.textContent = 'Nur die Lampe leuchtet'; text.textContent = 'Bei 0 Bounces ist nur die Deckenlampe sichtbar – der Rest der Box ist dunkel.'; }
+        else if (n === 1) { stage.textContent = '1 Bounce – direktes Licht'; text.textContent = 'Das Licht trifft Boden und Wände direkt. Ecken und Decke bleiben dunkel, es gibt noch keinen Farbübertrag.'; }
+        else if (n <= 3) { stage.textContent = n + ' Bounces – indirektes Licht'; text.textContent = 'Flächen reichen Licht weiter. Die Box hellt auf, die rote und grüne Wand beginnen, benachbarte Flächen einzufärben.'; }
+        else { stage.textContent = n + ' Bounces – Farbbleeding & Konvergenz'; text.textContent = 'Deutliches Color Bleeding: Boden und Decke nehmen Rot/Grün an. Nach wenigen Bounces ändert sich kaum noch etwas – die Lösung konvergiert.'; }
+    }
+
+    function apply() {
+        if (mode === 'bounce') {
+            var n = parseInt(bounceSlider.value, 10);
+            bounceVal.textContent = String(n);
+            applyBounces(n);
+            describe(n);
+        } else {
+            if (compareRadiosity) { applyBounces(6); stage.textContent = 'Radiosity (konvergiert)'; text.textContent = 'Volle Radiosity-Lösung: weiches indirektes Licht, aufgehellte Ecken und deutliches Farbbleeding der Wände.'; }
+            else { applyBounces(1); stage.textContent = 'Direkte Beleuchtung'; text.textContent = 'Nur direktes Licht von der Lampe: harte Verteilung, dunkle Ecken, kein Farbübertrag – wie ohne Global Illumination.'; }
+        }
+    }
+
+    function setMode(m) {
+        mode = m;
+        modeBounce.classList.toggle('active', m === 'bounce');
+        modeCompare.classList.toggle('active', m === 'compare');
+        bounceCtrl.classList.toggle('r3-hidden', m !== 'bounce');
+        compareCtrl.classList.toggle('r3-hidden', m !== 'compare');
+        apply();
+    }
+
+    bounceSlider.addEventListener('input', apply);
+    toggle.addEventListener('click', function () {
+        compareRadiosity = !compareRadiosity;
+        toggle.textContent = compareRadiosity ? 'Zeige: Radiosity' : 'Zeige: Direkt';
+        apply();
+    });
+    modeBounce.addEventListener('click', function () { setMode('bounce'); });
+    modeCompare.addEventListener('click', function () { setMode('compare'); });
+
+    window.addEventListener('resize', function () { engine.resize(); });
+    var ro = new ResizeObserver(function () { engine.resize(); });
+    ro.observe(canvas);
+});
+</script>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Schalte oben auf <strong>„Direkt vs.&nbsp;Radiosity”</strong> 🔁 und vergleiche per Knopf: Bei <em>Direkt</em> bleiben Decke und Ecken dunkel, bei <em>Radiosity</em> sind sie aufgehellt und die Wände färben den Raum ein. Genau dieser Unterschied steht auf der Vorlesungsfolie „Direct Illumination vs.&nbsp;Radiosity”.</p>
+</div>
+<section id="direkt-vs-radiosity" class="level3">
+<h3 class="anchored" data-anchor-id="direkt-vs-radiosity">Direkt vs.&nbsp;Radiosity – der direkte Vergleich</h3>
+<p>Im Modus <strong>„Direkt vs.&nbsp;Radiosity”</strong> der 3D-Szene oben schaltest du per Knopf zwischen beiden Zuständen um:</p>
+<ul>
+<li><strong>Direkt</strong> – nur die direkte Beleuchtung der Lampe (harte Verteilung, dunkle Ecken, kein Farbübertrag). Das entspricht lokaler Beleuchtung <em>ohne</em> GI.</li>
+<li><strong>Radiosity</strong> – die konvergierte Lösung mit indirektem Licht: aufgehellte Ecken, weiche Übergänge und Farbbleeding der roten und grünen Wand.</li>
+</ul>
+<blockquote class="blockquote">
+<p>Hinweis: Im Browser nähern wir die Radiosity-Bounces über zunehmendes Umgebungslicht und farbige „Bleed”-Lichter an (echtzeitfähig). Eine physikalisch exakte Lösung liefert ein Offline-Renderer wie Blender Cycles – diesen Ground-Truth-Vergleich bauen wir als Nächstes ein.</p>
+</blockquote>
+</section>
+</section>
+<section id="vergleich" class="level2">
+<h2 class="anchored" data-anchor-id="vergleich">Der große Vergleich</h2>
+<p>Damit hast du vier Wege gesehen, ein Bild zu berechnen. Sie unterscheiden sich vor allem darin, <strong>wie gut sie globale Beleuchtung erfassen</strong> und <strong>wie teuer</strong> das ist <span class="citation" data-cites="nischwitz2020 pharr2023">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>; <a href="#ref-pharr2023" role="doc-biblioref">Pharr et al. 2023</a>)</span>.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Verfahren</th>
+<th>Prinzip</th>
+<th>Globale Beleuchtung</th>
+<th>Stärke</th>
+<th>Schwäche</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Rasterisierung</strong></td>
+<td>Dreiecke direkt auf Pixel projizieren</td>
+<td>Nein (nur Tricks/Fakes)</td>
+<td>Extrem schnell, echtzeitfähig</td>
+<td>Kein echtes indirektes Licht</td>
+</tr>
+<tr class="even">
+<td><strong>Ray Tracing</strong></td>
+<td>Strahlen verfolgen, direkt beleuchten</td>
+<td>Teilweise (Spiegel, Schatten)</td>
+<td>Scharfe Spiegelungen &amp; harte Schatten</td>
+<td>Diffuses indirektes Licht schwierig</td>
+</tr>
+<tr class="odd">
+<td><strong>Path Tracing</strong></td>
+<td>Integral per Monte-Carlo schätzen</td>
+<td>Ja, vollständig</td>
+<td>Physikalisch plausibel, alle Effekte</td>
+<td>Rauschen, hohe Rechenzeit</td>
+</tr>
+<tr class="even">
+<td><strong>Radiosity</strong></td>
+<td>Diffuse Energiebilanz lösen</td>
+<td>Ja, aber nur diffus</td>
+<td>Rauschfrei, blickwinkel-unabhängig</td>
+<td>Keine Spiegelungen, viel Speicher</td>
+</tr>
+</tbody>
+</table>
+<p>In der Praxis werden Verfahren oft <strong>kombiniert</strong> – z. B. Radiosity für diffuses indirektes Licht plus Ray Tracing für Spiegelungen, oder moderne Echtzeit-Engines, die abgespeckte Path-Tracing-Varianten verwenden.</p>
+<section id="finder" class="level3">
+<h3 class="anchored" data-anchor-id="finder">Methoden-Finder</h3>
+<p>Wähle deine Anforderungen – Lumi zeigt dir, welches Verfahren am besten passt.</p>
+<style>
+    .mf-wrap {
+        margin: 1rem 0 2rem;
+        padding: 1rem 1.1rem 1.15rem;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(30, 41, 59, 0.08);
+    }
+    .mf-opts { display: flex; flex-wrap: wrap; gap: 0.55rem; margin-bottom: 0.9rem; }
+    .mf-chip {
+        border: 1px solid #c7d2fe;
+        background: #eef2ff;
+        color: #3730a3;
+        border-radius: 999px;
+        padding: 0.4rem 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.12s ease;
+    }
+    .mf-chip[aria-pressed="true"] {
+        background: #4f46e5;
+        color: #fff;
+        border-color: #4f46e5;
+    }
+    .mf-result {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 0.7rem;
+    }
+    .mf-method {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 0.7rem 0.8rem;
+        background: #f9fafb;
+        transition: all 0.15s ease;
+    }
+    .mf-method.best {
+        border-color: #16a34a;
+        background: #ecfdf5;
+        box-shadow: 0 6px 18px rgba(22, 163, 74, 0.16);
+    }
+    .mf-method h4 { margin: 0 0 0.25rem; font-size: 0.98rem; }
+    .mf-score { font-size: 0.8rem; color: #6b7280; font-weight: 700; }
+    .mf-method.best .mf-score { color: #15803d; }
+    .mf-note { margin: 0.9rem 0 0; font-size: 0.9rem; color: #374151; }
+</style>
+
+<div class="mf-wrap">
+    <div class="mf-opts" id="mfOpts">
+        <button class="mf-chip" data-key="realtime" aria-pressed="false">Echtzeit nötig</button>
+        <button class="mf-chip" data-key="diffuseGI" aria-pressed="false">Diffuse globale Beleuchtung</button>
+        <button class="mf-chip" data-key="mirrors" aria-pressed="false">Scharfe Spiegelungen</button>
+        <button class="mf-chip" data-key="exact" aria-pressed="false">Physikalisch exakt</button>
+        <button class="mf-chip" data-key="noiseFree" aria-pressed="false">Rauschfrei</button>
+    </div>
+
+    <div class="mf-result" id="mfResult"></div>
+    <p class="mf-note" id="mfNote">Wähle oben eine oder mehrere Anforderungen aus.</p>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var opts = document.getElementById('mfOpts');
+    var result = document.getElementById('mfResult');
+    var note = document.getElementById('mfNote');
+    if (!opts || !result) return;
+
+    // Eignung je Methode und Kriterium (0..2).
+    var METHODS = [
+        { name: 'Rasterisierung', s: { realtime: 2, diffuseGI: 0, mirrors: 0, exact: 0, noiseFree: 2 } },
+        { name: 'Ray Tracing',    s: { realtime: 1, diffuseGI: 0, mirrors: 2, exact: 1, noiseFree: 2 } },
+        { name: 'Path Tracing',   s: { realtime: 0, diffuseGI: 2, mirrors: 2, exact: 2, noiseFree: 0 } },
+        { name: 'Radiosity',      s: { realtime: 1, diffuseGI: 2, mirrors: 0, exact: 1, noiseFree: 2 } }
+    ];
+
+    var active = {};
+
+    function update() {
+        var keys = Object.keys(active).filter(function (k) { return active[k]; });
+        var scored = METHODS.map(function (m) {
+            var sc = 0;
+            keys.forEach(function (k) { sc += (m.s[k] || 0); });
+            return { name: m.name, score: sc };
+        });
+        var max = 0;
+        scored.forEach(function (m) { if (m.score > max) max = m.score; });
+
+        var html = '';
+        scored.forEach(function (m) {
+            var best = keys.length > 0 && m.score === max && max > 0;
+            html += '<div class="mf-method' + (best ? ' best' : '') + '">' +
+                '<h4>' + m.name + '</h4>' +
+                '<span class="mf-score">Eignung: ' + m.score + (best ? ' ★' : '') + '</span>' +
+                '</div>';
+        });
+        result.innerHTML = html;
+
+        if (keys.length === 0) {
+            note.textContent = 'Wähle oben eine oder mehrere Anforderungen aus.';
+        } else {
+            var winners = scored.filter(function (m) { return m.score === max && max > 0; })
+                .map(function (m) { return m.name; });
+            note.textContent = winners.length
+                ? 'Beste Wahl für deine Anforderungen: ' + winners.join(' und ') + '.'
+                : 'Keine Methode passt gut – probier eine andere Kombination.';
+        }
+    }
+
+    opts.querySelectorAll('.mf-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            var key = chip.getAttribute('data-key');
+            active[key] = !active[key];
+            chip.setAttribute('aria-pressed', active[key] ? 'true' : 'false');
+            update();
+        });
+    });
+
+    update();
+});
+</script>
+</section>
+</section>
+<section id="quiz" class="level2">
+<h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Methoden-Meister</h2>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Das große Finale! 🏆 Beantworte mindestens <strong>6 von 8 Fragen</strong> richtig, dann hast du die komplette Lernwelt gemeistert.</p>
+</div>
+<div data-vcde-quiz="radiosity-vergleich">
+  <script type="application/json">
+  {
+    "levelId": "radiosity-vergleich",
+    "title": "Abschluss-Quiz: Radiosity & Vergleich 🏆",
+    "intro": "8 Fragen zu Radiosity und zum Vergleich aller Verfahren. Du brauchst mindestens 6 richtige Antworten.",
+    "passRatio": 0.7,
+    "questions": [
+      {
+        "q": "Welche Art von Lichtaustausch modelliert klassisches Radiosity?",
+        "options": [
+          "Nur diffuse Reflexion zwischen Flächen",
+          "Nur spiegelnde Reflexion",
+          "Ausschließlich direktes Licht ohne Reflexion"
+        ],
+        "answer": 0,
+        "explain": "Radiosity nimmt rein diffuse (Lambertsche) Flächen an und berechnet den diffusen Energieaustausch zwischen ihnen."
+      },
+      {
+        "q": "Was beschreibt der Formfaktor F_ij?",
+        "options": [
+          "Den Anteil der von Fläche j abgegebenen Energie, der bei Fläche i ankommt",
+          "Die Farbe der Fläche i",
+          "Die Anzahl der Strahlen pro Pixel"
+        ],
+        "answer": 0,
+        "explain": "Der Formfaktor hängt von Abstand, Orientierung und Sichtbarkeit ab und gibt den geometrischen Energieanteil zwischen zwei Flächen an."
+      },
+      {
+        "q": "Warum ist Radiosity 'blickwinkel-unabhängig' (view-independent)?",
+        "options": [
+          "Es berechnet eine Helligkeit pro Fläche, nicht pro Pixel – die Lösung gilt für jede Kamera",
+          "Weil die Kamera fest stehen muss",
+          "Weil es keine Lichtquellen gibt"
+        ],
+        "answer": 0,
+        "explain": "Das Ergebnis ist die Radiosity je Fläche. Man kann frei durch die Szene navigieren, ohne neu zu rechnen – ideal für Walkthroughs."
+      },
+      {
+        "q": "Warum ist eine Radiosity-Lösung rauschfrei, eine Path-Tracing-Lösung aber nicht?",
+        "options": [
+          "Radiosity löst ein lineares Gleichungssystem deterministisch, Path Tracing schätzt zufällig",
+          "Radiosity benutzt mehr Samples",
+          "Path Tracing hat keine Lichtquelle"
+        ],
+        "answer": 0,
+        "explain": "Radiosity ist eine deterministische Lösung der Energiebilanz; Path Tracing nutzt Zufallsstichproben, deren Streuung als Rauschen sichtbar wird."
+      },
+      {
+        "q": "Welches Verfahren ist am besten für Echtzeit-Grafik (Spiele) geeignet?",
+        "options": [
+          "Rasterisierung (ggf. mit GI-Näherungen)",
+          "Offline-Path-Tracing mit 10000 Samples",
+          "Vollständige Radiosity-Lösung jedes Frame neu"
+        ],
+        "answer": 0,
+        "explain": "Rasterisierung ist extrem schnell. Globale Beleuchtung wird dort durch Näherungen (z. B. SSAO, IBL, Lightmaps) ergänzt."
+      },
+      {
+        "q": "Was ist eine typische Schwäche von Radiosity?",
+        "options": [
+          "Es kann keine scharfen Spiegelungen darstellen",
+          "Es erzeugt immer starkes Rauschen",
+          "Es funktioniert nur ohne Lichtquellen"
+        ],
+        "answer": 0,
+        "explain": "Da Radiosity rein diffus rechnet, fehlen spiegelnde Effekte. Dafür kombiniert man es oft mit Ray Tracing."
+      },
+      {
+        "q": "Welches Verfahren erfasst am vollständigsten ALLE Beleuchtungseffekte?",
+        "options": [
+          "Path Tracing",
+          "Reine Rasterisierung",
+          "Lokales Phong-Blinn-Modell"
+        ],
+        "answer": 0,
+        "explain": "Path Tracing löst die volle Rendering-Gleichung inkl. diffuser und spiegelnder Mehrfachreflexionen – auf Kosten der Rechenzeit."
+      },
+      {
+        "q": "Die Radiosity-Gleichung B_i = E_i + ρ_i · Σ F_ij·B_j ist im Kern …",
+        "options": [
+          "eine diffuse Spezialform der Rendering-Gleichung",
+          "völlig unabhängig von der Rendering-Gleichung",
+          "identisch mit dem Snellius-Brechungsgesetz"
+        ],
+        "answer": 0,
+        "explain": "Es ist dieselbe Energiebilanz wie die Rendering-Gleichung, vereinfacht auf rein diffuse Flächen und pro Fläche statt pro Richtung."
+      }
+    ]
+  }
+  </script>
+</div>
+</section>
+<section id="abschluss" class="level2">
+<h2 class="anchored" data-anchor-id="abschluss">Geschafft!</h2>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Unglaublich – du hast die ganze GI-Lernwelt durchgespielt! 🎉 Von der Rendering-Gleichung über Ray Tracing und Path Tracing bis zu Radiosity und dem großen Methodenvergleich. Du weißt jetzt, <strong>warum</strong> globale Beleuchtung schwer ist und <strong>wie</strong> verschiedene Verfahren das Problem angehen. Schau dir deinen vollständigen Fortschritt auf der Landkarte an!</p>
+</div>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-goral1984" class="csl-entry" role="listitem">
+Goral, Cindy M., Kenneth E. Torrance, Donald P. Greenberg, and Bennett Battaile. 1984. <span>“Modeling the Interaction of Light Between Diffuse Surfaces.”</span> <em>Proceedings of the 11th Annual Conference on Computer Graphics and Interactive Techniques (SIGGRAPH ’84)</em>, 213–22. <a href="https://doi.org/10.1145/800031.808601">https://doi.org/10.1145/800031.808601</a>.
+</div>
+<div id="ref-nischwitz2020" class="csl-entry" role="listitem">
+Nischwitz, Alfred, Max Fischer, Peter Haberäcker, and Gudrun Socher. 2020. <em>Bildverarbeitung Und Computergrafik</em>. 4th ed. Springer Vieweg.
+</div>
+<div id="ref-pharr2023" class="csl-entry" role="listitem">
+Pharr, Matt, Wenzel Jakob, and Greg Humphreys. 2023. <em>Physically Based Rendering: From Theory to Implementation</em>. 4th ed. MIT Press. <a href="https://pbr-book.org/">https://pbr-book.org/</a>.
+</div>
+</div></section></div></main> <!-- /main -->
+<script>
+// site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
+// include-after-body nicht, liefert aber auf jeder Seite den korrekten
+// Offset zum Projektstamm über <meta name="quarto:offset">. So funktioniert
+// der Pfad sowohl auf der Startseite als auch in /levels/ und unter einem
+// GitHub-Pages-Unterpfad.
+(function () {
+  var offset = "";
+  var meta = document.querySelector('meta[name="quarto:offset"]');
+  if (meta && meta.getAttribute("content")) {
+    offset = meta.getAttribute("content");
+    if (offset.charAt(offset.length - 1) !== "/") offset += "/";
+  }
+  var s = document.createElement("script");
+  s.src = offset + "assets/site.js";
+  document.body.appendChild(s);
+})();
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/nermine10\.github\.io\/vcde\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -83,6 +83,13 @@
       icon: "🌌",
       href: "levels/path-tracing.html",
       desc: "Monte-Carlo-Pfade, Konvergenz und Russian Roulette: physikalisch plausible globale Beleuchtung."
+    },
+    {
+      id: "radiosity-vergleich",
+      title: "Radiosity & Vergleich",
+      icon: "🟩",
+      href: "levels/radiosity-vergleich.html",
+      desc: "Diffuse Energiebilanz mit Formfaktoren – plus der große Vergleich aller Render-Verfahren."
     }
   ];
 

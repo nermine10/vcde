@@ -23,41 +23,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-html { -webkit-text-size-adjust: 100%; }
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 /* CSS for citations */
 div.csl-bib-body { }
 div.csl-entry {
@@ -192,10 +157,14 @@ window.Quarto = {
     <a class="nav-link" href="../levels/path-tracing.html"> 
 <span class="menu-text">Path Tracing</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/radiosity-vergleich.html"> 
+<span class="menu-text">Radiosity &amp; Vergleich</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://github.com/nermine10/vcde"> <i class="bi bi-github" role="img" aria-label="GitHub">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -331,7 +300,7 @@ window.Quarto = {
 </section>
 <section id="worum" class="level2">
 <h2 class="anchored" data-anchor-id="worum">Worum geht es?</h2>
-<p>Eine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden <span class="citation" data-cites="quarto2024">(<a href="#ref-quarto2024" role="doc-biblioref">Allaire and Teague 2024</a>)</span>:</p>
+<p>Eine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden <span class="citation" data-cites="nischwitz2020">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>)</span>:</p>
 <ul>
 <li><strong>Lokale Beleuchtung</strong> (z. B. Phong-Blinn): Jeder Punkt wird nur aus der direkten Lichtquelle und seinem eigenen Material beleuchtet. Schnell, aber „indirektes“ Licht fehlt – Schatten werden tiefschwarz, Farben strahlen nicht aufeinander ab.</li>
 <li><strong>Globale Beleuchtung (Global Illumination)</strong>: Licht wird auch <em>zwischen</em> Oberflächen weitergereicht. Eine rote Wand färbt den Boden leicht rötlich, Schatten werden weicher, Räume wirken stimmig.</li>
@@ -1201,43 +1170,82 @@ window.addEventListener('DOMContentLoaded', function () {
 <section id="brdf" class="level3">
 <h3 class="anchored" data-anchor-id="brdf">Das Materialverhalten: die BRDF <span class="math inline">\(b(\cdot)\)</span></h3>
 <p>Der Term <span class="math inline">\(b(\cdot)\)</span> – die <strong>BRDF</strong> – beschreibt, in welche Richtungen eine Oberfläche eingehendes Licht zurückwirft. Eine <strong>diffuse</strong> Fläche streut breit in alle Richtungen (matte Wand), eine <strong>glänzende</strong> Fläche bündelt das Licht eng um die Spiegelrichtung. Die folgenden „Reflexionskeulen“ zeigen das in Polarkoordinaten:</p>
-<div id="cell-fig-brdf" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>theta <span class="op">=</span> np.linspace(<span class="op">-</span>np.pi <span class="op">/</span> <span class="dv">2</span>, np.pi <span class="op">/</span> <span class="dv">2</span>, <span class="dv">400</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>diffuse <span class="op">=</span> np.cos(theta)          <span class="co"># breite Lambert-Keule</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>glossy <span class="op">=</span> np.cos(theta) <span class="op">**</span> <span class="dv">40</span>     <span class="co"># schmale spekulare Keule</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(subplot_kw<span class="op">=</span>{<span class="st">'projection'</span>: <span class="st">'polar'</span>}, figsize<span class="op">=</span>(<span class="fl">5.2</span>, <span class="fl">4.2</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ax.plot(theta, diffuse, color<span class="op">=</span><span class="st">'#4f46e5'</span>, linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'diffus (Lambert)'</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ax.plot(theta, glossy, color<span class="op">=</span><span class="st">'#f59e0b'</span>, linewidth<span class="op">=</span><span class="dv">2</span>, label<span class="op">=</span><span class="st">'glänzend (spekular)'</span>)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>ax.fill(theta, diffuse, color<span class="op">=</span><span class="st">'#4f46e5'</span>, alpha<span class="op">=</span><span class="fl">0.10</span>)</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ax.fill(theta, glossy, color<span class="op">=</span><span class="st">'#f59e0b'</span>, alpha<span class="op">=</span><span class="fl">0.15</span>)</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>ax.set_theta_zero_location(<span class="st">'N'</span>)      <span class="co"># 0° = Oberflächennormale</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>ax.set_theta_direction(<span class="op">-</span><span class="dv">1</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>ax.set_thetamin(<span class="op">-</span><span class="dv">90</span>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>ax.set_thetamax(<span class="dv">90</span>)</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>ax.set_rticks([<span class="fl">0.5</span>, <span class="fl">1.0</span>])</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>ax.set_rlabel_position(<span class="dv">0</span>)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">'BRDF-Reflexionskeulen'</span>, pad<span class="op">=</span><span class="dv">18</span>)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>ax.legend(loc<span class="op">=</span><span class="st">'lower center'</span>, bbox_to_anchor<span class="op">=</span>(<span class="fl">0.5</span>, <span class="op">-</span><span class="fl">0.22</span>), ncol<span class="op">=</span><span class="dv">2</span>, frameon<span class="op">=</span><span class="va">False</span>)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
-<div id="fig-brdf" class="quarto-float quarto-figure quarto-figure-center anchored" data-fig-align="center">
-<figure class="quarto-float quarto-float-fig figure">
-<div aria-describedby="fig-brdf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="local-vs-global_files/figure-html/fig-brdf-output-1.png" class="quarto-figure quarto-figure-center figure-img" width="370" height="386">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-brdf-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Reflexionskeulen der BRDF: eine diffuse Fläche (breit) streut Licht gleichmäßig, eine glänzende Fläche (schmal) bündelt es um die Spiegelrichtung.
-</figcaption>
+<style>
+    .brdf-fig { margin: 1rem auto 1.6rem; max-width: 560px; padding: 0.9rem; border-radius: 14px; border: 1px solid #d1d5db; background: #fff; }
+    .brdf-fig canvas { width: 100%; height: auto; display: block; }
+    .brdf-fig figcaption { margin-top: 0.6rem; font-size: 0.85rem; color: #4b5563; line-height: 1.45; text-align: center; }
+    .brdf-fig .legend { display: flex; gap: 1.1rem; justify-content: center; flex-wrap: wrap; margin-top: 0.5rem; font-size: 0.84rem; }
+    .brdf-fig .legend span { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .brdf-fig .swatch { width: 1.1rem; height: 0.22rem; border-radius: 2px; display: inline-block; }
+</style>
+
+<figure class="brdf-fig figure" id="fig-brdf">
+    <canvas id="brdfLobeCanvas" width="560" height="420" role="img" aria-label="Polardiagramm der BRDF-Reflexionskeulen: eine breite diffuse Keule und eine schmale glänzende Keule um die Normale."></canvas>
+    <div class="legend">
+        <span><i class="swatch" style="background:#4f46e5"></i> diffus (Lambert)</span>
+        <span><i class="swatch" style="background:#f59e0b"></i> glänzend (spekular)</span>
+    </div>
+    <figcaption>
+        <strong>BRDF-Reflexionskeulen.</strong> Eine diffuse Fläche (breit) streut Licht
+        gleichmäßig, eine glänzende Fläche (schmal) bündelt es um die Spiegelrichtung.
+        0° zeigt entlang der Oberflächennormalen.
+    </figcaption>
 </figure>
-</div>
-</div>
-</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', function () {
+    var canvas = document.getElementById('brdfLobeCanvas');
+    if (!canvas || !canvas.getContext) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    var cx = W / 2, cy = H * 0.86;
+    var R = cy - 36; // Skalierung für r = 1
+
+    function lobe(power, stroke, fill) {
+        var pts = [];
+        for (var d = -90; d <= 90; d += 1) {
+            var th = d * Math.PI / 180;
+            var r = Math.pow(Math.max(0, Math.cos(th)), power);
+            pts.push({ x: cx + r * R * Math.sin(th), y: cy - r * R * Math.cos(th) });
+        }
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        for (var i = 0; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y);
+        ctx.closePath();
+        ctx.fillStyle = fill; ctx.fill();
+        ctx.strokeStyle = stroke; ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (var j = 0; j < pts.length; j++) { if (j === 0) ctx.moveTo(pts[j].x, pts[j].y); else ctx.lineTo(pts[j].x, pts[j].y); }
+        ctx.stroke();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+        ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+
+        // Polar-Gitter (Halbkreise r = 0.5 und r = 1.0)
+        ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1;
+        [0.5, 1.0].forEach(function (rr) {
+            ctx.beginPath(); ctx.arc(cx, cy, rr * R, Math.PI, 2 * Math.PI); ctx.stroke();
+        });
+        // Oberfläche + Normale
+        ctx.strokeStyle = '#9ca3af'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(cx - R - 10, cy); ctx.lineTo(cx + R + 10, cy); ctx.stroke();
+        ctx.setLineDash([5, 5]); ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - R - 12); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#6b7280'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('Normale (0°)', cx, cy - R - 18);
+
+        lobe(1, '#4f46e5', 'rgba(79,70,229,0.12)');   // diffus
+        lobe(40, '#f59e0b', 'rgba(245,158,11,0.18)');  // glänzend
+
+        ctx.fillStyle = '#111827';
+        ctx.beginPath(); ctx.arc(cx, cy, 3.5, 0, Math.PI * 2); ctx.fill();
+    }
+    draw();
+});
+</script>
 <div data-vcde-mascot="true" data-name="Lumi">
 <p>Stark! Du hast die Formel geknackt. 🔍 Jetzt wird’s praktisch: Im nächsten Abschnitt darfst du das Integral <em>ein- und ausschalten</em> und live sehen, was passiert. Achte besonders auf die Schatten und die Wandfarben!</p>
 </div>
@@ -1985,8 +1993,8 @@ window.addEventListener('DOMContentLoaded', function () {
 </section>
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-quarto2024" class="csl-entry" role="listitem">
-Allaire, J. J., and Charles Teague. 2024. <span>“Quarto: An Open-Source Scientific and Technical Publishing System.”</span> <em>Proceedings of the Scientific Computing Conference</em>.
+<div id="ref-nischwitz2020" class="csl-entry" role="listitem">
+Nischwitz, Alfred, Max Fischer, Peter Haberäcker, and Gudrun Socher. 2020. <em>Bildverarbeitung Und Computergrafik</em>. 4th ed. Springer Vieweg.
 </div>
 </div></section></div></main> <!-- /main -->
 <script>

@@ -23,7 +23,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -73,6 +92,35 @@ ul.task-list li input[type="checkbox"] {
 <script src="https://cdn.babylonjs.com/babylon.js"></script>
 <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -109,10 +157,14 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="../levels/path-tracing.html" aria-current="page"> 
 <span class="menu-text">Path Tracing</span></a>
   </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../levels/radiosity-vergleich.html"> 
+<span class="menu-text">Radiosity &amp; Vergleich</span></a>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/"> <i class="bi bi-github" role="img" aria-label="GitHub">
+    <a class="nav-link" href="https://github.com/nermine10/vcde"> <i class="bi bi-github" role="img" aria-label="GitHub">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -132,7 +184,10 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Auf dieser Seite</h2>
    
   <ul>
-  <li><a href="#path-tracing-erklaerung-auf-deutsch" id="toc-path-tracing-erklaerung-auf-deutsch" class="nav-link active" data-scroll-target="#path-tracing-erklaerung-auf-deutsch">Path Tracing (Erklaerung auf Deutsch)</a></li>
+  <li><a href="#idee" id="toc-idee" class="nav-link active" data-scroll-target="#idee">Die Grundidee</a></li>
+  <li><a href="#montecarlo" id="toc-montecarlo" class="nav-link" data-scroll-target="#montecarlo">Warum Zufall? Monte-Carlo in einer Formel</a></li>
+  <li><a href="#vertiefung" id="toc-vertiefung" class="nav-link" data-scroll-target="#vertiefung">Vertiefung: Rauschen, Konvergenz &amp; Russian Roulette</a></li>
+  <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz">Boss-Quiz: Pfad-Pilot</a></li>
   <li><a href="#abschluss" id="toc-abschluss" class="nav-link" data-scroll-target="#abschluss">Geschafft?</a></li>
   </ul>
 </nav>
@@ -166,16 +221,32 @@ ul.task-list li input[type="checkbox"] {
 <div data-vcde-mascot="true" data-name="Lumi">
 <p>Letztes Level! 🌌 Path Tracing löst das Integral der Rendering-Gleichung <strong>statistisch</strong>: viele zufällige Pfade werden gemittelt. Spiel mit den Samples und beobachte, wie das Rauschen abnimmt.</p>
 </div>
-<section id="path-tracing-erklaerung-auf-deutsch" class="level2">
-<h2 class="anchored" data-anchor-id="path-tracing-erklaerung-auf-deutsch">Path Tracing (Erklaerung auf Deutsch)</h2>
+<section id="idee" class="level2">
+<h2 class="anchored" data-anchor-id="idee">Die Grundidee</h2>
+<p>Ray Tracing (Level 2) verfolgt Strahlen und wertet an jedem Treffer eine <em>direkte</em> Beleuchtung aus. Path Tracing geht einen Schritt weiter und löst das <strong>Integral der Rendering-Gleichung</strong> – also die indirekte Beleuchtung über die ganze Hemisphäre <span class="citation" data-cites="kajiya1986">(<a href="#ref-kajiya1986" role="doc-biblioref">Kajiya 1986</a>)</span>:</p>
 <ol type="1">
-<li>Ein Pfad startet an der Kamera und wird zufaellig durch die Szene verfolgt.</li>
-<li>Jeder Treffer erzeugt einen neuen Bounce (diffus oder spiegelnd).</li>
-<li>Trifft der Pfad eine Lichtquelle, wird Energie eingesammelt.</li>
-<li>Viele zufaellige Pfade werden gemittelt (Monte Carlo Integration).</li>
+<li>Ein Pfad startet an der Kamera und wird <strong>zufällig</strong> durch die Szene verfolgt.</li>
+<li>Jeder Treffer erzeugt einen neuen Bounce (diffus oder spiegelnd) – die nächste Richtung wird <strong>zufällig gezogen</strong>.</li>
+<li>Trifft der Pfad eine Lichtquelle, wird die Energie entlang des Pfads eingesammelt.</li>
+<li>Sehr viele zufällige Pfade pro Pixel werden <strong>gemittelt</strong> (Monte-Carlo-Integration).</li>
 <li>Mehr Samples pro Pixel reduzieren das Rauschen, brauchen aber mehr Rechenzeit.</li>
-<li>Russian Roulette beendet unwichtige lange Pfade effizient.</li>
+<li>Russian Roulette beendet unwichtige lange Pfade effizient – <strong>ohne Bias</strong>.</li>
 </ol>
+</section>
+<section id="montecarlo" class="level2">
+<h2 class="anchored" data-anchor-id="montecarlo">Warum Zufall? Monte-Carlo in einer Formel</h2>
+<p>Das Integral über die Hemisphäre lässt sich nicht exakt lösen. Monte-Carlo schätzt es, indem wir <span class="math inline">\(N\)</span> zufällige Richtungen <span class="math inline">\(\omega_i\)</span> ziehen und mitteln:</p>
+<p><span class="math display">\[
+L_o(x,\omega_o) \;\approx\; L_e(x,\omega_o) \;+\; \frac{1}{N} \sum_{k=1}^{N}
+\frac{f_r(x,\omega_k\!\to\!\omega_o)\; L_i(x,\omega_k)\; (\omega_k \cdot n)}{p(\omega_k)}
+\]</span></p>
+<ul>
+<li><span class="math inline">\(f_r\)</span> ist die <strong>BRDF</strong> (Materialverhalten), <span class="math inline">\((\omega_k \cdot n)\)</span> der <strong>Cosinus-Term</strong>.</li>
+<li><span class="math inline">\(p(\omega_k)\)</span> ist die <strong>Wahrscheinlichkeitsdichte</strong>, mit der wir die Richtung gezogen haben. Zieht man Richtungen <em>cosinus-gewichtet</em> (mehr Strahlen dort, wo viel beiträgt), kürzt sich der Cosinus heraus und das Rauschen sinkt – das nennt man <strong>Importance Sampling</strong>.</li>
+</ul>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Merke dir die wichtigste Faustregel 📏: Der Fehler (das Rauschen) sinkt nur mit <span class="math inline">\(\mathcal{O}(1/\sqrt{N})\)</span>. Das heißt: <strong>viermal so viele Samples</strong> halbieren das Rauschen nur. Genau deshalb ist Path Tracing offline schön, aber in Echtzeit teuer!</p>
+</div>
 <style>
     .ptx-wrap {
         margin: 1rem 0 2rem;
@@ -309,7 +380,7 @@ ul.task-list li input[type="checkbox"] {
         </article>
 
         <section class="ptx-card">
-            <h3 class="ptx-head anchored">Erklaerung</h3>
+            <h3 class="ptx-head anchored">Erklärung</h3>
             <div class="ptx-panel">
                 <p class="ptx-stage" id="ptxStageTitle">Stage</p>
                 <p id="ptxStageText"></p>
@@ -710,19 +781,131 @@ window.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 </section>
+<section id="vertiefung" class="level2">
+<h2 class="anchored" data-anchor-id="vertiefung">Vertiefung: Rauschen, Konvergenz &amp; Russian Roulette</h2>
+<p>In der Demo oben siehst du im unteren Diagramm, wie sich der geschätzte Helligkeitswert mit mehr Samples <strong>einpendelt</strong>. Das ist Konvergenz in Aktion.</p>
+<ul>
+<li><strong>Varianz = Rauschen.</strong> Jeder einzelne Pfad ist eine grobe, zufällige Schätzung. Erst der Mittelwert vieler Pfade nähert sich dem wahren Wert. Sichtbar wird die Varianz als körniges Bildrauschen.</li>
+<li><strong>Konvergenzrate <span class="math inline">\(1/\sqrt{N}\)</span>.</strong> Um das Rauschen zu halbieren, braucht man die <em>vierfache</em> Sample-Zahl. Deshalb lohnt sich <strong>Varianzreduktion</strong> statt nur „mehr Samples”: Importance Sampling, Next-Event-Estimation (direkt zur Lichtquelle sampeln) und gute Zufallszahlen.</li>
+<li><strong>Russian Roulette.</strong> Lange Pfade tragen oft kaum noch Energie bei (die Throughput-Werte werden klein). Statt sie hart abzuschneiden (das würde das Ergebnis verfälschen, also <em>Bias</em> erzeugen), beendet man sie mit Wahrscheinlichkeit <span class="math inline">\(1-p\)</span> und skaliert die überlebenden Pfade mit <span class="math inline">\(1/p\)</span> hoch. So bleibt der Schätzer <strong>erwartungstreu</strong> (unbiased) und wird trotzdem schneller.</li>
+</ul>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Kurz zur Einordnung 🧭: <strong>Ray Tracing</strong> (Level 2) glänzt bei scharfen Spiegelungen und harten Schatten, tut sich aber schwer mit diffusem indirektem Licht. <strong>Path Tracing</strong> löst genau dieses Integral statistisch und liefert Farbbleeding, weiche Schatten und Kaustiken – die volle globale Beleuchtung. Der Preis ist die Rechenzeit. Im nächsten Level siehst du mit <strong>Radiosity</strong> eine ganz andere Herangehensweise an dasselbe Ziel.</p>
+</div>
+</section>
+<section id="quiz" class="level2">
+<h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Pfad-Pilot</h2>
+<div data-vcde-mascot="true" data-name="Lumi">
+<p>Letzte Prüfung der Lernreise! 🌌 Beantworte mindestens <strong>6 von 8 Fragen</strong> richtig, dann markiere ich Path Tracing als abgeschlossen. Schau bei Bedarf in die Erklärungen und versuch es einfach nochmal.</p>
+</div>
+<div data-vcde-quiz="path-tracing">
+  <script type="application/json">
+  {
+    "levelId": "path-tracing",
+    "title": "Abschluss-Quiz: Path Tracing 🌌",
+    "intro": "8 Fragen zu Monte-Carlo, Konvergenz und Russian Roulette. Du brauchst mindestens 6 richtige Antworten.",
+    "passRatio": 0.7,
+    "questions": [
+      {
+        "q": "Was schätzt Path Tracing im Kern?",
+        "options": [
+          "Das Integral der Rendering-Gleichung über die Hemisphäre per Monte-Carlo",
+          "Nur die direkte Beleuchtung von einer Punktlichtquelle",
+          "Die Bildauflösung in Pixeln"
+        ],
+        "answer": 0,
+        "explain": "Path Tracing nähert das Hemisphären-Integral der Rendering-Gleichung mit vielen zufälligen Pfaden an – das ist Monte-Carlo-Integration."
+      },
+      {
+        "q": "Wie verändert sich das Bild, wenn du die Samples pro Pixel erhöhst?",
+        "options": [
+          "Das Rauschen nimmt ab, die Rechenzeit steigt",
+          "Das Bild wird automatisch heller",
+          "Die Kamera bewegt sich"
+        ],
+        "answer": 0,
+        "explain": "Mehr gemittelte Pfade reduzieren die Varianz (Rauschen), kosten aber proportional mehr Rechenzeit."
+      },
+      {
+        "q": "Mit welcher Rate sinkt der Monte-Carlo-Fehler bei N Samples?",
+        "options": [
+          "Mit etwa 1/√N – vierfache Samples halbieren das Rauschen",
+          "Linear mit 1/N – doppelte Samples halbieren das Rauschen",
+          "Exponentiell – wenige Samples genügen"
+        ],
+        "answer": 0,
+        "explain": "Der Standardfehler einer Monte-Carlo-Schätzung fällt mit 1/√N. Um das Rauschen zu halbieren, braucht man die vierfache Sample-Zahl."
+      },
+      {
+        "q": "Warum entsteht in einem Path-Tracing-Bild überhaupt Rauschen?",
+        "options": [
+          "Weil jeder Pfad eine zufällige Stichprobe ist und erst der Mittelwert konvergiert",
+          "Weil der Monitor zu wenige Pixel hat",
+          "Weil die Lichtquelle flackert"
+        ],
+        "answer": 0,
+        "explain": "Die Richtungen werden zufällig gezogen. Einzelne Schätzungen streuen stark; das Bildrauschen ist die sichtbare Varianz."
+      },
+      {
+        "q": "Wozu dient Russian Roulette?",
+        "options": [
+          "Unwichtige lange Pfade unverfälscht (unbiased) zu beenden und Zeit zu sparen",
+          "Die Lichtquelle zufällig auszuschalten",
+          "Die Auflösung dynamisch zu erhöhen"
+        ],
+        "answer": 0,
+        "explain": "Pfade werden mit Wahrscheinlichkeit 1−p beendet; Überlebende werden mit 1/p hochskaliert. Im Erwartungswert bleibt das Ergebnis korrekt."
+      },
+      {
+        "q": "Was bewirkt cosinus-gewichtetes Sampling (Importance Sampling)?",
+        "options": [
+          "Es zieht mehr Strahlen dort, wo viel zum Integral beiträgt, und senkt so die Varianz",
+          "Es macht das Bild dunkler",
+          "Es ersetzt die BRDF durch einen festen Wert"
+        ],
+        "answer": 0,
+        "explain": "Wenn die Sampling-Dichte p der zu integrierenden Funktion ähnelt, sinkt die Varianz bei gleicher Sample-Zahl deutlich."
+      },
+      {
+        "q": "Worin unterscheidet sich Path Tracing von klassischem (Whitted-)Ray Tracing?",
+        "options": [
+          "Path Tracing erfasst auch diffuses indirektes Licht (Farbbleeding, weiche Schatten)",
+          "Path Tracing kann keine Spiegelungen darstellen",
+          "Path Tracing benötigt keine Strahlen"
+        ],
+        "answer": 0,
+        "explain": "Whitted-Ray-Tracing verfolgt v.a. Spiegel-/Brechungsstrahlen. Path Tracing löst das volle Integral und liefert diffuse globale Beleuchtung."
+      },
+      {
+        "q": "Was passiert mit der 'Energie' (Throughput) entlang eines diffusen Pfads?",
+        "options": [
+          "Sie wird an jedem Bounce mit dem Albedo gewichtet und nimmt tendenziell ab",
+          "Sie bleibt entlang des Pfads immer konstant",
+          "Sie steigt mit jedem Bounce an"
+        ],
+        "answer": 0,
+        "explain": "Jeder diffuse Treffer multipliziert den Throughput mit dem Albedo (< 1). Lange Pfade tragen daher meist nur noch wenig bei – siehe Russian Roulette."
+      }
+    ]
+  }
+  </script>
+</div>
+</section>
 <section id="abschluss" class="level2">
 <h2 class="anchored" data-anchor-id="abschluss">Geschafft?</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Wow, du hast die ganze Lernreise durchgespielt – von der Rendering-Gleichung bis zum Path Tracing! 🎉 Markiere das letzte Level als abgeschlossen und sieh dir deinen vollständigen Fortschritt auf der Landkarte an.</p>
+<p>Wow, du hast die ganze Lernreise durchgespielt – von der Rendering-Gleichung bis zum Path Tracing! 🎉 Mit bestandenem Quiz ist dein Fortschritt gespeichert. Schau dir deinen vollständigen Stand auf der Landkarte an.</p>
 </div>
-<div data-vcde-complete="path-tracing">
 
-</div>
 
 
 </section>
 
-</main> <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-kajiya1986" class="csl-entry" role="listitem">
+Kajiya, James T. 1986. <span>“The Rendering Equation.”</span> <em>Proceedings of the 13th Annual Conference on Computer Graphics and Interactive Techniques (SIGGRAPH ’86)</em>, 143–50. <a href="https://doi.org/10.1145/15922.15902">https://doi.org/10.1145/15922.15902</a>.
+</div>
+</div></section></div></main> <!-- /main -->
 <script>
 // site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
 // include-after-body nicht, liefert aber auf jeder Seite den korrekten
