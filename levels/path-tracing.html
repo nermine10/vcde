@@ -372,7 +372,7 @@ L_o(x,\omega_o) \;\approx\; L_e(x,\omega_o) \;+\; \frac{1}{N} \sum_{k=1}^{N}
                 <p class="ptx-stat"><strong>Treffer Licht:</strong> <span id="ptxHitInfo"></span></p>
                 <p class="ptx-stat"><strong>Geschaetzte Helligkeit:</strong> <span id="ptxEnergyInfo"></span></p>
 
-                <div class="ptx-row">
+                <div class="ptx-row" id="ptxSampleRow">
                     <label for="ptxSampleSlider">Samples (manuell)</label>
                     <input id="ptxSampleSlider" class="ptx-range" type="range" min="8" max="320" step="8" value="80">
                 </div>
@@ -403,6 +403,7 @@ window.addEventListener('DOMContentLoaded', function () {
     const hitInfo = document.getElementById('ptxHitInfo');
     const energyInfo = document.getElementById('ptxEnergyInfo');
     const sampleSlider = document.getElementById('ptxSampleSlider');
+    const sampleRow = document.getElementById('ptxSampleRow');
     const resampleBtn = document.getElementById('ptxResample');
 
     if (!canvas || !conv || !toolbar) return;
@@ -694,6 +695,7 @@ window.addEventListener('DOMContentLoaded', function () {
         const s = STAGES[stageIndex];
         const sampleCount = stageIndex === 3 ? Number(sampleSlider.value) : s.samples;
         if (stageIndex !== 3) sampleSlider.value = String(s.samples);
+        if (sampleRow) sampleRow.style.display = (stageIndex === 3) ? '' : 'none';
 
         drawSceneBase(ctx, w, h);
 

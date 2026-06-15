@@ -528,7 +528,7 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
 </section>
 <section id="schatten" class="level2">
 <h2 class="anchored" data-anchor-id="schatten">Schattenstrahlen &amp; der Sichtbarkeits-Faktor <span class="math inline">\(g\)</span></h2>
-<p>Ob ein Punkt beleuchtet ist, hängt davon ab, ob er die Lichtquelle <strong>„sehen“</strong> kann. Genau das prüft ein <strong>Schattenstrahl</strong>: ein Strahl vom Treffpunkt zur Lampe. Wird er von einem Objekt blockiert, ist der Sichtbarkeitsterm <span class="math inline">\(g = 0\)</span> – der Punkt liegt im <strong>Schatten</strong>.</p>
+<p>Ob ein Punkt beleuchtet ist, hängt davon ab, ob er die Lichtquelle <strong>„sehen“</strong> kann. Wichtig: Die <strong>Primärstrahlen kommen aus der Kamera</strong> und bestimmen, <em>welche</em> Oberflächenpunkte überhaupt getroffen werden (die Punkte am Boden hier). <strong>Von diesen Treffpunkten</strong> aus wird dann ein <strong>Schattenstrahl zur Lampe</strong> geschossen – deshalb zeigen die Pfeile vom Boden <strong>nach oben zur Lichtquelle</strong>, nicht umgekehrt. Wird er von einem Objekt blockiert, ist der Sichtbarkeitsterm <span class="math inline">\(g = 0\)</span> – der Punkt liegt im <strong>Schatten</strong>.</p>
 <p>Schalte die Schattenstrahlen unten an und aus. Ohne sie verhält sich das Modell wie das <strong>lokale Standardmodell</strong> ohne Schatten (eine Vereinfachung von <span class="math inline">\(g\)</span>):</p>
 <div class="rtx-fig">
   <div class="rtx-fig__head">🌑 Schattenstrahlen – Sichtbarkeit zur Lichtquelle</div>
@@ -587,6 +587,27 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
       ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
 
+      // Pfeilspitze, die die Richtung "vom Oberflächenpunkt zur Lampe" zeigt.
+      function arrowTowardLight(px, py, color) {
+        var dx = lx - px, dy = ly - py;
+        var len = Math.hypot(dx, dy) || 1;
+        var ux = dx / len, uy = dy / len;
+        // Position der Spitze: ein Stück oberhalb des Bodenpunkts entlang des Strahls.
+        var tipX = px + ux * 30, tipY = py + uy * 30;
+        var ax = -uy, ay = ux; // senkrecht
+        ctx.save();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.9;
+        ctx.lineWidth = 1.6;
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX - ux * 7 + ax * 4, tipY - uy * 7 + ay * 4);
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(tipX - ux * 7 - ax * 4, tipY - uy * 7 - ay * 4);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       var n = 15, lit = 0, shad = 0;
       for (var i = 0; i < n; i++) {
         var px = 60 + (w - 120) * i / (n - 1);
@@ -600,6 +621,7 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(px, groundY); ctx.lineTo(lx, ly); ctx.stroke();
           ctx.restore();
+          if (shadows) arrowTowardLight(px, groundY, '#ef4444');
         } else {
           lit++;
           ctx.save();
@@ -608,8 +630,9 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
           ctx.lineWidth = 1;
           ctx.beginPath(); ctx.moveTo(px, groundY); ctx.lineTo(lx, ly); ctx.stroke();
           ctx.restore();
+          if (shadows) arrowTowardLight(px, groundY, '#d97706');
         }
-        // Bodenpunkt
+        // Bodenpunkt (Treffpunkt eines Primärstrahls)
         ctx.fillStyle = blocked ? '#475569' : '#fbbf24';
         ctx.beginPath(); ctx.arc(px, groundY, 4.5, 0, Math.PI * 2); ctx.fill();
       }
@@ -1069,17 +1092,11 @@ L(x, x', \lambda) = g(x, x', \lambda) \cdot \left(
 
         <p class="rtx-stat"><strong>Kamera:</strong> <span id="camInfo"></span></p>
         <p class="rtx-stat"><strong>Zentraler Ray:</strong> <span id="rayInfo"></span></p>
-        <p class="rtx-stat"><strong>Samples/Pixel:</strong> <span id="sppInfo"></span></p>
         <p class="rtx-stat"><strong>Bounces:</strong> <span id="bounceInfo"></span></p>
 
-        <div class="rtx-row">
+        <div class="rtx-row" id="pixelSizeRow">
           <label for="pixelSize">Pixelgröße</label>
           <input id="pixelSize" class="rtx-range" type="range" min="1" max="14" value="6">
-        </div>
-
-        <div class="rtx-row">
-          <label for="manualSpp">SPP (manuell)</label>
-          <input id="manualSpp" class="rtx-range" type="range" min="1" max="16" value="8">
         </div>
 
         <p class="rtx-hint">🖱️ Ziehen = Orbit · Mausrad = Zoom</p>
@@ -1099,10 +1116,9 @@ window.addEventListener('DOMContentLoaded', function () {
   const stageText = document.getElementById('rtxStageText');
   const camInfo = document.getElementById('camInfo');
   const rayInfo = document.getElementById('rayInfo');
-  const sppInfo = document.getElementById('sppInfo');
   const bounceInfo = document.getElementById('bounceInfo');
   const pixelSizeInput = document.getElementById('pixelSize');
-  const manualSppInput = document.getElementById('manualSpp');
+  const pixelSizeRow = document.getElementById('pixelSizeRow');
 
   if (!canvas || !diagram || !toolbar) return;
 
@@ -1473,7 +1489,7 @@ window.addEventListener('DOMContentLoaded', function () {
     stageTitle.textContent = s.name;
     stageText.textContent = s.text;
     pixelSizeInput.value = String(Math.round(s.pixel));
-    manualSppInput.value = String(Math.round(s.spp));
+    if (pixelSizeRow) pixelSizeRow.style.display = (stageIndex === 2) ? '' : 'none';
     setButtonState();
   }
 
@@ -1582,10 +1598,9 @@ window.addEventListener('DOMContentLoaded', function () {
     const up = BABYLON.Vector3.Cross(forward, right).normalize();
 
     const s = STAGES[stageIndex];
-    const manualSpp = Number(manualSppInput.value);
     const pixelSize = Number(pixelSizeInput.value);
 
-    const spp = (stageIndex <= 3) ? manualSpp : s.spp;
+    const spp = s.spp;
     const bounces = s.bounces;
     const mode = s.mode;
 
@@ -1601,7 +1616,6 @@ window.addEventListener('DOMContentLoaded', function () {
 
     camInfo.textContent = 'yaw ' + yaw.toFixed(2) + ', pitch ' + pitch.toFixed(2) + ', radius ' + radius.toFixed(2);
     rayInfo.textContent = centerRayHitInfo(camPos);
-    sppInfo.textContent = String(spp);
     bounceInfo.textContent = String(bounces);
 
     drawRayDiagram(camPos, forward);
