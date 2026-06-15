@@ -1524,7 +1524,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <section id="quiz" class="level2">
 <h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Licht-Detektiv</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Zeit für die Abschlussprüfung! 🚀 Es warten <strong>15 Fragen</strong> rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du <strong>mindestens 11 richtig</strong>, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!</p>
+<p>Zeit für die Abschlussprüfung! 🚀 Es warten <strong>8 Fragen</strong> rund um lokale vs. globale Beleuchtung und die Rendering-Gleichung. Schaffst du <strong>mindestens 11 richtig</strong>, markiere ich Level 1 als abgeschlossen und schalte das nächste frei. Keine Angst vor Fehlern – du darfst beliebig oft neu starten!</p>
 </div>
 <style>
   .lvg-quiz {
@@ -1680,7 +1680,7 @@ window.addEventListener('DOMContentLoaded', function () {
   <div class="lvg-quiz__barwrap">
     <div class="lvg-quiz__barhead">
       <span>Fortschritt</span>
-      <span class="lvg-quiz__score" id="lvgScore">0 / 15 richtig · benötigt: 11</span>
+      <span class="lvg-quiz__score" id="lvgScore">0 / 8 richtig · benötigt: 6</span>
     </div>
     <div class="lvg-quiz__bar"><div class="lvg-quiz__fill" id="lvgFill"></div></div>
   </div>
@@ -1763,16 +1763,6 @@ window.addEventListener('DOMContentLoaded', function () {
       explain: "Color Bleeding entsteht, weil Licht von der roten Wand reflektiert wird und so indirekt den Boden einfärbt."
     },
     {
-      q: "Wofür ist der ambiente Term in lokalen Beleuchtungsmodellen gedacht?",
-      options: [
-        "Als billige, konstante Näherung ('Fake') für das fehlende globale Licht",
-        "Als exakte Lösung des Rendering-Integrals",
-        "Zur Berechnung der Spiegelreflexion"
-      ],
-      answer: 0,
-      explain: "Das Ambient-Light ist ein konstanter Grundwert, der das fehlende indirekte Licht grob ersetzt – mehr Trick als Physik."
-    },
-    {
       q: "Warum werden Schatten mit globaler Beleuchtung weicher und nicht tiefschwarz?",
       options: [
         "Weil indirektes Licht von anderen Flächen auch in den Schatten gelangt",
@@ -1781,16 +1771,6 @@ window.addEventListener('DOMContentLoaded', function () {
       ],
       answer: 0,
       explain: "Indirektes Licht 'füllt' die Schattenbereiche auf. Rein lokales Licht mit Punktlampe liefert dagegen harte, schwarze Schatten."
-    },
-    {
-      q: "Was beschreibt der Geometrie-/Sichtbarkeitsfaktor g(x, x') anschaulich?",
-      options: [
-        "Ob sich die beiden Punkte überhaupt 'sehen' können",
-        "Welche Farbe die Lichtquelle hat",
-        "Wie viele Bounces berechnet werden"
-      ],
-      answer: 0,
-      explain: "g(...) kümmert sich um Sichtbarkeit und Geometrie: Verdeckt etwas die Verbindung, trägt der Punkt kein Licht bei."
     },
     {
       q: "Radiosity und Path Tracing sind Beispiele für …",
@@ -1802,56 +1782,6 @@ window.addEventListener('DOMContentLoaded', function () {
       answer: 0,
       explain: "Beide lösen (näherungsweise) das Rendering-Integral und erfassen damit indirektes Licht – also globale Beleuchtung."
     },
-    {
-      q: "Warum ist L_e = 0 auf dem grauen Boden in der Cornell-Box?",
-      options: [
-        "Weil der Boden selbst kein Licht emittiert – er reflektiert nur eingehendes Licht",
-        "Weil die Kamera den Boden nicht sieht",
-        "Weil das Integral auf dem Boden nicht definiert ist"
-      ],
-      answer: 0,
-      explain: "L_e gilt nur für emissive Flächen (Lampen, Bildschirme). Ein diffuser Boden hat L_e = 0 und bekommt sein Licht über das Integral."
-    },
-    {
-      q: "Was bewirkt der Cosinus-Term (ω_i·n) in der Rendering-Gleichung?",
-      options: [
-        "Er gewichtet eingehendes Licht nach dem Einfallswinkel zur Normalen – flacher = schwächer",
-        "Er dreht die Kamera um die Normalenachse",
-        "Er ersetzt die BRDF bei diffusen Materialien"
-      ],
-      answer: 0,
-      explain: "Das Skalarprodukt aus ω_i und Normalen n ist das Lambert'sche Cosinusgesetz: senkrechter Einfall trägt voll, streifender fast nicht."
-    },
-    {
-      q: "Was beschreibt die BRDF f_r (bzw. b) in der Rendering-Gleichung?",
-      options: [
-        "Wie ein Material eingehendes Licht in eine ausgehende Richtung zurückstreut",
-        "Die Position der Lichtquelle in der Szene",
-        "Die Anzahl der Pixel pro Zeile"
-      ],
-      answer: 0,
-      explain: "f_r ist eine Material-Eigenschaft: breite Keule bei diffus, schmale bei glänzend. Sie sagt, wie viel von L_i in Richtung ω_o reflektiert wird."
-    },
-    {
-      q: "Was ist L_i(x, ω_i) und wie wird es typischerweise berechnet?",
-      options: [
-        "Eingehende Radiance aus Richtung ω_i – oft per Rekursion am Strahltrefferpunkt",
-        "Die Helligkeit der Kamera-Blende",
-        "Der Emissionsterm der gleichen Fläche"
-      ],
-      answer: 0,
-      explain: "L_i ist das Licht, das von außen ankommt. In Ray/Path Tracing verfolgt man den Strahl weiter, bis L_e > 0 oder ein Hintergrund gefunden wird."
-    },
-    {
-      q: "Warum ist das Integral ∫_Ω … dω_i eine „große Summe über Hemisphären-Strahlen“?",
-      options: [
-        "Weil man in der Praxis viele Richtungen ω_i auf der Hemisphäre abtastet und die Beiträge addiert",
-        "Weil nur eine einzige Richtung pro Pixel erlaubt ist",
-        "Weil das Integral nur für emissive Flächen gilt"
-      ],
-      answer: 0,
-      explain: "Das Integral sammelt Licht aus allen Richtungen. Monte-Carlo-Verfahren ersetzen es durch eine Summe vieler zufälliger ω_i-Strahlen."
-    }
   ];
 
   function prefix() {
