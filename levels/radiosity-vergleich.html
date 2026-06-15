@@ -23,26 +23,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -235,7 +216,7 @@ window.Quarto = {
 </div>
 <section id="worum" class="level2">
 <h2 class="anchored" data-anchor-id="worum">Worum geht es?</h2>
-<p>Radiosity stammt aus der Wärmeübertragung und wurde 1984 in die Computergrafik gebracht <span class="citation" data-cites="goral1984">(<a href="#ref-goral1984" role="doc-biblioref">Goral et al. 1984</a>)</span>. Die Idee: Man zerlegt die Szene in viele kleine Flächen (<strong>Patches</strong>) und berechnet, wie viel Lichtenergie jede Fläche abgibt und von den anderen empfängt – bis sich ein <strong>Gleichgewicht</strong> einstellt.</p>
+<p>Radiosity stammt aus der Wärmeübertragung und wurde 1984 in die Computergrafik gebracht. Die Idee: Man zerlegt die Szene in viele kleine Flächen (<strong>Patches</strong>) und berechnet, wie viel Lichtenergie jede Fläche abgibt und von den anderen empfängt – bis sich ein <strong>Gleichgewicht</strong> einstellt.</p>
 <ul>
 <li><strong>Nur diffus.</strong> Radiosity nimmt an, dass alle Flächen das Licht gleichmäßig in alle Richtungen streuen (Lambert). Spiegelungen kann es daher nicht.</li>
 <li><strong>Blickwinkel-unabhängig (view-independent).</strong> Das Ergebnis ist eine Helligkeit <em>pro Fläche</em>, nicht pro Pixel. Einmal berechnet, kann man frei durch die Szene fliegen, ohne neu zu rendern – ideal für Architektur-Walkthroughs.</li>
@@ -259,7 +240,7 @@ B_i \;=\; E_i \;+\; \rho_i \sum_{j} F_{ij}\, B_j
 </section>
 <section id="brdf" class="level2">
 <h2 class="anchored" data-anchor-id="brdf">Welcher Teil der BRDF? Nur der diffuse!</h2>
-<p>Jede BRDF lässt sich gedanklich in drei Anteile zerlegen <span class="citation" data-cites="nischwitz2020">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>)</span>: einen <strong>diffusen</strong> (Licht streut gleichmäßig in alle Richtungen), einen <strong>spiegelnden</strong> (Mirror, ein scharfer Reflexionsstrahl) und einen <strong>glänzenden</strong> (Glossy, ein gerichteter Lichtkegel um die Spiegelrichtung).</p>
+<p>Jede BRDF lässt sich gedanklich in drei Anteile zerlegen: einen <strong>diffusen</strong> (Licht streut gleichmäßig in alle Richtungen), einen <strong>spiegelnden</strong> (Mirror, ein scharfer Reflexionsstrahl) und einen <strong>glänzenden</strong> (Glossy, ein gerichteter Lichtkegel um die Spiegelrichtung).</p>
 <p><span class="math display">\[
 f_r \;=\; \underbrace{f_{\text{diffus}}}_{\text{Lambert}} \;+\;
 \underbrace{f_{\text{spiegelnd}}}_{\text{Mirror}} \;+\;
@@ -851,7 +832,7 @@ window.addEventListener('DOMContentLoaded', function () {
 </section>
 <section id="vergleich" class="level2">
 <h2 class="anchored" data-anchor-id="vergleich">Der große Vergleich</h2>
-<p>Damit hast du vier Wege gesehen, ein Bild zu berechnen. Sie unterscheiden sich vor allem darin, <strong>wie gut sie globale Beleuchtung erfassen</strong> und <strong>wie teuer</strong> das ist <span class="citation" data-cites="nischwitz2020 pharr2023">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>; <a href="#ref-pharr2023" role="doc-biblioref">Pharr et al. 2023</a>)</span>.</p>
+<p>Damit hast du vier Wege gesehen, ein Bild zu berechnen. Sie unterscheiden sich vor allem darin, <strong>wie gut sie globale Beleuchtung erfassen</strong> und <strong>wie teuer</strong> das ist.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -1134,20 +1115,9 @@ window.addEventListener('DOMContentLoaded', function () {
 </div>
 
 
-
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-goral1984" class="csl-entry" role="listitem">
-Goral, Cindy M., Kenneth E. Torrance, Donald P. Greenberg, and Bennett Battaile. 1984. <span>“Modeling the Interaction of Light Between Diffuse Surfaces.”</span> <em>Proceedings of the 11th Annual Conference on Computer Graphics and Interactive Techniques (SIGGRAPH ’84)</em>, 213–22. <a href="https://doi.org/10.1145/800031.808601">https://doi.org/10.1145/800031.808601</a>.
-</div>
-<div id="ref-nischwitz2020" class="csl-entry" role="listitem">
-Nischwitz, Alfred, Max Fischer, Peter Haberäcker, and Gudrun Socher. 2020. <em>Bildverarbeitung Und Computergrafik</em>. 4th ed. Springer Vieweg.
-</div>
-<div id="ref-pharr2023" class="csl-entry" role="listitem">
-Pharr, Matt, Wenzel Jakob, and Greg Humphreys. 2023. <em>Physically Based Rendering: From Theory to Implementation</em>. 4th ed. MIT Press. <a href="https://pbr-book.org/">https://pbr-book.org/</a>.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script>
 // site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
 // include-after-body nicht, liefert aber auf jeder Seite den korrekten

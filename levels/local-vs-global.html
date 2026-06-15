@@ -23,26 +23,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -297,7 +278,7 @@ window.Quarto = {
 </section>
 <section id="worum" class="level2">
 <h2 class="anchored" data-anchor-id="worum">Worum geht es?</h2>
-<p>Eine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden <span class="citation" data-cites="nischwitz2020">(<a href="#ref-nischwitz2020" role="doc-biblioref">Nischwitz et al. 2020</a>)</span>:</p>
+<p>Eine Szene sieht erst dann „echt“ aus, wenn das Licht physikalisch plausibel verteilt wird. In der Vorlesung haben wir zwei Sichtweisen unterschieden:</p>
 <ul>
 <li><strong>Lokale Beleuchtung</strong> (z. B. Phong-Blinn): Jeder Punkt wird nur aus der direkten Lichtquelle und seinem eigenen Material beleuchtet. Schnell, aber „indirektes“ Licht fehlt – Schatten werden tiefschwarz, Farben strahlen nicht aufeinander ab.</li>
 <li><strong>Globale Beleuchtung (Global Illumination)</strong>: Licht wird auch <em>zwischen</em> Oberflächen weitergereicht. Eine rote Wand färbt den Boden leicht rötlich, Schatten werden weicher, Räume wirken stimmig.</li>
@@ -1863,14 +1844,9 @@ window.addEventListener('DOMContentLoaded', function () {
 </script>
 
 
-
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-nischwitz2020" class="csl-entry" role="listitem">
-Nischwitz, Alfred, Max Fischer, Peter Haberäcker, and Gudrun Socher. 2020. <em>Bildverarbeitung Und Computergrafik</em>. 4th ed. Springer Vieweg.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script>
 // site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
 // include-after-body nicht, liefert aber auf jeder Seite den korrekten

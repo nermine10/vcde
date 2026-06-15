@@ -23,26 +23,7 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for citations */
-div.csl-bib-body { }
-div.csl-entry {
-  clear: both;
-}
-.hanging-indent div.csl-entry {
-  margin-left:2em;
-  text-indent:-2em;
-}
-div.csl-left-margin {
-  min-width:2em;
-  float:left;
-}
-div.csl-right-inline {
-  margin-left:2em;
-  padding-left:1em;
-}
-div.csl-indent {
-  margin-left: 2em;
-}</style>
+</style>
 
 
 <script src="../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -188,7 +169,7 @@ window.Quarto = {
   <li><a href="#montecarlo" id="toc-montecarlo" class="nav-link" data-scroll-target="#montecarlo">Warum Zufall? Monte-Carlo in einer Formel</a></li>
   <li><a href="#vertiefung" id="toc-vertiefung" class="nav-link" data-scroll-target="#vertiefung">Vertiefung: Rauschen, Konvergenz &amp; Russian Roulette</a></li>
   <li><a href="#quiz" id="toc-quiz" class="nav-link" data-scroll-target="#quiz">Boss-Quiz: Pfad-Pilot</a></li>
-  <li><a href="#abschluss" id="toc-abschluss" class="nav-link" data-scroll-target="#abschluss">Geschafft?</a></li>
+  <li><a href="#abschluss" id="toc-abschluss" class="nav-link" data-scroll-target="#abschluss">Level geschafft?</a></li>
   </ul>
 </nav>
     </div>
@@ -223,7 +204,7 @@ window.Quarto = {
 </div>
 <section id="idee" class="level2">
 <h2 class="anchored" data-anchor-id="idee">Die Grundidee</h2>
-<p>Ray Tracing (Level 2) verfolgt Strahlen und wertet an jedem Treffer eine <em>direkte</em> Beleuchtung aus. Path Tracing geht einen Schritt weiter und löst das <strong>Integral der Rendering-Gleichung</strong> – also die indirekte Beleuchtung über die ganze Hemisphäre <span class="citation" data-cites="kajiya1986">(<a href="#ref-kajiya1986" role="doc-biblioref">Kajiya 1986</a>)</span>:</p>
+<p>Ray Tracing (Level 2) verfolgt Strahlen und wertet an jedem Treffer eine <em>direkte</em> Beleuchtung aus. Path Tracing geht einen Schritt weiter und löst das <strong>Integral der Rendering-Gleichung</strong> – also die indirekte Beleuchtung über die ganze Hemisphäre:</p>
 <ol type="1">
 <li>Ein Pfad startet an der Kamera und wird <strong>zufällig</strong> durch die Szene verfolgt.</li>
 <li>Jeder Treffer erzeugt einen neuen Bounce (diffus oder spiegelnd) – die nächste Richtung wird <strong>zufällig gezogen</strong>.</li>
@@ -796,14 +777,14 @@ window.addEventListener('DOMContentLoaded', function () {
 <section id="quiz" class="level2">
 <h2 class="anchored" data-anchor-id="quiz">Boss-Quiz: Pfad-Pilot</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Letzte Prüfung der Lernreise! 🌌 Beantworte mindestens <strong>6 von 8 Fragen</strong> richtig, dann markiere ich Path Tracing als abgeschlossen. Schau bei Bedarf in die Erklärungen und versuch es einfach nochmal.</p>
+<p>Quiz zu <strong>Level 3 – Path Tracing</strong>! 🌌 Beantworte mindestens <strong>6 von 8 Fragen</strong> richtig, dann schalte ich <strong>Radiosity &amp; Vergleich</strong> frei. Schau bei Bedarf in die Erklärungen und versuch es einfach nochmal.</p>
 </div>
 <div data-vcde-quiz="path-tracing">
   <script type="application/json">
   {
     "levelId": "path-tracing",
-    "title": "Abschluss-Quiz: Path Tracing 🌌",
-    "intro": "8 Fragen zu Monte-Carlo, Konvergenz und Russian Roulette. Du brauchst mindestens 6 richtige Antworten.",
+    "title": "Quiz: Path Tracing 🌌",
+    "intro": "8 Fragen zu Monte-Carlo, Konvergenz und Russian Roulette. Mindestens 6 richtig – dann geht es weiter zu Radiosity & Vergleich.",
     "passRatio": 0.7,
     "questions": [
       {
@@ -892,20 +873,15 @@ window.addEventListener('DOMContentLoaded', function () {
 </div>
 </section>
 <section id="abschluss" class="level2">
-<h2 class="anchored" data-anchor-id="abschluss">Geschafft?</h2>
+<h2 class="anchored" data-anchor-id="abschluss">Level geschafft?</h2>
 <div data-vcde-mascot="true" data-name="Lumi">
-<p>Wow, du hast die ganze Lernreise durchgespielt – von der Rendering-Gleichung bis zum Path Tracing! 🎉 Mit bestandenem Quiz ist dein Fortschritt gespeichert. Schau dir deinen vollständigen Stand auf der Landkarte an.</p>
+<p>Stark – <strong>Level 3</strong> ist geschafft! 🎉 Du kennst jetzt Monte-Carlo-Pfade, Konvergenz und Russian Roulette. Auf der Landkarte wartet als Nächstes <strong>Radiosity &amp; Vergleich</strong> – dort siehst du eine ganz andere Herangehensweise an globale Beleuchtung und den großen Methodenvergleich.</p>
 </div>
-
 
 
 </section>
 
-<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
-<div id="ref-kajiya1986" class="csl-entry" role="listitem">
-Kajiya, James T. 1986. <span>“The Rendering Equation.”</span> <em>Proceedings of the 13th Annual Conference on Computer Graphics and Interactive Techniques (SIGGRAPH ’86)</em>, 143–50. <a href="https://doi.org/10.1145/15922.15902">https://doi.org/10.1145/15922.15902</a>.
-</div>
-</div></section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script>
 // site.js relativ zum Seitenstamm laden. Quarto rewritet Pfade in
 // include-after-body nicht, liefert aber auf jeder Seite den korrekten
