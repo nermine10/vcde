@@ -42,7 +42,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ca3b0bad74abff5a4150c4bb03718eca.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-5c1852a8eb6ae8895333615d564770cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -676,7 +676,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
         ctx.fillStyle = '#1f2937';
         ctx.font = '12px sans-serif';
-        ctx.fillText('Konvergenz des Helligkeits-Schaetzers', 10, 16);
+        ctx.fillText('Konvergenz des Helligkeits-Schätzers', 10, 16);
     }
 
     function setButtonState(buttons) {
@@ -812,12 +812,12 @@ window.addEventListener('DOMContentLoaded', function () {
       {
         "q": "Mit welcher Rate sinkt der Monte-Carlo-Fehler bei N Samples?",
         "options": [
-          "Mit etwa 1/√N – vierfache Samples halbieren das Rauschen",
-          "Linear mit 1/N – doppelte Samples halbieren das Rauschen",
+          "Mit etwa $1/\\sqrt{N}$ – vierfache Samples halbieren das Rauschen",
+          "Linear mit $1/N$ – doppelte Samples halbieren das Rauschen",
           "Exponentiell – wenige Samples genügen"
         ],
         "answer": 0,
-        "explain": "Der Standardfehler einer Monte-Carlo-Schätzung fällt mit 1/√N. Um das Rauschen zu halbieren, braucht man die vierfache Sample-Zahl."
+        "explain": "Der Standardfehler einer Monte-Carlo-Schätzung fällt mit $1/\\sqrt{N}$. Um das Rauschen zu halbieren, braucht man die vierfache Sample-Zahl."
       },
       {
         "q": "Warum entsteht in einem Path-Tracing-Bild überhaupt Rauschen?",
@@ -837,7 +837,7 @@ window.addEventListener('DOMContentLoaded', function () {
           "Die Auflösung dynamisch zu erhöhen"
         ],
         "answer": 0,
-        "explain": "Pfade werden mit Wahrscheinlichkeit 1−p beendet; Überlebende werden mit 1/p hochskaliert. Im Erwartungswert bleibt das Ergebnis korrekt."
+        "explain": "Pfade werden mit Wahrscheinlichkeit $1-p$ beendet; Überlebende werden mit $1/p$ hochskaliert. Im Erwartungswert bleibt das Ergebnis korrekt."
       },
       {
         "q": "Was bewirkt cosinus-gewichtetes Sampling (Importance Sampling)?",
@@ -879,6 +879,7 @@ window.addEventListener('DOMContentLoaded', function () {
 <div data-vcde-mascot="true" data-name="Lumi">
 <p>Stark – <strong>Level 3</strong> ist geschafft! 🎉 Du kennst jetzt Monte-Carlo-Pfade, Konvergenz und Russian Roulette. Auf der Landkarte wartet als Nächstes <strong>Radiosity &amp; Vergleich</strong> – dort siehst du eine ganz andere Herangehensweise an globale Beleuchtung und den großen Methodenvergleich.</p>
 </div>
+
 
 
 </section>

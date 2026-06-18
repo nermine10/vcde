@@ -42,7 +42,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-ca3b0bad74abff5a4150c4bb03718eca.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-5c1852a8eb6ae8895333615d564770cb.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1521,14 +1521,14 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var QUESTIONS = [
     {
-      q: "Wofür steht der Term L_e in der Rendering-Gleichung L = g·(L_e + ∫ b·L dx'')?",
+      q: "Wofür steht der Term $L_e$ in der Rendering-Gleichung $L = g \\cdot (L_e + \\int b \\cdot L \\, dx'')$?",
       options: [
         "Für das Licht, das die Oberfläche selbst emittiert",
         "Für die Position der Kamera im Raum",
         "Für die Anzahl der Strahlen pro Pixel"
       ],
       answer: 0,
-      explain: "L_e ist der Emissionsterm – z. B. eine Lampe, eine Flamme oder ein leuchtender Bildschirm."
+      explain: "$L_e$ ist der Emissionsterm – z. B. eine Lampe, eine Flamme oder ein leuchtender Bildschirm."
     },
     {
       q: "Was ist der zentrale Unterschied zwischen lokaler und globaler Beleuchtung?",
@@ -1543,15 +1543,15 @@ window.addEventListener('DOMContentLoaded', function () {
     {
       q: "Welcher Term beschreibt, wie ein Material eingehendes Licht zurückwirft – die BRDF?",
       options: [
-        "b(x, x', x'')",
-        "g(x, x')",
-        "L_e(x, x')"
+        "$b(x, x', x'')$",
+        "$g(x, x')$",
+        "$L_e(x, x')$"
       ],
       answer: 0,
-      explain: "b(...) ist die Reflexions-/Streufunktion (BRDF): breite Keule bei diffusen, schmale bei glänzenden Flächen."
+      explain: "$b(\\ldots)$ ist die Reflexions-/Streufunktion (BRDF): breite Keule bei diffusen, schmale bei glänzenden Flächen."
     },
     {
-      q: "Was leistet das Integral ∫_S … dx'' in der Rendering-Gleichung?",
+      q: "Was leistet das Integral $\\int_S \\ldots \\, dx''$ in der Rendering-Gleichung?",
       options: [
         "Es sammelt einfallendes Licht aus allen Richtungen über die umgebenden Flächen S ein",
         "Es berechnet nur die Auflösung der Kamera",
@@ -1628,21 +1628,69 @@ window.addEventListener('DOMContentLoaded', function () {
         .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
 
+    function formatQuizText(str) {
+      if (str == null) return "";
+      var parts = String(str).split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+      var out = "";
+      for (var i = 0; i < parts.length; i++) {
+        var part = parts[i];
+        if (!part) continue;
+        if (part.indexOf("$$") === 0 && part.lastIndexOf("$$") === part.length - 2) {
+          out += '<span class="math display">\\[' + esc(part.slice(2, -2)) + "\\]</span>";
+        } else if (part.charAt(0) === "$" && part.charAt(part.length - 1) === "$" && part.length > 1) {
+          out += '<span class="math inline">\\(' + esc(part.slice(1, -1)) + "\\)</span>";
+        } else {
+          out += esc(part);
+        }
+      }
+      return out;
+    }
+
+    function typesetQuizMath(el) {
+      function run() {
+        if (window.Quarto && typeof window.Quarto.typesetMath === "function") {
+          window.Quarto.typesetMath(el);
+        } else if (window.MathJax && typeof window.MathJax.typesetPromise === "function") {
+          window.MathJax.typesetPromise([el]).catch(function () {});
+        } else if (window.MathJax && typeof window.MathJax.typeset === "function") {
+          window.MathJax.typeset([el]);
+        }
+      }
+      function whenReady() {
+        if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+          window.MathJax.startup.promise.then(run);
+        } else {
+          run();
+        }
+      }
+      if (window.MathJax || (window.Quarto && window.Quarto.typesetMath)) whenReady();
+      else {
+        var n = 0;
+        var t = setInterval(function () {
+          if (window.MathJax || (window.Quarto && window.Quarto.typesetMath) || ++n > 50) {
+            clearInterval(t);
+            whenReady();
+          }
+        }, 100);
+      }
+    }
+
     function render() {
       var html = "";
       QUESTIONS.forEach(function (q, qi) {
         html += '<div class="lvg-q" data-qi="' + qi + '" data-answer="' + q.answer + '">';
         html += '<span class="lvg-q__num">Frage ' + (qi + 1) + ' / ' + QUESTIONS.length + '</span>';
-        html += '<p class="lvg-q__text">' + esc(q.q) + '</p>';
+        html += '<p class="lvg-q__text">' + formatQuizText(q.q) + '</p>';
         q.options.forEach(function (opt, oi) {
           html += '<label class="lvg-opt" data-oi="' + oi + '">' +
             '<input type="radio" name="' + gid + '-' + qi + '" value="' + oi + '">' +
-            '<span>' + esc(opt) + '</span></label>';
+            '<span>' + formatQuizText(opt) + '</span></label>';
         });
-        html += '<p class="lvg-q__explain">💡 ' + esc(q.explain) + '</p>';
+        html += '<p class="lvg-q__explain">💡 ' + formatQuizText(q.explain) + '</p>';
         html += '</div>';
       });
       qWrap.innerHTML = html;
+      typesetQuizMath(qWrap);
     }
 
     function setBar(correct) {
@@ -1768,6 +1816,7 @@ window.addEventListener('DOMContentLoaded', function () {
   }
 })();
 </script>
+
 
 
 </section>
