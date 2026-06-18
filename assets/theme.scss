@@ -313,6 +313,17 @@ a.vcde-card:hover {
   margin: 0 0 0.6rem;
 }
 
+.vcde-quiz__q-text mjx-container,
+.vcde-quiz__opt mjx-container,
+.vcde-quiz__explain mjx-container,
+.lvg-q__text mjx-container,
+.lvg-opt mjx-container,
+.lvg-q__explain mjx-container {
+  display: inline !important;
+  margin: 0 0.08em;
+  vertical-align: baseline;
+}
+
 .vcde-quiz__opt {
   display: flex;
   align-items: flex-start;

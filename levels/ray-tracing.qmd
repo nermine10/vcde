@@ -1517,7 +1517,7 @@ nochmal – Fehler sind erlaubt!
           "Er ersetzt die Kamera durch eine zweite Lichtquelle"
         ],
         "answer": 0,
-        "explain": "Der Schattenstrahl testet die Sichtbarkeit zur Lampe. Wird er blockiert, ist g = 0 und der Punkt liegt im Schatten."
+        "explain": "Der Schattenstrahl testet die Sichtbarkeit zur Lampe. Wird er blockiert, ist $g = 0$ und der Punkt liegt im Schatten."
       },
       {
         "q": "Wie lautet das Reflexionsgesetz an einer glatten Oberfläche?",
@@ -1527,17 +1527,17 @@ nochmal – Fehler sind erlaubt!
           "Der reflektierte Strahl steht immer senkrecht zur Oberfläche"
         ],
         "answer": 0,
-        "explain": "Bei idealer Spiegelung gilt α = β: Einfalls- und Ausfallswinkel zur Flächennormalen sind gleich."
+        "explain": "Bei idealer Spiegelung gilt $\\alpha = \\beta$: Einfalls- und Ausfallswinkel zur Flächennormalen sind gleich."
       },
       {
         "q": "Brechung folgt dem Snellius-Gesetz. Welcher Zusammenhang gilt?",
         "options": [
-          "sin α / sin γ = n₂ / n₁",
-          "α + γ = 90°",
-          "n₁ · n₂ = 1 unabhängig vom Winkel"
+          "$\\sin\\alpha / \\sin\\gamma = n_2 / n_1$",
+          "$\\alpha + \\gamma = 90°$",
+          "$n_1 \\cdot n_2 = 1$ unabhängig vom Winkel"
         ],
         "answer": 0,
-        "explain": "Snellius: sin(Einfallswinkel)/sin(Brechungswinkel) = n₂/n₁. Der Strahl knickt beim Medienwechsel ab."
+        "explain": "Snellius: $\\sin\\alpha / \\sin\\gamma = n_2 / n_1$. Der Strahl knickt beim Medienwechsel ab."
       },
       {
         "q": "Was sagt der Fresnel-Effekt über flache (streifende) Blickwinkel?",
@@ -1567,7 +1567,7 @@ nochmal – Fehler sind erlaubt!
           "Es ist identisch zum lokalen Phong-Blinn-Modell"
         ],
         "answer": 0,
-        "explain": "Path Tracing schätzt das Integral ∫ b·L dx'' mit Zufallspfaden (Monte-Carlo) und liefert damit echte globale Beleuchtung."
+        "explain": "Path Tracing schätzt das Integral $\\int b \\cdot L \\, dx''$ mit Zufallspfaden (Monte-Carlo) und liefert damit echte globale Beleuchtung."
       }
     ]
   }

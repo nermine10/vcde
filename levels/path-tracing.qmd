@@ -497,7 +497,7 @@ window.addEventListener('DOMContentLoaded', function () {
 
 		ctx.fillStyle = '#1f2937';
 		ctx.font = '12px sans-serif';
-		ctx.fillText('Konvergenz des Helligkeits-Schaetzers', 10, 16);
+		ctx.fillText('Konvergenz des Helligkeits-Schätzers', 10, 16);
 	}
 
 	function setButtonState(buttons) {
@@ -653,12 +653,12 @@ Erklärungen und versuch es einfach nochmal.
       {
         "q": "Mit welcher Rate sinkt der Monte-Carlo-Fehler bei N Samples?",
         "options": [
-          "Mit etwa 1/√N – vierfache Samples halbieren das Rauschen",
-          "Linear mit 1/N – doppelte Samples halbieren das Rauschen",
+          "Mit etwa $1/\\sqrt{N}$ – vierfache Samples halbieren das Rauschen",
+          "Linear mit $1/N$ – doppelte Samples halbieren das Rauschen",
           "Exponentiell – wenige Samples genügen"
         ],
         "answer": 0,
-        "explain": "Der Standardfehler einer Monte-Carlo-Schätzung fällt mit 1/√N. Um das Rauschen zu halbieren, braucht man die vierfache Sample-Zahl."
+        "explain": "Der Standardfehler einer Monte-Carlo-Schätzung fällt mit $1/\\sqrt{N}$. Um das Rauschen zu halbieren, braucht man die vierfache Sample-Zahl."
       },
       {
         "q": "Warum entsteht in einem Path-Tracing-Bild überhaupt Rauschen?",
@@ -678,7 +678,7 @@ Erklärungen und versuch es einfach nochmal.
           "Die Auflösung dynamisch zu erhöhen"
         ],
         "answer": 0,
-        "explain": "Pfade werden mit Wahrscheinlichkeit 1−p beendet; Überlebende werden mit 1/p hochskaliert. Im Erwartungswert bleibt das Ergebnis korrekt."
+        "explain": "Pfade werden mit Wahrscheinlichkeit $1-p$ beendet; Überlebende werden mit $1/p$ hochskaliert. Im Erwartungswert bleibt das Ergebnis korrekt."
       },
       {
         "q": "Was bewirkt cosinus-gewichtetes Sampling (Importance Sampling)?",

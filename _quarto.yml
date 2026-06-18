@@ -30,6 +30,7 @@ website:
 
 format:
   html:
+    math: mathjax
     theme:
       - cosmo
       - assets/theme.scss

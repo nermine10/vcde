@@ -196,6 +196,66 @@
       .replace(/"/g, "&quot;");
   }
 
+  // $...$ / $$...$$ → Quarto-kompatible <span class="math">-Markup für MathJax.
+  function formatQuizText(str) {
+    if (str == null) return "";
+    var parts = String(str).split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+    var out = "";
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (!part) continue;
+      if (part.indexOf("$$") === 0 && part.lastIndexOf("$$") === part.length - 2) {
+        out += '<span class="math display">\\[' + escapeHTML(part.slice(2, -2)) + "\\]</span>";
+      } else if (part.charAt(0) === "$" && part.charAt(part.length - 1) === "$" && part.length > 1) {
+        out += '<span class="math inline">\\(' + escapeHTML(part.slice(1, -1)) + "\\)</span>";
+      } else {
+        out += escapeHTML(part);
+      }
+    }
+    return out;
+  }
+
+  function typesetQuizMath(target) {
+    var el = resolve(target);
+    if (!el) return Promise.resolve();
+
+    function run() {
+      if (window.Quarto && typeof window.Quarto.typesetMath === "function") {
+        window.Quarto.typesetMath(el);
+        return Promise.resolve();
+      }
+      if (window.MathJax && typeof window.MathJax.typesetPromise === "function") {
+        return window.MathJax.typesetPromise([el]).catch(function () {});
+      }
+      if (window.MathJax && typeof window.MathJax.typeset === "function") {
+        window.MathJax.typeset([el]);
+      }
+      return Promise.resolve();
+    }
+
+    function whenReady() {
+      if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+        return window.MathJax.startup.promise.then(run);
+      }
+      return run();
+    }
+
+    if (window.MathJax || (window.Quarto && window.Quarto.typesetMath)) {
+      return whenReady();
+    }
+
+    return new Promise(function (resolve) {
+      var attempts = 0;
+      var timer = setInterval(function () {
+        attempts++;
+        if (window.MathJax || (window.Quarto && window.Quarto.typesetMath) || attempts > 50) {
+          clearInterval(timer);
+          whenReady().then(resolve);
+        }
+      }, 100);
+    });
+  }
+
   // ---- Rendering: Landkarte -------------------------------------------------
   function renderMap(target) {
     var el = resolve(target);
@@ -351,17 +411,17 @@
 
     questions.forEach(function (q, qi) {
       html += '<div class="vcde-quiz__q" data-qi="' + qi + '" data-answer="' + q.answer + '">';
-      html += '<p class="vcde-quiz__q-text">' + (qi + 1) + ". " + escapeHTML(q.q) + "</p>";
+      html += '<p class="vcde-quiz__q-text">' + (qi + 1) + ". " + formatQuizText(q.q) + "</p>";
       (q.options || []).forEach(function (opt, oi) {
         var gid = groupPrefix + "-" + qi;
         html +=
           '<label class="vcde-quiz__opt" data-oi="' + oi + '">' +
             '<input type="radio" name="' + gid + '" value="' + oi + '">' +
-            "<span>" + escapeHTML(opt) + "</span>" +
+            "<span>" + formatQuizText(opt) + "</span>" +
           "</label>";
       });
       if (q.explain) {
-        html += '<p class="vcde-quiz__explain">' + escapeHTML(q.explain) + "</p>";
+        html += '<p class="vcde-quiz__explain">' + formatQuizText(q.explain) + "</p>";
       }
       html += "</div>";
     });
@@ -375,6 +435,7 @@
     html += "</div>";
 
     el.innerHTML = html;
+    typesetQuizMath(el);
 
     var root = el.querySelector(".vcde-quiz");
     var checkBtn = root.querySelector("[data-quiz-check]");
@@ -610,7 +671,9 @@
     renderLevelBar: renderLevelBar,
     renderComplete: renderComplete,
     mascotHTML: mascotHTML,
-    mountMascot: mountMascot
+    mountMascot: mountMascot,
+    formatQuizText: formatQuizText,
+    typesetQuizMath: typesetQuizMath
   };
 
   if (document.readyState === "loading") {

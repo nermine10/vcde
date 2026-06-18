@@ -51,6 +51,319 @@ die Lampe, dann der Boden, dann färben die Wände den Boden ein … bis sich ni
 mehr ändert.
 :::
 
+## Schritt für Schritt: ein Mini-Beispiel {#mini-beispiel}
+
+Statt einer ganzen Cornell-Box nehmen wir nur **drei Flächen**: eine Deckenlampe,
+eine rote Wand und einen weißen Boden. Klicke auf **„Bounce +1"** und beobachte,
+wie sich das Licht Schritt für Schritt verteilt – links als Skizze, rechts als
+Zahlen aus der Radiosity-Gleichung $B_i = E_i + \rho_i \sum_j F_{ij} B_j$.
+
+```{=html}
+<style>
+	.rm-wrap { margin: 1rem 0 1.4rem; padding: 1rem; border-radius: 14px; border: 1px solid #d1d5db; background: linear-gradient(180deg, #fbfdff, #f3f7fd); }
+	.rm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+	@media (max-width: 820px) { .rm-grid { grid-template-columns: 1fr; } }
+	.rm-card { border: 1px solid #d1d5db; border-radius: 12px; background: #fff; overflow: hidden; }
+	.rm-head { margin: 0; padding: 0.55rem 0.75rem; font-size: 0.9rem; font-weight: 700; border-bottom: 1px solid #e5e7eb; background: #f8fafc; color: #1f2937; }
+	.rm-svgbox { padding: 0.5rem; }
+	.rm-svg { width: 100%; height: auto; display: block; }
+	.rm-tablebox { padding: 0.7rem 0.8rem; }
+	.rm-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+	.rm-table th, .rm-table td { padding: 0.4rem 0.5rem; text-align: center; border-bottom: 1px solid #eef2f7; }
+	.rm-table th { color: #6b7280; font-weight: 600; }
+	.rm-face { display: inline-flex; align-items: center; gap: 0.4rem; }
+	.rm-swatch { width: 0.85rem; height: 0.85rem; border-radius: 3px; border: 1px solid rgba(0,0,0,0.15); }
+	.rm-bnum { font-variant-numeric: tabular-nums; font-weight: 700; color: #111827; }
+	.rm-delta { font-variant-numeric: tabular-nums; font-size: 0.82rem; color: #059669; }
+	.rm-delta--zero { color: #9ca3af; }
+	.rm-formula { margin: 0.7rem 0 0; padding: 0.6rem 0.7rem; border-radius: 9px; background: #f5f3ff; border: 1px solid #ddd6fe; font-size: 0.86rem; line-height: 1.7; color: #1f2937; min-height: 1.2rem; }
+	.rm-formula--empty { display: none; }
+	.rm-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.8rem; }
+	.rm-sliderrow { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.7rem; }
+	.rm-sliderrow label { font-size: 0.82rem; font-weight: 700; color: #4f46e5; white-space: nowrap; }
+	.rm-range { flex: 1 1 auto; }
+	.rm-btn { border: 1px solid #4f46e5; background: #4f46e5; color: #fff; border-radius: 999px; padding: 0.45rem 0.95rem; font-size: 0.85rem; font-weight: 700; cursor: pointer; }
+	.rm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+	.rm-btn--ghost { background: #fff; color: #4f46e5; }
+	.rm-step { font-size: 0.82rem; color: #4f46e5; font-weight: 700; }
+	.rm-caption { margin: 0.75rem 0 0; font-size: 0.88rem; color: #374151; line-height: 1.45; }
+	.rm-arrow { transition: opacity 0.4s ease, stroke-width 0.2s ease; }
+	.rm-flow { stroke-dasharray: 6 5; animation: rm-dash 0.9s linear infinite; }
+	@keyframes rm-dash { to { stroke-dashoffset: -22; } }
+	#rmWall, #rmFloor { transition: fill 0.45s ease; }
+	.rm-fmatrix { margin: 0.9rem 0 0; }
+	.rm-fmatrix summary { cursor: pointer; font-size: 0.84rem; font-weight: 700; color: #4f46e5; }
+	.rm-fgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #e5e7eb; border: 1px solid #e5e7eb; border-radius: 6px; overflow: hidden; font-size: 0.82rem; margin-top: 0.5rem; }
+	.rm-fgrid > div { background: #fff; padding: 0.35rem 0.4rem; text-align: center; }
+	.rm-fgrid .rm-fh { background: #f8fafc; color: #6b7280; font-weight: 600; }
+	.rm-fnote { font-size: 0.76rem; color: #6b7280; margin: 0.4rem 0 0; }
+</style>
+
+<div class="rm-wrap">
+	<div class="rm-grid">
+		<article class="rm-card">
+			<h3 class="rm-head">Lichtfluss (Skizze)</h3>
+			<div class="rm-svgbox">
+				<svg class="rm-svg" viewBox="0 0 320 240" role="img" aria-label="Skizze: Lampe, rote Wand und weißer Boden">
+					<rect x="0" y="0" width="320" height="240" fill="#0b1020" rx="8"></rect>
+					<!-- Boden -->
+					<rect id="rmFloor" x="40" y="180" width="240" height="26" rx="4" fill="#1f2433"></rect>
+					<text x="160" y="222" fill="#94a3b8" font-size="11" text-anchor="middle">Boden (weiß)</text>
+					<!-- Wand -->
+					<rect id="rmWall" x="40" y="60" width="26" height="120" rx="4" fill="#3a1417"></rect>
+					<text x="53" y="52" fill="#94a3b8" font-size="11" text-anchor="middle">Wand</text>
+					<!-- Lampe -->
+					<circle id="rmLamp" cx="210" cy="58" r="16" fill="#fde68a"></circle>
+					<text x="210" y="34" fill="#fde68a" font-size="11" text-anchor="middle">Lampe</text>
+					<!-- direkte Strahlen -->
+					<line id="rmLtoB" class="rm-arrow" x1="210" y1="74" x2="170" y2="180" stroke="#fcd34d" stroke-width="3" opacity="0" marker-end="url(#rmHead)"></line>
+					<line id="rmLtoW" class="rm-arrow" x1="196" y1="62" x2="66" y2="110" stroke="#fcd34d" stroke-width="3" opacity="0" marker-end="url(#rmHead)"></line>
+					<!-- indirekte Strahlen (Bounce) -->
+					<line id="rmWtoB" class="rm-arrow" x1="66" y1="150" x2="150" y2="184" stroke="#f87171" stroke-width="3" opacity="0" marker-end="url(#rmHeadR)"></line>
+					<line id="rmBtoW" class="rm-arrow" x1="150" y1="180" x2="66" y2="160" stroke="#cbd5e1" stroke-width="3" opacity="0" marker-end="url(#rmHeadW)"></line>
+					<defs>
+						<marker id="rmHead" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#fcd34d"></path></marker>
+						<marker id="rmHeadR" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f87171"></path></marker>
+						<marker id="rmHeadW" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#cbd5e1"></path></marker>
+					</defs>
+				</svg>
+			</div>
+			<details class="rm-fmatrix" style="padding: 0 0.7rem 0.7rem;">
+				<summary>Formfaktoren anzeigen</summary>
+				<div class="rm-fgrid">
+					<div class="rm-fh"></div>
+					<div class="rm-fh">von Lampe</div>
+					<div class="rm-fh">von Wand</div>
+					<div class="rm-fh">von Boden</div>
+					<div class="rm-fh">Wand</div>
+					<div>0,35</div>
+					<div>—</div>
+					<div>0,25</div>
+					<div class="rm-fh">Boden</div>
+					<div>0,50</div>
+					<div>0,25</div>
+					<div>—</div>
+				</div>
+				<p class="rm-fnote">F<sub>ij</sub> = Anteil der Energie von Fläche j, der bei Fläche i ankommt. Der Boden „sieht" die Lampe stärker als die Wand.</p>
+			</details>
+		</article>
+
+		<section class="rm-card">
+			<h3 class="rm-head">Radiosity-Werte <span class="rm-step" id="rmStepLabel">Bounce 0</span></h3>
+			<div class="rm-tablebox">
+				<table class="rm-table">
+					<thead>
+						<tr><th>Fläche</th><th>E</th><th>&rho;</th><th>B (aktuell)</th><th>&Delta;B</th></tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><span class="rm-face"><span class="rm-swatch" style="background:#fde68a"></span>Lampe</span></td>
+							<td>100</td><td>0,0</td>
+							<td><span class="rm-bnum" id="rmBL">100</span></td>
+							<td><span class="rm-delta rm-delta--zero" id="rmDL">—</span></td>
+						</tr>
+						<tr>
+							<td><span class="rm-face"><span class="rm-swatch" style="background:#dc2626"></span>Wand</span></td>
+							<td>0</td><td>0,7</td>
+							<td><span class="rm-bnum" id="rmBW">0</span></td>
+							<td><span class="rm-delta rm-delta--zero" id="rmDW">—</span></td>
+						</tr>
+						<tr>
+							<td><span class="rm-face"><span class="rm-swatch" style="background:#f1f5f9"></span>Boden</span></td>
+							<td>0</td><td>0,8</td>
+							<td><span class="rm-bnum" id="rmBB">0</span></td>
+							<td><span class="rm-delta rm-delta--zero" id="rmDB">—</span></td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="rm-formula rm-formula--empty" id="rmFormula"></div>
+				<div class="rm-sliderrow">
+					<label for="rmSlider">Bounce <span id="rmSliderVal">0</span></label>
+					<input id="rmSlider" class="rm-range" type="range" min="0" max="6" step="1" value="0">
+				</div>
+				<div class="rm-controls">
+					<button class="rm-btn" id="rmStep">Bounce +1</button>
+					<button class="rm-btn rm-btn--ghost" id="rmPlay">▶ Abspielen</button>
+					<button class="rm-btn rm-btn--ghost" id="rmReset">Zurücksetzen</button>
+				</div>
+			</div>
+		</section>
+	</div>
+	<p class="rm-caption" id="rmCaption">Start: Nur die Lampe leuchtet (B = E = 100). Wand und Boden sind noch dunkel.</p>
+</div>
+
+<script>
+(function () {
+	var E = { L: 100, W: 0, B: 0 };
+	var rho = { L: 0, W: 0.7, B: 0.8 };
+	// Formfaktoren F[empfänger][sender]: Anteil der Energie von "sender", der bei "empfänger" ankommt.
+	var F = {
+		W: { L: 0.35, B: 0.25 },
+		B: { L: 0.50, W: 0.25 }
+	};
+
+	var MAX = 6;
+
+	// Alle Bounce-Zustände 0..MAX vorab per Jacobi-Iteration berechnen, damit der
+	// Slider beliebig vor- und zurückspringen kann.
+	var history = [{ L: E.L, W: 0, B: 0 }];
+	for (var k = 1; k <= MAX; k++) {
+		var p = history[k - 1];
+		history.push({
+			L: E.L,
+			W: E.W + rho.W * (F.W.L * p.L + F.W.B * p.B),
+			B: E.B + rho.B * (F.B.L * p.L + F.B.W * p.W)
+		});
+	}
+
+	var iter = 0;
+	var B = history[0];
+	var timer = null;
+
+	var elBL = document.getElementById('rmBL');
+	var elBW = document.getElementById('rmBW');
+	var elBB = document.getElementById('rmBB');
+	var elDL = document.getElementById('rmDL');
+	var elDW = document.getElementById('rmDW');
+	var elDB = document.getElementById('rmDB');
+	var elStep = document.getElementById('rmStep');
+	var elPlay = document.getElementById('rmPlay');
+	var elReset = document.getElementById('rmReset');
+	var elStepLabel = document.getElementById('rmStepLabel');
+	var elCaption = document.getElementById('rmCaption');
+	var elFormula = document.getElementById('rmFormula');
+	var elSlider = document.getElementById('rmSlider');
+	var elSliderVal = document.getElementById('rmSliderVal');
+
+	var lamp = document.getElementById('rmLamp');
+	var wall = document.getElementById('rmWall');
+	var floor = document.getElementById('rmFloor');
+	var aLtoB = document.getElementById('rmLtoB');
+	var aLtoW = document.getElementById('rmLtoW');
+	var aWtoB = document.getElementById('rmWtoB');
+	var aBtoW = document.getElementById('rmBtoW');
+
+	function fmt(x) { return x.toFixed(1).replace('.', ','); }
+
+	function mix(hi, lo, t) {
+		var r = Math.round(lo[0] + (hi[0] - lo[0]) * t);
+		var g = Math.round(lo[1] + (hi[1] - lo[1]) * t);
+		var b = Math.round(lo[2] + (hi[2] - lo[2]) * t);
+		return 'rgb(' + r + ',' + g + ',' + b + ')';
+	}
+
+	function typeset(el) {
+		if (window.Quarto && typeof window.Quarto.typesetMath === 'function') {
+			window.Quarto.typesetMath(el);
+		} else if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+			window.MathJax.typesetPromise([el]).catch(function () {});
+		} else if (window.MathJax && typeof window.MathJax.typeset === 'function') {
+			window.MathJax.typeset([el]);
+		}
+	}
+
+	function setArrows() {
+		var direct = iter >= 1 ? 1 : 0;
+		var indirect = iter >= 2 ? 1 : 0;
+		[aLtoB, aLtoW].forEach(function (a) {
+			a.style.opacity = direct;
+			a.classList.toggle('rm-flow', direct === 1);
+		});
+		[aWtoB, aBtoW].forEach(function (a) {
+			a.style.opacity = indirect;
+			a.classList.toggle('rm-flow', indirect === 1);
+		});
+	}
+
+	function setDelta(el, d) {
+		if (iter === 0) { el.textContent = '—'; el.classList.add('rm-delta--zero'); return; }
+		var z = Math.abs(d) < 0.05;
+		el.textContent = (d >= 0 ? '+' : '−') + fmt(Math.abs(d));
+		el.classList.toggle('rm-delta--zero', z);
+	}
+
+	function paint() {
+		elBL.textContent = fmt(B.L);
+		elBW.textContent = fmt(B.W);
+		elBB.textContent = fmt(B.B);
+		elStepLabel.textContent = 'Bounce ' + iter;
+		elSlider.value = iter;
+		elSliderVal.textContent = iter;
+
+		var prev = iter > 0 ? history[iter - 1] : null;
+		setDelta(elDL, 0);
+		setDelta(elDW, prev ? B.W - prev.W : 0);
+		setDelta(elDB, prev ? B.B - prev.B : 0);
+
+		var tW = Math.min(1, B.W / 35);
+		var tB = Math.min(1, B.B / 50);
+		var bleed = Math.min(1, B.W / 35); // wie stark der Boden Rot von der Wand abbekommt
+		var litFloor = [245, Math.round(245 - 70 * bleed), Math.round(249 - 95 * bleed)];
+		wall.setAttribute('fill', mix([220, 38, 38], [58, 20, 23], tW));
+		floor.setAttribute('fill', mix(litFloor, [31, 36, 51], tB));
+		lamp.setAttribute('opacity', '1');
+		setArrows();
+	}
+
+	function caption() {
+		if (iter === 0) return 'Start: Nur die Lampe leuchtet (B = E = 100). Wand und Boden sind noch dunkel.';
+		if (iter === 1) return 'Bounce 1 – direktes Licht: Die Lampe bestrahlt Wand und Boden direkt. Der Boden empfängt am meisten (großer Formfaktor), die Wand etwas weniger.';
+		if (iter === 2) return 'Bounce 2 – erstes indirektes Licht: Jetzt reichen Wand und Boden Licht aneinander weiter. Die rote Wand färbt den Boden leicht ein (Color Bleeding).';
+		if (iter >= MAX) return 'Konvergenz: Die Werte ändern sich kaum noch (ΔB ≈ 0) – die Energiebilanz ist im Gleichgewicht. Genau das ist die fertige Radiosity-Lösung.';
+		return 'Bounce ' + iter + ' – die Flächen tauschen weiter Licht aus. Mit jedem Schritt wird ΔB kleiner: die Lösung konvergiert.';
+	}
+
+	function buildFormula() {
+		if (iter === 0) {
+			elFormula.classList.add('rm-formula--empty');
+			elFormula.innerHTML = '';
+			return;
+		}
+		var prev = history[iter - 1];
+		var curr = history[iter];
+		var wand = '\\(B_W = 0 + 0{,}7\\,(0{,}35\\cdot' + fmt(prev.L) + ' + 0{,}25\\cdot' + fmt(prev.B) + ') = ' + fmt(curr.W) + '\\)';
+		var boden = '\\(B_B = 0 + 0{,}8\\,(0{,}50\\cdot' + fmt(prev.L) + ' + 0{,}25\\cdot' + fmt(prev.W) + ') = ' + fmt(curr.B) + '\\)';
+		elFormula.classList.remove('rm-formula--empty');
+		elFormula.innerHTML =
+			'<span class="math inline">' + wand + '</span><br>' +
+			'<span class="math inline">' + boden + '</span>';
+		typeset(elFormula);
+	}
+
+	function goTo(n) {
+		iter = Math.max(0, Math.min(MAX, n));
+		B = history[iter];
+		elStep.disabled = iter >= MAX;
+		paint();
+		elCaption.textContent = caption();
+		buildFormula();
+	}
+
+	function stopPlay() {
+		if (timer) { clearInterval(timer); timer = null; }
+		elPlay.textContent = '▶ Abspielen';
+	}
+
+	function play() {
+		if (timer) { stopPlay(); return; }
+		if (iter >= MAX) goTo(0);
+		elPlay.textContent = '⏸ Pause';
+		timer = setInterval(function () {
+			if (iter >= MAX) { stopPlay(); return; }
+			goTo(iter + 1);
+		}, 1200);
+	}
+
+	elStep.addEventListener('click', function () { stopPlay(); goTo(iter + 1); });
+	elPlay.addEventListener('click', play);
+	elReset.addEventListener('click', function () { stopPlay(); goTo(0); });
+	elSlider.addEventListener('input', function () { stopPlay(); goTo(parseInt(elSlider.value, 10)); });
+
+	goTo(0);
+})();
+</script>
+```
+
 ## Welcher Teil der BRDF? Nur der diffuse! {#brdf}
 
 Jede BRDF lässt sich gedanklich in drei Anteile zerlegen: einen
@@ -675,8 +988,7 @@ zwischen beiden Zuständen um:
 
 > Hinweis: Im Browser nähern wir die Radiosity-Bounces über zunehmendes
 > Umgebungslicht und farbige „Bleed"-Lichter an (echtzeitfähig). Eine
-> physikalisch exakte Lösung liefert ein Offline-Renderer wie Blender Cycles –
-> diesen Ground-Truth-Vergleich bauen wir als Nächstes ein.
+> physikalisch exakte Lösung liefert ein Offline-Renderer wie Blender Cycles.
 
 ## Der große Vergleich {#vergleich}
 
@@ -851,7 +1163,7 @@ du die komplette Lernwelt gemeistert.
         "explain": "Radiosity nimmt rein diffuse (Lambertsche) Flächen an und berechnet den diffusen Energieaustausch zwischen ihnen."
       },
       {
-        "q": "Was beschreibt der Formfaktor F_ij?",
+        "q": "Was beschreibt der Formfaktor $F_{ij}$?",
         "options": [
           "Den Anteil der von Fläche j abgegebenen Energie, der bei Fläche i ankommt",
           "Die Farbe der Fläche i",
@@ -911,7 +1223,7 @@ du die komplette Lernwelt gemeistert.
         "explain": "Path Tracing löst die volle Rendering-Gleichung inkl. diffuser und spiegelnder Mehrfachreflexionen – auf Kosten der Rechenzeit."
       },
       {
-        "q": "Die Radiosity-Gleichung B_i = E_i + ρ_i · Σ F_ij·B_j ist im Kern …",
+        "q": "Die Radiosity-Gleichung $B_i = E_i + \\rho_i \\sum_j F_{ij} B_j$ ist im Kern …",
         "options": [
           "eine diffuse Spezialform der Rendering-Gleichung",
           "völlig unabhängig von der Rendering-Gleichung",
