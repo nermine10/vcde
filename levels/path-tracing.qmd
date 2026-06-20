@@ -14,7 +14,7 @@ und beobachte, wie das Rauschen abnimmt.
 
 ## Die Grundidee {#idee}
 
-Ray Tracing (Level 2) verfolgt Strahlen und wertet an jedem Treffer eine *direkte*
+Ray Tracing verfolgt Strahlen und wertet an jedem Treffer eine *direkte*
 Beleuchtung aus. Path Tracing geht einen Schritt weiter und löst das **Integral der
 Rendering-Gleichung** – also die indirekte Beleuchtung über die ganze Hemisphäre:
 
@@ -26,27 +26,548 @@ Rendering-Gleichung** – also die indirekte Beleuchtung über die ganze Hemisph
 5. Mehr Samples pro Pixel reduzieren das Rauschen, brauchen aber mehr Rechenzeit.
 6. Russian Roulette beendet unwichtige lange Pfade effizient – **ohne Bias**.
 
+## Von der Rendering-Gleichung zum Schätzer {#re-to-mc}
+
+Zur Erinnerung: die **Rendering-Gleichung** – mit denselben Symbolen wie bisher,
+damit nichts durcheinandergerät:
+
+$$
+L(x, x', \lambda)
+= g(x, x', \lambda) \cdot \left(
+\underbrace{L_e(x, x', \lambda)}_{\text{Emission}}
++ \underbrace{\int_S b(x, x', x'', \lambda) \cdot L(x', x'', \lambda) \, d x''}_{\text{indirektes Licht}}
+\right)
+$$
+
+Path Tracing kümmert sich genau um den **Integral-Anteil** $\int_S b \cdot L \, dx''$:
+Am Punkt $x'$ sammeln wir das Licht von *allen* anderen Flächen $S$ ein – also von allen
+Punkten $x''$, die wir „sehen".
+
+**Warum nicht exakt?** Das Integral läuft über *unendlich viele* Flächenpunkte $x''$.
+In einer echten Szene mit Verdeckungen und Mehrfachreflexionen gibt es dafür keine
+geschlossene Lösung – wir können es nur **schätzen**.
+
+**Die Monte-Carlo-Idee:** Ersetze das Integral durch den **Mittelwert von $N$
+Zufallsstichproben** $x_k''$. Damit der Schätzer *erwartungstreu* bleibt, teilt man
+jeden Beitrag durch die Wahrscheinlichkeitsdichte $p(x_k'')$, mit der der Punkt gezogen
+wurde:
+
+$$
+\int_S h(x'')\, dx'' \;\approx\; \frac{1}{N}\sum_{k=1}^{N} \frac{h(x_k'')}{p(x_k'')}
+$$
+
+**Ein Pfad = eine Stichprobe.** Path Tracing zieht einen zufälligen Flächenpunkt $x''$,
+verfolgt den Strahl dorthin und sammelt das Licht $L(x', x'')$ ein. Je mehr Pfade pro
+Pixel, desto näher kommt der Mittelwert dem wahren Integral – der Schätzer
+**konvergiert**.
+
 ## Warum Zufall? Monte-Carlo in einer Formel {#montecarlo}
 
-Das Integral über die Hemisphäre lässt sich nicht exakt lösen. Monte-Carlo schätzt
-es, indem wir $N$ zufällige Richtungen $\omega_i$ ziehen und mitteln:
+Setzt man den Integral-Anteil in den Schätzer ein, erhält man genau die Formel, die ein
+Path Tracer pro Pixel auswertet:
 
 $$
-L_o(x,\omega_o) \;\approx\; L_e(x,\omega_o) \;+\; \frac{1}{N} \sum_{k=1}^{N}
-\frac{f_r(x,\omega_k\!\to\!\omega_o)\; L_i(x,\omega_k)\; (\omega_k \cdot n)}{p(\omega_k)}
+L(x, x', \lambda) \;\approx\; g \cdot \left(
+L_e \;+\; \frac{1}{N} \sum_{k=1}^{N}
+\frac{b(x, x', x_k'')\; L(x', x_k'')}{p(x_k'')}
+\right)
 $$
 
-- $f_r$ ist die **BRDF** (Materialverhalten), $(\omega_k \cdot n)$ der **Cosinus-Term**.
-- $p(\omega_k)$ ist die **Wahrscheinlichkeitsdichte**, mit der wir die Richtung gezogen
-  haben. Zieht man Richtungen *cosinus-gewichtet* (mehr Strahlen dort, wo viel beiträgt),
-  kürzt sich der Cosinus heraus und das Rauschen sinkt – das nennt man
-  **Importance Sampling**.
+- $b(x, x', x'')$ ist die **BRDF** (Reflexions-/Streufunktion) – das Materialverhalten.
+- $p(x_k'')$ ist die **Wahrscheinlichkeitsdichte**, mit der wir den Flächenpunkt $x_k''$
+  gezogen haben. Zieht man bevorzugt dort, wo viel beiträgt (z. B. Richtung Lichtquelle),
+  sinkt das Rauschen – das nennt man **Importance Sampling**.
 
 ::: {data-vcde-mascot="true" data-name="Lumi"}
 Merke dir die wichtigste Faustregel 📏: Der Fehler (das Rauschen) sinkt nur mit
 $\mathcal{O}(1/\sqrt{N})$. Das heißt: **viermal so viele Samples** halbieren das Rauschen
 nur. Genau deshalb ist Path Tracing offline schön, aber in Echtzeit teuer!
 :::
+
+## Schritt für Schritt: Integral schätzen {#mc-mini-demo}
+
+Wir schauen auf **einen einzigen Punkt** $x'$ am Boden. Über ihm spannt sich die
+Hemisphäre – sie steht für *alle* Richtungen bzw. Flächen $S$, über die das Integral
+$\int_S b \cdot L \, dx''$ läuft.
+
+1. **Volles Integral:** Zuerst zeigt der erste Tab, was wir eigentlich berechnen wollen
+   – das Licht von *allen* Flächen $S$ gleichzeitig, mit einem festen wahren Wert $L$.
+2. **Monte Carlo:** Statt alle Flächen abzutasten, ziehst du mit **„Sample +1"**
+   einzelne zufällige Punkte $x''$. Rechts siehst du, wie sich der Mittelwert $\hat{L}$
+   Sample für Sample genau diesem wahren Wert nähert.
+3. **Russian Roulette:** Wie lange, schwache Pfade fair beendet werden.
+
+```{=html}
+<style>
+	.mcm-wrap { margin: 1rem 0 1.4rem; padding: 1rem; border-radius: 14px; border: 1px solid #d1d5db; background: linear-gradient(180deg, #fbfdff, #f3f7fd); }
+	.mcm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: start; }
+	@media (max-width: 820px) { .mcm-grid { grid-template-columns: 1fr; } }
+	.mcm-card { border: 1px solid #d1d5db; border-radius: 12px; background: #fff; overflow: hidden; }
+	.mcm-head { margin: 0; padding: 0.55rem 0.75rem; font-size: 0.9rem; font-weight: 700; border-bottom: 1px solid #e5e7eb; background: #f8fafc; color: #1f2937; }
+	.mcm-svgbox { padding: 0.5rem; }
+	.mcm-svg { width: 100%; height: auto; display: block; }
+	.mcm-body { padding: 0.75rem 0.85rem 0.9rem; font-size: 0.9rem; color: #374151; }
+	.mcm-modes { display: flex; gap: 0.5rem; margin-bottom: 0.7rem; }
+	.mcm-modebtn { flex: 1 1 auto; border: 1px solid #4f46e5; background: #fff; color: #4f46e5; border-radius: 999px; padding: 0.4rem 0.7rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+	.mcm-modebtn.active { background: #4f46e5; color: #fff; }
+	.mcm-stat { margin: 0.25rem 0; font-variant-numeric: tabular-nums; }
+	.mcm-stat b { color: #111827; }
+	.mcm-formula { margin: 0.65rem 0; padding: 0.55rem 0.7rem; border-radius: 9px; background: #f5f3ff; border: 1px solid #ddd6fe; font-size: 0.86rem; line-height: 1.6; min-height: 1.2rem; }
+	.mcm-spark { width: 100%; height: 90px; display: block; border: 1px solid #e5e7eb; border-radius: 8px; background: #f8fafc; margin-top: 0.4rem; }
+	.mcm-controls { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+	.mcm-btn { border: 1px solid #4f46e5; background: #4f46e5; color: #fff; border-radius: 999px; padding: 0.45rem 0.9rem; font-size: 0.84rem; font-weight: 700; cursor: pointer; }
+	.mcm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+	.mcm-btn--ghost { background: #fff; color: #4f46e5; }
+	.mcm-sliderrow { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.6rem; }
+	.mcm-sliderrow label { font-size: 0.82rem; font-weight: 700; color: #4f46e5; white-space: nowrap; }
+	.mcm-range { flex: 1 1 auto; }
+	.mcm-caption { margin: 0.6rem 0 0; font-size: 0.86rem; color: #374151; line-height: 1.45; }
+	.mcm-bars { margin: 0.5rem 0 0; }
+	.mcm-bar { display: flex; align-items: center; gap: 0.5rem; margin: 0.3rem 0; font-size: 0.82rem; }
+	.mcm-bar__label { width: 4.6rem; color: #6b7280; white-space: nowrap; }
+	.mcm-bar__track { flex: 1 1 auto; height: 14px; background: #eef2f7; border-radius: 7px; overflow: hidden; }
+	.mcm-bar__fill { height: 100%; background: linear-gradient(90deg, #6366f1, #a855f7); transition: width 0.3s ease; }
+	.mcm-bar__val { width: 3.2rem; text-align: right; font-variant-numeric: tabular-nums; color: #111827; font-weight: 700; }
+	.mcm-bar--dead .mcm-bar__fill { background: #ef4444; }
+	.mcm-hidden { display: none; }
+</style>
+
+<div class="mcm-wrap">
+	<div class="mcm-modes">
+		<button class="mcm-modebtn active" id="mcmModeG">1 · Volles Integral</button>
+		<button class="mcm-modebtn" id="mcmModeA">2 · Monte Carlo</button>
+		<button class="mcm-modebtn" id="mcmModeB">3 · Russian Roulette</button>
+	</div>
+	<div class="mcm-grid">
+		<article class="mcm-card">
+			<h3 class="mcm-head" id="mcmSvgHead">Das volle Integral über die Hemisphäre</h3>
+			<div class="mcm-svgbox">
+				<svg class="mcm-svg" viewBox="0 0 320 230" role="img" aria-label="Hemisphäre über einem Bodenpunkt mit Sample-Strahlen">
+					<rect x="0" y="0" width="320" height="230" fill="#0b1020" rx="8"></rect>
+					<!-- Gefüllte Hemisphäre (volles Integral) -->
+					<path id="mcmDome" d="M 40 192 A 120 120 0 0 1 280 192 Z" fill="rgba(99,102,241,0.10)" stroke="none"></path>
+					<!-- Dichter Strahlenfächer (volles Integral, dynamisch) -->
+					<g id="mcmFan" class="mcm-hidden"></g>
+					<!-- Hemisphäre -->
+					<path d="M 40 192 A 120 120 0 0 1 280 192" fill="none" stroke="#334155" stroke-width="2"></path>
+					<!-- Licht-Fenster auf der Hemisphäre -->
+					<path id="mcmLightArc" d="" fill="none" stroke="#fde047" stroke-width="7" stroke-linecap="round"></path>
+					<!-- Boden -->
+					<line x1="20" y1="192" x2="300" y2="192" stroke="#475569" stroke-width="2"></line>
+					<!-- Normale -->
+					<line x1="160" y1="192" x2="160" y2="78" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 4"></line>
+					<text x="166" y="86" fill="#7dd3fc" font-size="10">n</text>
+					<!-- Sample-Strahlen (dynamisch) -->
+					<g id="mcmRays"></g>
+					<!-- Pfad-Segmente für RR-Modus (dynamisch) -->
+					<g id="mcmPath" class="mcm-hidden"></g>
+					<!-- Bodenpunkt -->
+					<circle cx="160" cy="192" r="4" fill="#f97316"></circle>
+					<text x="160" y="212" fill="#94a3b8" font-size="10" text-anchor="middle">Punkt x</text>
+				</svg>
+			</div>
+		</article>
+
+		<section class="mcm-card">
+			<div class="mcm-body">
+				<!-- Modus G: volles Integral (Ground Truth) -->
+				<div id="mcmPanelG">
+					<p class="mcm-stat">Das <b>exakte Integral</b> berücksichtigt das Licht aus <b>allen</b> Richtungen der Hemisphäre <b>gleichzeitig</b> – gewichtet mit dem Cosinus-Term.</p>
+					<div class="mcm-formula" id="mcmGFormula"></div>
+					<p class="mcm-stat"><b>Wahrer Wert:</b> <span id="mcmTrue">–</span></p>
+					<div class="mcm-controls">
+						<button class="mcm-btn" id="mcmGShow">Alle Richtungen zeigen</button>
+						<button class="mcm-btn mcm-btn--ghost" id="mcmGoMC">→ Mit Monte Carlo annähern</button>
+					</div>
+					<p class="mcm-caption" id="mcmCaptionG">Stell dir unendlich viele Strahlen über die ganze Hemisphäre vor. Ihre gewichtete Summe ist der wahre Wert – genau diesen will Monte Carlo schätzen, ohne alle Richtungen abzutasten.</p>
+				</div>
+
+				<!-- Modus A -->
+				<div id="mcmPanelA" class="mcm-hidden">
+					<p class="mcm-stat"><b>Samples N:</b> <span id="mcmN">0</span> &nbsp;·&nbsp; <b>Treffer:</b> <span id="mcmHits">0</span></p>
+					<p class="mcm-stat"><b>Letzter Beitrag c<sub>k</sub>:</b> <span id="mcmLast">–</span></p>
+					<div class="mcm-formula" id="mcmFormula"></div>
+					<canvas class="mcm-spark" id="mcmSpark" width="420" height="90"></canvas>
+					<div class="mcm-sliderrow">
+						<label for="mcmSlider">N = <span id="mcmSliderVal">0</span></label>
+						<input id="mcmSlider" class="mcm-range" type="range" min="0" max="64" step="1" value="0">
+					</div>
+					<div class="mcm-controls">
+						<button class="mcm-btn" id="mcmStep">Sample +1</button>
+						<button class="mcm-btn mcm-btn--ghost" id="mcmPlay">▶ Abspielen</button>
+						<button class="mcm-btn mcm-btn--ghost" id="mcmReset">Zurücksetzen</button>
+					</div>
+					<p class="mcm-caption" id="mcmCaptionA">Noch kein Sample gezogen. Jeder Strahl ist eine Zufallsrichtung auf der Hemisphäre.</p>
+				</div>
+
+				<!-- Modus B -->
+				<div id="mcmPanelB" class="mcm-hidden">
+					<p class="mcm-stat"><b>Throughput pro Bounce</b> (Anteil der Energie, der weiterläuft):</p>
+					<div class="mcm-bars" id="mcmBars"></div>
+					<div class="mcm-formula" id="mcmRrFormula"></div>
+					<div class="mcm-controls">
+						<button class="mcm-btn" id="mcmRoll">🎲 Pfad würfeln</button>
+						<button class="mcm-btn mcm-btn--ghost" id="mcmRrReset">Zurücksetzen</button>
+					</div>
+					<p class="mcm-caption" id="mcmCaptionB">Ein Pfad streut mehrfach. Mit jedem Bounce sinkt der Throughput. Ab Bounce 3 entscheidet Russian Roulette, ob er weiterläuft.</p>
+				</div>
+			</div>
+		</section>
+	</div>
+</div>
+
+<script>
+(function () {
+	function prefixReady(fn) {
+		if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+		else fn();
+	}
+
+	prefixReady(function () {
+		var svgNS = 'http://www.w3.org/2000/svg';
+		var CX = 160, CY = 192, R = 120;
+		var L_POWER = 3.0;
+		// Licht-Fenster in Grad (φ von Normale, negativ = links).
+		var LIGHT0 = -34, LIGHT1 = -6;
+
+		// Exakter Integralwert: bei cosinus-gewichtetem Sampling ist sin(φ)
+		// gleichverteilt auf [-1, 1]. Der Anteil der Hemisphäre, der auf das
+		// Licht-Fenster entfällt, ist daher (sin φ1 − sin φ0) / 2.
+		var SIN0 = Math.sin(LIGHT0 * Math.PI / 180);
+		var SIN1 = Math.sin(LIGHT1 * Math.PI / 180);
+		var L_TRUE = L_POWER * (SIN1 - SIN0) / 2;
+
+		// ---- gemeinsame Helfer ----
+		function rimPoint(phiDeg) {
+			var r = phiDeg * Math.PI / 180;
+			return { x: CX + R * Math.sin(r), y: CY - R * Math.cos(r) };
+		}
+		function fmt(x, d) { return x.toFixed(d === undefined ? 2 : d).replace('.', ','); }
+		function typeset(el) {
+			if (window.Quarto && typeof window.Quarto.typesetMath === 'function') window.Quarto.typesetMath(el);
+			else if (window.MathJax && window.MathJax.typesetPromise) window.MathJax.typesetPromise([el]).catch(function () {});
+			else if (window.MathJax && window.MathJax.typeset) window.MathJax.typeset([el]);
+		}
+
+		// ---- Modus A: Monte-Carlo-Sampling ----
+		var MAXN = 64;
+		var samples = [];      // { phi, hit, c }
+		var runningMean = [];  // Mittelwert nach k Samples
+		var rngState = 0;
+
+		function rand() {
+			rngState = (rngState * 1664525 + 1013904223) % 4294967296;
+			return rngState / 4294967296;
+		}
+		function buildSamples() {
+			rngState = Math.floor(Math.random() * 4294967296);
+			samples = []; runningMean = [];
+			var sum = 0;
+			for (var k = 0; k < MAXN; k++) {
+				// cosinus-gewichtet: φ = asin(2u-1)
+				var u = rand();
+				var phi = Math.asin(2 * u - 1) * 180 / Math.PI;
+				var hit = phi >= LIGHT0 && phi <= LIGHT1;
+				var c = hit ? L_POWER : 0;
+				samples.push({ phi: phi, hit: hit, c: c });
+				sum += c;
+				runningMean.push(sum / (k + 1));
+			}
+		}
+
+		var lightArc = document.getElementById('mcmLightArc');
+		var raysG = document.getElementById('mcmRays');
+		var elN = document.getElementById('mcmN');
+		var elHits = document.getElementById('mcmHits');
+		var elLast = document.getElementById('mcmLast');
+		var elFormula = document.getElementById('mcmFormula');
+		var spark = document.getElementById('mcmSpark');
+		var slider = document.getElementById('mcmSlider');
+		var sliderVal = document.getElementById('mcmSliderVal');
+		var stepBtn = document.getElementById('mcmStep');
+		var playBtn = document.getElementById('mcmPlay');
+		var resetBtn = document.getElementById('mcmReset');
+		var captionA = document.getElementById('mcmCaptionA');
+
+		var nShown = 0;
+		var timerA = null;
+
+		(function drawLightArc() {
+			var a = rimPoint(LIGHT0), b = rimPoint(LIGHT1);
+			lightArc.setAttribute('d', 'M ' + a.x + ' ' + a.y + ' A ' + R + ' ' + R + ' 0 0 1 ' + b.x + ' ' + b.y);
+		})();
+
+		function drawRays() {
+			while (raysG.firstChild) raysG.removeChild(raysG.firstChild);
+			var start = Math.max(0, nShown - 12); // nur die letzten Strahlen zeigen
+			for (var k = start; k < nShown; k++) {
+				var s = samples[k];
+				var p = rimPoint(s.phi);
+				var line = document.createElementNS(svgNS, 'line');
+				line.setAttribute('x1', CX); line.setAttribute('y1', CY);
+				line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+				line.setAttribute('stroke', s.hit ? '#fde047' : '#475569');
+				line.setAttribute('stroke-width', s.hit ? '2' : '1');
+				line.setAttribute('opacity', k === nShown - 1 ? '1' : '0.4');
+				raysG.appendChild(line);
+			}
+		}
+
+		function drawSpark() {
+			var ctx = spark.getContext('2d');
+			if (!ctx) return;
+			var w = spark.width, h = spark.height;
+			ctx.clearRect(0, 0, w, h);
+			ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, w, h);
+			if (nShown < 1) return;
+			// Konvergenzziel = exakter Integralwert aus dem Modus "Volles Integral"
+			var target = L_TRUE;
+			var maxY = Math.max(L_POWER * 0.6, target * 1.8);
+			// Ziel-Linie
+			ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+			var yt = h - 8 - (target / maxY) * (h - 16);
+			ctx.beginPath(); ctx.moveTo(6, yt); ctx.lineTo(w - 6, yt); ctx.stroke();
+			ctx.setLineDash([]);
+			// Mittelwert-Verlauf
+			ctx.strokeStyle = '#4f46e5'; ctx.lineWidth = 2; ctx.beginPath();
+			for (var i = 0; i < nShown; i++) {
+				var x = 6 + (i / Math.max(1, MAXN - 1)) * (w - 12);
+				var y = h - 8 - (runningMean[i] / maxY) * (h - 16);
+				if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+			}
+			ctx.stroke();
+			ctx.fillStyle = '#475569'; ctx.font = '10px sans-serif';
+			ctx.fillText('Ziel L ≈ ' + fmt(target), 8, 12);
+		}
+
+		function buildFormulaA() {
+			if (nShown < 1) { elFormula.innerHTML = '<span style="color:#9ca3af">Noch kein Sample.</span>'; return; }
+			var s = samples[nShown - 1];
+			var mean = runningMean[nShown - 1];
+			var ck = s.hit
+				? '\\(c_k = b\\cdot L / p = ' + fmt(s.c) + '\\) (Fläche leuchtet)'
+				: '\\(c_k = 0\\) (kein Licht getroffen)';
+			var meanTex = '\\(\\hat{L}_{' + nShown + '} = \\frac{1}{' + nShown + '}\\sum c_k = ' + fmt(mean) + '\\)';
+			elFormula.innerHTML =
+				'<span class="math inline">' + ck + '</span><br>' +
+				'<span class="math inline">' + meanTex + '</span>';
+			typeset(elFormula);
+		}
+
+		function paintA() {
+			elN.textContent = nShown;
+			var hits = 0; for (var k = 0; k < nShown; k++) if (samples[k].hit) hits++;
+			elHits.textContent = hits;
+			elLast.textContent = nShown > 0 ? fmt(samples[nShown - 1].c) : '–';
+			slider.value = nShown; sliderVal.textContent = nShown;
+			stepBtn.disabled = nShown >= MAXN;
+			drawRays(); drawSpark(); buildFormulaA();
+			if (nShown === 0) captionA.textContent = 'Noch kein Sample gezogen. Jeder Strahl ist eine Zufallsrichtung auf der Hemisphäre.';
+			else if (nShown < 8) captionA.textContent = 'Wenige Samples: Der Mittelwert springt noch stark – das ist die Varianz (Rauschen).';
+			else if (nShown < 32) captionA.textContent = 'Mit mehr Samples beruhigt sich der Mittelwert und nähert sich dem wahren Integral.';
+			else captionA.textContent = 'Viele Samples: Der Schätzer hat sich fast eingependelt – Konvergenz mit Rate 1/√N.';
+		}
+
+		function goToA(n) {
+			nShown = Math.max(0, Math.min(MAXN, n));
+			paintA();
+		}
+		function stopPlayA() { if (timerA) { clearInterval(timerA); timerA = null; } playBtn.textContent = '▶ Abspielen'; }
+		function playA() {
+			if (timerA) { stopPlayA(); return; }
+			if (nShown >= MAXN) { buildSamples(); goToA(0); }
+			playBtn.textContent = '⏸ Pause';
+			timerA = setInterval(function () {
+				if (nShown >= MAXN) { stopPlayA(); return; }
+				goToA(nShown + 1);
+			}, 220);
+		}
+
+		stepBtn.addEventListener('click', function () { stopPlayA(); goToA(nShown + 1); });
+		playBtn.addEventListener('click', playA);
+		resetBtn.addEventListener('click', function () { stopPlayA(); buildSamples(); goToA(0); });
+		slider.addEventListener('input', function () { stopPlayA(); goToA(parseInt(slider.value, 10)); });
+
+		// ---- Modus B: Russian Roulette ----
+		var RHO = [0.82, 0.70, 0.62, 0.58, 0.55, 0.52];
+		var pathPts = [
+			{ x: 40, y: 192 }, { x: 110, y: 120 }, { x: 185, y: 168 }, { x: 250, y: 96 }, { x: 290, y: 150 }, { x: 250, y: 60 }, { x: 200, y: 120 }
+		];
+		var barsEl = document.getElementById('mcmBars');
+		var rrFormula = document.getElementById('mcmRrFormula');
+		var captionB = document.getElementById('mcmCaptionB');
+		var pathG = document.getElementById('mcmPath');
+
+		function rollPath() {
+			var throughput = 1.0;
+			var bounces = [{ label: 'Start', tp: 1.0, dead: false, note: 'volle Energie' }];
+			var dead = false;
+			for (var i = 0; i < RHO.length; i++) {
+				throughput *= RHO[i];
+				var note = '× ρ = ' + fmt(RHO[i]);
+				var thisDead = false;
+				if (i + 1 >= 3) {
+					var p = Math.min(0.9, Math.max(0.1, throughput));
+					var u = Math.random();
+					if (u > p) { thisDead = true; dead = true; note += ' · 🎲 ' + fmt(u) + ' > p=' + fmt(p) + ' → Stopp'; }
+					else { throughput /= p; note += ' · 🎲 ' + fmt(u) + ' ≤ p=' + fmt(p) + ' → ×1/p'; }
+				}
+				bounces.push({ label: 'Bounce ' + (i + 1), tp: throughput, dead: thisDead, note: note });
+				if (dead) break;
+			}
+			return bounces;
+		}
+
+		function drawPath(n) {
+			while (pathG.firstChild) pathG.removeChild(pathG.firstChild);
+			for (var i = 0; i < n && i + 1 < pathPts.length; i++) {
+				var a = pathPts[i], b = pathPts[i + 1];
+				var line = document.createElementNS(svgNS, 'line');
+				line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
+				line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+				line.setAttribute('stroke', '#a855f7'); line.setAttribute('stroke-width', '2');
+				pathG.appendChild(line);
+				var dot = document.createElementNS(svgNS, 'circle');
+				dot.setAttribute('cx', b.x); dot.setAttribute('cy', b.y); dot.setAttribute('r', '3');
+				dot.setAttribute('fill', '#c084fc');
+				pathG.appendChild(dot);
+			}
+		}
+
+		function renderRR(bounces) {
+			barsEl.innerHTML = '';
+			bounces.forEach(function (bnc) {
+				var row = document.createElement('div');
+				row.className = 'mcm-bar' + (bnc.dead ? ' mcm-bar--dead' : '');
+				row.innerHTML =
+					'<span class="mcm-bar__label">' + bnc.label + '</span>' +
+					'<span class="mcm-bar__track"><span class="mcm-bar__fill" style="width:' + Math.round(Math.min(1, bnc.tp) * 100) + '%"></span></span>' +
+					'<span class="mcm-bar__val">' + fmt(bnc.tp) + '</span>';
+				barsEl.appendChild(row);
+			});
+			var last = bounces[bounces.length - 1];
+			drawPath(bounces.length - 1);
+			if (last.dead) {
+				rrFormula.innerHTML = '<span class="math inline">\\(\\text{Pfad beendet: } u > p \\Rightarrow \\text{Stopp ohne Bias}\\)</span>';
+				captionB.textContent = 'Der Pfad wurde per Roulette beendet. Im Schnitt verfälscht das nichts: Überlebende werden mit 1/p hochgewichtet.';
+			} else {
+				rrFormula.innerHTML = '<span class="math inline">\\(\\text{Überlebt: Beitrag} \\times \\tfrac{1}{p} \\text{ hält den Erwartungswert konstant}\\)</span>';
+				captionB.textContent = 'Dieser Pfad hat alle Roulette-Stufen überlebt. Jede Überlebens-Stufe skaliert den Beitrag mit 1/p hoch.';
+			}
+			typeset(rrFormula);
+		}
+
+		document.getElementById('mcmRoll').addEventListener('click', function () { renderRR(rollPath()); });
+		document.getElementById('mcmRrReset').addEventListener('click', function () {
+			barsEl.innerHTML = ''; rrFormula.innerHTML = '';
+			while (pathG.firstChild) pathG.removeChild(pathG.firstChild);
+			captionB.textContent = 'Ein Pfad streut mehrfach. Mit jedem Bounce sinkt der Throughput. Ab Bounce 3 entscheidet Russian Roulette, ob er weiterläuft.';
+		});
+
+		// ---- Modus G: volles Integral (Ground Truth) ----
+		var fanG = document.getElementById('mcmFan');
+		var gFormula = document.getElementById('mcmGFormula');
+		var elTrue = document.getElementById('mcmTrue');
+		var captionG = document.getElementById('mcmCaptionG');
+		var FAN_N = 90; // dichter Fächer als Annäherung an "alle Richtungen"
+		var timerG = null;
+
+		function buildFanAll() {
+			while (fanG.firstChild) fanG.removeChild(fanG.firstChild);
+			for (var i = 0; i < FAN_N; i++) {
+				// gleichverteilt in sin(φ) → cosinus-gewichtete Richtungen
+				var sinPhi = -1 + 2 * (i + 0.5) / FAN_N;
+				var phi = Math.asin(sinPhi) * 180 / Math.PI;
+				var hit = phi >= LIGHT0 && phi <= LIGHT1;
+				var p = rimPoint(phi);
+				var line = document.createElementNS(svgNS, 'line');
+				line.setAttribute('x1', CX); line.setAttribute('y1', CY);
+				line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+				line.setAttribute('stroke', hit ? '#fde047' : '#475569');
+				line.setAttribute('stroke-width', hit ? '1.4' : '0.7');
+				line.setAttribute('opacity', hit ? '0.95' : '0.5');
+				fanG.appendChild(line);
+			}
+		}
+
+		function sweepFan() {
+			if (timerG) { clearInterval(timerG); timerG = null; }
+			while (fanG.firstChild) fanG.removeChild(fanG.firstChild);
+			var i = 0;
+			timerG = setInterval(function () {
+				if (i >= FAN_N) { clearInterval(timerG); timerG = null; return; }
+				var sinPhi = -1 + 2 * (i + 0.5) / FAN_N;
+				var phi = Math.asin(sinPhi) * 180 / Math.PI;
+				var hit = phi >= LIGHT0 && phi <= LIGHT1;
+				var p = rimPoint(phi);
+				var line = document.createElementNS(svgNS, 'line');
+				line.setAttribute('x1', CX); line.setAttribute('y1', CY);
+				line.setAttribute('x2', p.x); line.setAttribute('y2', p.y);
+				line.setAttribute('stroke', hit ? '#fde047' : '#475569');
+				line.setAttribute('stroke-width', hit ? '1.4' : '0.7');
+				line.setAttribute('opacity', hit ? '0.95' : '0.5');
+				fanG.appendChild(line);
+				i++;
+			}, 18);
+		}
+
+		function buildFormulaG() {
+			gFormula.innerHTML =
+				'<span class="math inline">\\(\\int_S b\\, L\\, \\mathrm{d}x^{\\prime\\prime} = ' + fmt(L_TRUE) + '\\)</span>';
+			typeset(gFormula);
+		}
+
+		// ---- Modus-Umschaltung ----
+		var modeG = document.getElementById('mcmModeG');
+		var modeA = document.getElementById('mcmModeA');
+		var modeB = document.getElementById('mcmModeB');
+		var panelG = document.getElementById('mcmPanelG');
+		var panelA = document.getElementById('mcmPanelA');
+		var panelB = document.getElementById('mcmPanelB');
+		var svgHead = document.getElementById('mcmSvgHead');
+
+		function setMode(m) {
+			var isG = m === 'G', isA = m === 'A', isB = m === 'B';
+			modeG.classList.toggle('active', isG);
+			modeA.classList.toggle('active', isA);
+			modeB.classList.toggle('active', isB);
+			panelG.classList.toggle('mcm-hidden', !isG);
+			panelA.classList.toggle('mcm-hidden', !isA);
+			panelB.classList.toggle('mcm-hidden', !isB);
+			fanG.classList.toggle('mcm-hidden', !isG);
+			raysG.classList.toggle('mcm-hidden', !isA);
+			lightArc.classList.toggle('mcm-hidden', isB);
+			pathG.classList.toggle('mcm-hidden', !isB);
+			if (isG) svgHead.textContent = 'Das volle Integral über die Hemisphäre';
+			else if (isA) svgHead.textContent = 'Monte Carlo: Zufallsstrahlen';
+			else svgHead.textContent = 'Ein Pfad mit Russian Roulette';
+			if (!isA) stopPlayA();
+			if (!isG && timerG) { clearInterval(timerG); timerG = null; }
+			if (isG) buildFanAll();
+		}
+		modeG.addEventListener('click', function () { setMode('G'); });
+		modeA.addEventListener('click', function () { setMode('A'); });
+		modeB.addEventListener('click', function () { setMode('B'); });
+
+		document.getElementById('mcmGShow').addEventListener('click', sweepFan);
+		document.getElementById('mcmGoMC').addEventListener('click', function () { setMode('A'); });
+
+		// Init
+		buildSamples();
+		goToA(0);
+		elTrue.textContent = fmt(L_TRUE);
+		buildFormulaG();
+		setMode('G');
+	});
+})();
+</script>
+```
+
+## Live-Demo: Pfade in der Szene {#demo}
+
+Die Mini-Demo oben zeigt das Prinzip an einem **einzelnen Punkt**. Hier siehst du
+dasselbe in einer **ganzen Szene** – mit Konvergenzdiagramm unten und Russian Roulette
+in Stufe 4.
 
 ```{=html}
 <style>
@@ -253,7 +774,7 @@ window.addEventListener('DOMContentLoaded', function () {
 		},
 		{
 			name: '4) Russian Roulette',
-			text: 'Lange, schwache Pfade werden probabilistisch beendet. Das spart Zeit ohne Bias.',
+			text: 'Lange, schwache Pfade werden probabilistisch beendet – wie im Modus „Russian Roulette" der Mini-Demo oben. Das spart Zeit ohne Bias.',
 			samples: 120,
 			bounces: 7,
 			rr: true
@@ -605,7 +1126,7 @@ Helligkeitswert mit mehr Samples **einpendelt**. Das ist Konvergenz in Aktion.
   bleibt der Schätzer **erwartungstreu** (unbiased) und wird trotzdem schneller.
 
 ::: {data-vcde-mascot="true" data-name="Lumi"}
-Kurz zur Einordnung 🧭: **Ray Tracing** (Level 2) glänzt bei scharfen
+Kurz zur Einordnung 🧭: **Ray Tracing** glänzt bei scharfen
 Spiegelungen und harten Schatten, tut sich aber schwer mit diffusem indirektem
 Licht. **Path Tracing** löst genau dieses Integral statistisch und liefert
 Farbbleeding, weiche Schatten und Kaustiken – die volle globale Beleuchtung. Der
