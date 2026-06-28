@@ -61,9 +61,8 @@ einfach weg!
 
 ## Schritt für Schritt: die Rendering-Gleichung {#re-walkthrough}
 
-Wie im Video von Eric Arnebäck gehen wir dieselbe Cornell-Box **Term für Term**
-durch – diesmal als interaktive **3D-Szene** in Babylon.js. Klicke die Stufen durch,
-drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.
+Wir gehen dieselbe Cornell-Box **Term für Term** durch – mit **exakt der Rendering-Gleichung aus der Vorlesung**. Klicke die Stufen durch,
+drehe die Kamera und beobachte, welcher Term der Gleichung gerade hervorgehoben ist.
 
 ::: {.column-page}
 
@@ -317,15 +316,10 @@ drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.
         <div class="req-eq" id="reqEquation"></div>
 
         <div class="req-row" id="reqRayRow">
-          <label for="reqRayCount">Hemisphären-Strahlen</label>
+          <label for="reqRayCount">Beiträge im Integral</label>
           <input id="reqRayCount" class="req-range" type="range" min="3" max="24" value="8" />
           <span id="reqRayVal" style="font-size:0.8rem;font-weight:700;color:#4338ca;">8</span>
         </div>
-
-        <label class="req-toggle" id="reqCosRow">
-          <input type="checkbox" id="reqCosToggle" checked />
-          Cosinus-Gewichtung (ω<sub>i</sub>·n) anzeigen
-        </label>
 
         <div class="req-nav">
           <button type="button" class="req-btn" id="reqPrev">← Zurück</button>
@@ -360,11 +354,9 @@ window.addEventListener('DOMContentLoaded', function () {
   var lumiText = document.getElementById('reqLumiText');
   var raySlider = document.getElementById('reqRayCount');
   var rayVal = document.getElementById('reqRayVal');
-  var cosToggle = document.getElementById('reqCosToggle');
   var prevBtn = document.getElementById('reqPrev');
   var nextBtn = document.getElementById('reqNext');
   var rayRow = document.getElementById('reqRayRow');
-  var cosRow = document.getElementById('reqCosRow');
   if (!canvas || !toolbar) return;
 
   function prefix() {
@@ -385,66 +377,43 @@ window.addEventListener('DOMContentLoaded', function () {
 
   var STAGES = [
     {
-      id: 'cam', name: '1) Bild & Kamerastrahl',
-      text: 'Zum Rendern schicken wir für <strong>jedes Pixel</strong> der Bildfläche einen Strahl in die Szene – hier als 5×5-Raster vor der Kamera. Für den Walkthrough wählen wir <strong>ein grün markiertes Pixel</strong> und verfolgen genau diesen Strahl bis zum Bodenpunkt <strong>x</strong>.',
-      hl: 'Lo', lumi: 'In der Praxis hat das Bild Millionen Pixel – wir zoomen auf einen einzelnen Strahl.',
-      showGrid: true, showRays: false, showCos: false,
+      id: 'L', name: '1) L(x, x′, λ)',
+      text: 'Zum Rendern schicken wir für <strong>jedes Pixel</strong> der Bildfläche einen Strahl in die Szene – hier als 5×5-Raster vor der Kamera. Für den Walkthrough wählen wir <strong>ein grün markiertes Pixel</strong> und verfolgen genau diesen Strahl bis zum Bodenpunkt <strong>x</strong>. Das gesuchte <strong>L(x, x′, λ)</strong> ist die Helligkeit entlang dieser Verbindung (x ↔ x′).',
+      hl: 'L', lumi: 'In der Praxis hat das Bild Millionen Pixel – wir zoomen auf einen einzelnen Strahl.',
+      showGrid: true,
       view: { alpha: FRONT_ALPHA, beta: Math.PI / 2.48, radius: 12.5, target: [0, 1.35, 0.15] }
     },
     {
-      id: 'lo', name: '2) L<sub>o</sub> am Trefferpunkt',
-      text: 'Die Pixel-Farbe ist die ausgehende Helligkeit L<sub>o</sub>(x, ω<sub>o</sub>): Licht, das am Trefferpunkt x in Richtung der Kamera (ω<sub>o</sub>) abgestrahlt wird.',
-      hl: 'Lo', lumi: 'ω<sub>o</sub> zeigt vom Boden zurück zur Kamera – so „sieht“ das Pixel den Punkt x.',
-      showRays: false, showCos: false,
-      view: { alpha: FRONT_ALPHA + 0.22, beta: Math.PI / 2.75, radius: 6.8, target: [0.12, 0.45, 0.08] }
-    },
-    {
-      id: 'le', name: '3) Emission L<sub>e</sub>',
-      text: 'L<sub>o</sub> beginnt mit L<sub>e</sub>: leuchtet x selbst? Der Boden ist nicht emissiv → L<sub>e</sub> = 0. Nur die gelbe Deckenlampe hat L<sub>e</sub> > 0.',
-      hl: 'Le', lumi: 'Nicht jede Fläche leuchtet von selbst – der Boden reflektiert nur!',
-      showRays: false, showCos: false,
-      view: { alpha: FRONT_ALPHA - 0.08, beta: Math.PI / 2.55, radius: 9.5, target: [0, 1.85, 0] }
-    },
-    {
-      id: 'hemi', name: '4) Hemisphäre / Integral',
-      text: 'Der Rest kommt vom Integral ∫<sub>Ω</sub>: Am Punkt x müssen wir alle möglichen eingehenden Richtungen ω<sub>i</sub> auf der Hemisphäre über der Normalen n betrachten.',
-      hl: 'int', lumi: 'Stell dir eine Halbkugel auf den Boden – jeder Strahl ist ein Kandidat für eingehendes Licht.',
-      showRays: true, showCos: false,
-      view: { alpha: FRONT_ALPHA + 0.18, beta: Math.PI / 2.85, radius: 5.8, target: [0.12, 0.38, 0.08] }
-    },
-    {
-      id: 'wi', name: '5) Ein Strahl ω<sub>i</sub>',
-      text: 'Wir verfolgen einen konkreten ω<sub>i</sub>-Strahl von x. Er trifft die weiße Decke – dort ist L<sub>e</sub> ebenfalls 0 (die Decke leuchtet nicht von selbst).',
-      hl: 'int', lumi: '', showRays: false, showCos: false, singleWi: true,
-      view: { alpha: FRONT_ALPHA + 0.12, beta: Math.PI / 2.65, radius: 7.2, target: [0.08, 1.55, 0.05] }
-    },
-    {
-      id: 'li', name: '6) Rekursion & L<sub>i</sub>',
-      text: 'Von der Decke schicken wir einen weiteren Strahl zur Lampe. L<sub>i</sub>(x, ω<sub>i</sub>) ist die Radiance, die bei x aus Richtung ω<sub>i</sub> ankommt – berechnet durch Rekursion am Decke-Trefferpunkt.',
-      hl: 'Li', lumi: 'L<sub>i</sub> ist „Licht von woanders“ – wir verfolgen den Strahl weiter, bis eine Quelle L<sub>e</sub> > 0 liefert.',
-      showRays: false, showCos: false, recurse: true,
+      id: 'g', name: '2) g(x, x′, λ)',
+      text: 'Der Faktor <strong>g</strong> beschreibt Geometrie und <strong>Sichtbarkeit</strong> zwischen x und x′: Wie weit sind die Punkte entfernt? Liegt ein Objekt dazwischen? Ist g = 0, kommt kein Licht an (Schatten).',
+      hl: 'g', lumi: 'Ohne freie Sicht – kein Lichttransport auf diesem Weg.',
       view: { alpha: FRONT_ALPHA - 0.05, beta: Math.PI / 2.5, radius: 8.8, target: [0, 2.05, 0] }
     },
     {
-      id: 'cos', name: '7) Cosinus (ω<sub>i</sub>·n)',
-      text: 'Der Term (ω<sub>i</sub>·n) ist das Skalarprodukt aus eingehender Richtung und Normalen n. Steht ω<sub>i</sub> senkrecht auf der Fläche, trägt der Strahl voll bei; liegt er flach, fast gar nicht.',
-      hl: 'cos', lumi: 'Das ist das Lambert’sche Cosinus-Gesetz – schräges Licht wirkt schwächer.',
-      showRays: false, showCos: true, singleWi: true,
-      view: { alpha: FRONT_ALPHA + 0.2, beta: Math.PI / 2.9, radius: 5.2, target: [0.12, 0.32, 0.08] }
+      id: 'le', name: '3) L<sub>e</sub>(x, x′, λ)',
+      text: 'Die Klammer beginnt mit <strong>L<sub>e</sub></strong>: Leuchtet x selbst? Der Boden ist nicht emissiv → L<sub>e</sub> = 0. Nur die gelbe Deckenlampe hat L<sub>e</sub> > 0.',
+      hl: 'Le', lumi: 'Nicht jede Fläche leuchtet von selbst – der Boden reflektiert nur!',
+      view: { alpha: FRONT_ALPHA - 0.08, beta: Math.PI / 2.55, radius: 9.5, target: [0, 1.85, 0] }
     },
     {
-      id: 'brdf', name: '8) BRDF f<sub>r</sub>',
-      text: 'f<sub>r</sub> beschreibt das Material: Wie viel einfallendes Licht wird in Richtung ω<sub>o</sub> reflektiert? Diffuser Boden ≈ 0,7, perfektes Schwarz = 0, Spiegel → 1 in Spiegelrichtung.',
-      hl: 'fr', lumi: 'Die BRDF ist die „Farbe und Oberflächenart“ in der Formel.',
-      showRays: false, showCos: false, singleWi: true,
+      id: 'int', name: '4) ∫<sub>S</sub> indirektes Licht',
+      text: 'Der Integralterm summiert Licht, das über alle Flächen <strong>S</strong> der Szene zu x gelangt – das ist <strong>indirektes Licht</strong>. Praktisch müssen viele Pfade von anderen Flächen berücksichtigt werden.',
+      hl: 'int', lumi: 'Jeder Strahl steht für einen Beitrag aus dem Integral ∫<sub>S</sub> … d x″.',
+      showRays: true,
+      view: { alpha: FRONT_ALPHA + 0.18, beta: Math.PI / 2.85, radius: 5.8, target: [0.12, 0.38, 0.08] }
+    },
+    {
+      id: 'b', name: '5) b(x, x′, x″, λ)',
+      text: '<strong>b</strong> ist die Reflexionsfunktion (BRDF): Wie stark wirft das Material an x Licht von x″ in Richtung x′ zurück? Diffuser Boden reflektiert in viele Richtungen, ein Spiegel nur spiegelnd.',
+      hl: 'b', lumi: 'b kodiert Material und Oberflächenart – nicht jede Fläche reflektiert gleich.',
       view: { alpha: FRONT_ALPHA + 0.16, beta: Math.PI / 2.88, radius: 4.9, target: [0.12, 0.28, 0.08] }
     },
     {
-      id: 'sum', name: '9) Summe = Integral',
-      text: 'Für jeden Hemisphären-Strahl werten wir f<sub>r</sub> · L<sub>i</sub> · (ω<sub>i</sub>·n) aus und addieren – das Integral ist die große Summe über alle ω<sub>i</sub>. Ergebnis + L<sub>e</sub> = L<sub>o</sub>.',
-      hl: 'int', lumi: 'Geschafft! Genau so arbeiten Ray- und Path Tracer – nur mit vielen Strahlen statt einer Handvoll.',
-      showRays: true, showCos: true, sum: true,
-      view: { alpha: FRONT_ALPHA + 0.1, beta: Math.PI / 2.7, radius: 7.8, target: [0.12, 0.65, 0.08] }
+      id: 'Lrec', name: '6) L(x′, x″, λ)',
+      text: '<strong>L</strong> im Integral ist Licht zwischen zwei Flächenpunkten x′ und x″. Es wird <strong>rekursiv</strong> berechnet: Von x geht ein Strahl zur Decke (x″), von dort weiter zur Lampe mit L<sub>e</sub> > 0.',
+      hl: 'Lrec', lumi: 'Geschafft! So kettet sich indirektes Licht zusammen – genau die Idee hinter Ray- und Path Tracern.',
+      recurse: true,
+      view: { alpha: FRONT_ALPHA + 0.12, beta: Math.PI / 2.65, radius: 7.2, target: [0.08, 1.55, 0.05] }
     }
   ];
 
@@ -462,9 +431,6 @@ window.addEventListener('DOMContentLoaded', function () {
   var GRID_ROWS = 5, GRID_COLS = 5;
   var PIXEL_ROW = 2, PIXEL_COL = 2;
   var PLANE_W = 1.35, PLANE_H = 0.95, PLANE_DIST = 1.05;
-
-  var WI = CEIL_HIT.clone().subtract(HIT).normalize();
-  var WO = CAM_POS.clone().subtract(HIT).normalize();
 
   var engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
   var scene = new BABYLON.Scene(engine);
@@ -490,13 +456,14 @@ window.addEventListener('DOMContentLoaded', function () {
   var vizMeshes = [];
 
   function eqHtml(hl) {
-    var Lo = hl === 'Lo' ? '<span class="hl">L<sub>o</sub>(x,ω<sub>o</sub>)</span>' : '<span class="dim">L<sub>o</sub>(x,ω<sub>o</sub>)</span>';
-    var Le = hl === 'Le' ? '<span class="hl">L<sub>e</sub>(x,ω<sub>o</sub>)</span>' : 'L<sub>e</sub>(x,ω<sub>o</sub>)';
-    var fr = hl === 'fr' ? '<span class="hl">f<sub>r</sub>(x,ω<sub>i</sub>→ω<sub>o</sub>)</span>' : 'f<sub>r</sub>(x,ω<sub>i</sub>→ω<sub>o</sub>)';
-    var Li = hl === 'Li' ? '<span class="hl">L<sub>i</sub>(x,ω<sub>i</sub>)</span>' : 'L<sub>i</sub>(x,ω<sub>i</sub>)';
-    var cos = hl === 'cos' ? '<span class="hl">(ω<sub>i</sub>·n)</span>' : '(ω<sub>i</sub>·n)';
-    var integ = hl === 'int' ? '<span class="hl">∫<sub>Ω</sub> … dω<sub>i</sub></span>' : '∫<sub>Ω</sub> … dω<sub>i</sub>';
-    return Lo + ' = ' + Le + ' + ' + integ.replace('…', fr + ' ' + Li + ' ' + cos);
+    var L = hl === 'L' ? '<span class="hl">L(x, x′, λ)</span>' : '<span class="dim">L(x, x′, λ)</span>';
+    var g = hl === 'g' ? '<span class="hl">g(x, x′, λ)</span>' : 'g(x, x′, λ)';
+    var Le = hl === 'Le' ? '<span class="hl">L<sub>e</sub>(x, x′, λ)</span>' : 'L<sub>e</sub>(x, x′, λ)';
+    var b = hl === 'b' ? '<span class="hl">b(x, x′, x″, λ)</span>' : 'b(x, x′, x″, λ)';
+    var Lrec = hl === 'Lrec' ? '<span class="hl">L(x′, x″, λ)</span>' : 'L(x′, x″, λ)';
+    var intPart = '∫<sub>S</sub> ' + b + ' · ' + Lrec + ' d x″';
+    if (hl === 'int') intPart = '<span class="hl">' + intPart + '</span>';
+    return L + ' = ' + g + ' · ( ' + Le + ' + ' + intPart + ' )';
   }
 
   function color3(hex) {
@@ -682,8 +649,6 @@ window.addEventListener('DOMContentLoaded', function () {
     clearViz();
     var s = STAGES[stageIdx];
     var rayCount = parseInt(raySlider.value, 10);
-    var weightCos = cosToggle.checked;
-    var dotWiN = BABYLON.Vector3.Dot(WI, NORMAL);
 
     buildCameraMesh();
 
@@ -693,66 +658,43 @@ window.addEventListener('DOMContentLoaded', function () {
       var pCenter = buildPixelGrid(true);
       addLine('camRayA', CAM_POS, pCenter, color3('#22c55e'), 2.5);
       addLine('camRayB', pCenter, HIT, color3('#f97316'), 2.5);
-    } else if (stageIdx >= 0) {
+    } else {
       addLine('camRay', CAM_POS, HIT, color3('#f97316'), 2.5);
     }
 
-    if (stageIdx >= 1) {
-      addLine('woRay', HIT, HIT.clone().add(WO.clone().scale(2.2)), color3('#a78bfa'), 2);
+    if (s.id === 'g') {
+      addLine('visRay', HIT, LIGHT_POS, color3('#4ade80'), 2.5);
+      addSphere('visLight', LIGHT_POS, 0.2, color3('#4ade80'), true);
     }
 
-    if (stageIdx === 2 || stageIdx >= 2) {
+    if (s.id === 'le' || s.id === 'Lrec') {
       addSphere('leLight', LIGHT_POS, 0.28, color3('#fde047'), true);
-      if (stageIdx === 2) {
-        addSphere('leZero', HIT.clone().add(new BABYLON.Vector3(0.35, 0.08, 0)), 0.12, color3('#ef4444'), true);
-      }
+    }
+    if (s.id === 'le') {
+      addSphere('leZero', HIT.clone().add(new BABYLON.Vector3(0.35, 0.08, 0)), 0.12, color3('#ef4444'), true);
     }
 
     if (s.showRays) {
-      addDisc('hemiDisc', HIT.clone().add(new BABYLON.Vector3(0, 0.01, 0)), 1.05, color3('#38bdf8'));
+      addDisc('surfDisc', HIT.clone().add(new BABYLON.Vector3(0, 0.01, 0)), 1.05, color3('#38bdf8'));
       var dirs = hemiDirections(rayCount);
       dirs.forEach(function (d, i) {
         var cosW = BABYLON.Vector3.Dot(d, NORMAL);
         if (cosW <= 0) return;
-        var len = (s.id === 'sum' && weightCos) ? 1.1 + 1.4 * cosW : 1.8;
-        var alpha = (s.id === 'sum' && weightCos) ? 0.25 + 0.55 * cosW : 0.55;
-        var end = HIT.clone().add(d.clone().scale(len));
-        var col = color3('#38bdf8').scale(alpha);
-        addLine('hemi' + i, HIT, end, col, 1);
+        var end = HIT.clone().add(d.clone().scale(1.8));
+        addLine('surfRay' + i, HIT, end, color3('#38bdf8').scale(0.55), 1);
       });
     }
 
-    if (s.singleWi || s.id === 'cos' || s.id === 'brdf') {
-      addLine('wiRay', HIT, CEIL_HIT, color3('#22d3ee'), 2.5);
-      addSphere('wiHit', CEIL_HIT, 0.12, color3('#22d3ee'), true);
-    }
-
-    if (s.recurse || s.id === 'sum') {
-      addLine('recurseRay', CEIL_HIT, LIGHT_POS, color3('#4ade80'), 2);
-      addSphere('recurseHit', LIGHT_POS, 0.14, color3('#4ade80'), true);
-    }
-
-    if (s.showCos || (s.id === 'sum' && weightCos)) {
-      addLine('normalN', HIT, HIT.clone().add(NORMAL.clone().scale(1.3)), color3('#f472b6'), 2);
-      var proj = NORMAL.clone().scale(Math.max(0, dotWiN) * 1.1);
-      addLine('cosProj', HIT, HIT.clone().add(proj), color3('#ec4899'), 2.5);
-    }
-
-    if (s.id === 'brdf') {
+    if (s.id === 'b') {
       addDisc('brdfRing', HIT.clone().add(new BABYLON.Vector3(0, 0.015, 0)), 0.55, color3('#f59e0b'));
+      addLine('bRay', HIT, CEIL_HIT, color3('#22d3ee'), 2.5);
+      addSphere('bHit', CEIL_HIT, 0.12, color3('#22d3ee'), true);
     }
 
-    if (s.id === 'sum') {
-      var ring = BABYLON.MeshBuilder.CreateTorus('sumRing', { diameter: 1.6, thickness: 0.04, tessellation: 32 }, scene);
-      ring.position = HIT.clone().add(new BABYLON.Vector3(0, 0.03, 0));
-      ring.rotation.x = Math.PI / 2;
-      ring.parent = overlay;
-      var rm = new BABYLON.StandardMaterial('sumRingMat', scene);
-      rm.emissiveColor = color3('#6366f1');
-      rm.disableLighting = true;
-      rm.alpha = 0.75;
-      ring.material = rm;
-      vizMeshes.push(ring);
+    if (s.recurse) {
+      addLine('recWi', HIT, CEIL_HIT, color3('#22d3ee'), 2.5);
+      addSphere('recHit', CEIL_HIT, 0.12, color3('#22d3ee'), true);
+      addLine('recurseRay', CEIL_HIT, LIGHT_POS, color3('#4ade80'), 2);
     }
   }
 
@@ -772,7 +714,6 @@ window.addEventListener('DOMContentLoaded', function () {
     eqEl.innerHTML = eqHtml(s.hl);
 
     rayRow.style.display = s.showRays ? 'flex' : 'none';
-    cosRow.style.display = (s.showCos || s.id === 'sum') ? 'flex' : 'none';
 
     if (s.lumi) {
       lumiText.innerHTML = s.lumi;
@@ -815,7 +756,6 @@ window.addEventListener('DOMContentLoaded', function () {
     rayVal.textContent = raySlider.value;
     buildViz();
   });
-  cosToggle.addEventListener('change', buildViz);
 
   var modelRoot = prefix() + 'assets/models/';
   BABYLON.SceneLoader.ImportMeshAsync('', modelRoot, 'cornell-box.glb', scene).then(function () {
