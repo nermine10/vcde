@@ -95,7 +95,7 @@
     "href": "levels/local-vs-global.html#re-walkthrough",
     "title": "Level 1 – Lokal vs. Global",
     "section": "Schritt für Schritt: die Rendering-Gleichung",
-    "text": "Schritt für Schritt: die Rendering-Gleichung\nWie im Video von Eric Arnebäck gehen wir dieselbe Cornell-Box Term für Term durch – diesmal als interaktive 3D-Szene in Babylon.js. Klicke die Stufen durch, drehe die Kamera und beobachte, welcher Teil der Gleichung gerade „lebt“.\n\n\n\n\n  \n\n  \n    Cornell-Box wird geladen …\n    \n    Ziehen = drehen · Mausrad = zoomen\n\n    \n      \n        Stufe\n        \n        \n\n        \n          Hemisphären-Strahlen\n          \n          8\n        \n\n        \n          \n          Cosinus-Gewichtung (ωi·n) anzeigen\n        \n\n        \n          ← Zurück\n          Weiter →\n        \n\n        \n          \n            \n          \n          \n            Lumi"
+    "text": "Schritt für Schritt: die Rendering-Gleichung\nWir gehen dieselbe Cornell-Box Term für Term durch – mit exakt der Rendering-Gleichung aus der Vorlesung. Klicke die Stufen durch, drehe die Kamera und beobachte, welcher Term der Gleichung gerade hervorgehoben ist.\n\n\n\n\n  \n\n  \n    Cornell-Box wird geladen …\n    \n    Ziehen = drehen · Mausrad = zoomen\n\n    \n      \n        Stufe\n        \n        \n\n        \n          Beiträge im Integral\n          \n          8\n        \n\n        \n          ← Zurück\n          Weiter →\n        \n\n        \n          \n            \n          \n          \n            Lumi"
   },
   {
     "objectID": "levels/local-vs-global.html#demo",
